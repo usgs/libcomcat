@@ -19,9 +19,9 @@ FMTDICT['lat'] = '%.4f'
 FMTDICT['lon'] = '%.4f'
 FMTDICT['depth'] = '%.1f'
 FMTDICT['mag'] = '%.1f'
-FMTDICT['strike'] = '%i'
-FMTDICT['dip'] = '%i'
-FMTDICT['rake'] = '%i'
+FMTDICT['strike'] = '%.0f'
+FMTDICT['dip'] = '%.0f'
+FMTDICT['rake'] = '%.0f'
 FMTDICT['mrr'] = '%g'
 FMTDICT['mtt'] = '%g'
 FMTDICT['mpp'] = '%g'
@@ -105,12 +105,15 @@ if __name__ == '__main__':
                         help='Also extract moment type (Mww,Mwc, etc.) where available')
     parser.add_argument('-f','--format', dest='format', choices=['csv','tab'], default='csv',
                         help='Output format')
+    parser.add_argument('-v','--verbose', dest='verbose', action='store_true',
+                        help='Print progress')
     
     args = parser.parse_args()
 
     eventlist = getEventData(bounds=args.bounds,starttime=args.startTime,endtime=args.endTime,
                              magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
-                             getComponents=args.getComponents,getAngles=args.getAngles,getType=args.getType)
+                             getComponents=args.getComponents,getAngles=args.getAngles,
+                             getType=args.getType,verbose=args.verbose)
     
     fmt = getFormatString(args.format,eventlist[0].keys())
     print getHeader(args.format,eventlist[0].keys())

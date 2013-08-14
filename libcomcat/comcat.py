@@ -11,11 +11,97 @@ from xml.dom import minidom
 import sys
 import shutil
 
+#third-party imports
+from pagermap import distance
+
 URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
 CHECKBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/%s'
 EVENTURL = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
+KM2DEG = 1.0/111.191
+
+def getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
+    dd = distance.sdist(lat1,lon1,lat2,lon2)/1000.0
+    normd = dd/dwindow
+    if time2 > time1:
+        dt = time2-time1
+    else:
+        dt = time1-time2
+    nsecs = dt.days*86400 + dt.seconds
+    normt = nsecs/twindow
+    euclid = numpy.sqrt(normd**2 + normt**2)
+    return (euclid,dd,nsecs)
+
+def associate(self,event,distancewindow=100,timewindow=16,catalog=""):
+    """
+    Find possible matching events from ComCat for an input event.
+    @param event: Dictionary containing fields ['lat','lon','time']
+    @keyword distancewindow: Search distance in km.
+    @keyword timewindow: Time search delta in seconds.
+    @keyword catalog: Time search delta in seconds.
+    @return: List of origin dictionaries, with following keys:
+             - time datetime of the origin
+             - lat  Latitude of the origin
+             - lon  Longitude of the origin
+             - depth Depth of the origin
+             - mag   Magnitude of the origin
+             - id    ID of the authoritative origin.
+             - euclidean Euclidean distance from the input event to this origin (dimensions are time in sec and dist in km)
+             - timedelta Time delta between input event and this origin (seconds)
+             - distance  Distance between input event and this origin (km)
+    """
+    lat = event['lat']
+    lon = event['lon']
+    etime = event['time']
+    APITIMEFMT = '%Y-%m-%dT%H:%M:%S.%f'
+    mintime = etime - datetime.timedelta(seconds=timewindow)
+    maxtime = etime + datetime.timedelta(seconds=timewindow)
+    minlat = lat - distancewindow * KM2DEG
+    maxlat = lat + distancewindow * KM2DEG
+    minlon = lon - distancewindow * KM2DEG * (1/distance.cosd(lat))
+    maxlon = lon + distancewindow * KM2DEG * (1/distance.cosd(lat))
+
+    etimestr = etime.strftime(TIMEFMT)+'Z'
+    searchurl = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
+    #searchurl = 'http://comcat.cr.usgs.gov/earthquakes/feed/search.php?%s'
+    pdict = {'minlatitude':minlat,'minlongitude':minlon,
+             'maxlatitude':maxlat,'maxlongitude':maxlon,
+             'starttime':mintime.strftime(APITIMEFMT),'endtime':maxtime.strftime(APITIMEFMT),
+             'catalog':catalog,'format':'geojson','eventtype':'earthquake'}
+    if catalog == "":
+        pdict.pop('catalog')
+    params = urllib.urlencode(pdict)
+    searchurl = searchurl % params
+    if etime.year >= 2006:
+        pass
+    origins = []
+    try:
+        fh = urllib2.urlopen(searchurl)
+        data = fh.read()
+        #data2 = data[len(pdict['callback'])+1:-2]
+        datadict = json.loads(data)['features']
+        for feature in datadict:
+            eventdict = {}
+            eventdict['lon'] = feature['geometry']['coordinates'][0]
+            eventdict['lat'] = feature['geometry']['coordinates'][1]
+            eventdict['depth'] = feature['geometry']['coordinates'][2]
+            eventdict['mag'] = feature['properties']['mag']
+            otime = int(feature['properties']['time'])
+            eventdict['time'] = parseTime(otime)
+            idlist = feature['properties']['ids'].strip(',').split(',')
+            eventdict['id'] = idlist[0]
+            euclid,ddist,tdist = getEuclidean(lat,lon,etime,eventdict['lat'],eventdict['lon'],eventdict['time'])
+            eventdict['euclidean'] = euclid
+            eventdict['timedelta'] = tdist
+            eventdict['distance'] = ddist
+            origins.append(eventdict.copy())
+        fh.close()
+        origins = sorted(origins,key=lambda origin: origin['euclidean'])
+        return origins
+    except Exception,exception_object:
+        raise exception_object,'Could not reach "%s"' % searchurl
+
 
 def getMomentComponents(edict):
     mrr = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrr'])
@@ -29,19 +115,19 @@ def getMomentComponents(edict):
 def getFocalAngles(edict):
     product = 'focal-mechanism'
     backup_product = None
-    if 'moment-tensor' in edict['properties']['products'].keys():
+    if 'moment-tensor' in edict['products'].keys():
         product = 'moment-tensor'
-        if 'focal-mechanism' in edict['properties']['products'].keys():
+        if 'focal-mechanism' in edict['products'].keys():
             backup_product = 'focal-mechanism'
     strike = float('nan')
     dip = float('nan')
     rake = float('nan')
-    if not edict['products'][product]['properties'].has_key('nodal-plane-1-dip'):
-        if backup_product is not None and edict['products'][backup_product]['properties'].has_key('nodal-plane-1-dip'):
-            strike,dip,rake = _getAngles(edict['products'][backup_product])
+    if not edict['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
+        if backup_product is not None and edict['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
+            strike,dip,rake = _getAngles(edict['products'][0][backup_product])
         else:
             return (strike,dip,rake)
-    strike,dip,rake = _getAngles(edict['products'][product])
+    strike,dip,rake = _getAngles(edict['products'][product][0])
     return (strike,dip,rake)
 
 def _getAngles(product):
@@ -106,7 +192,8 @@ def checkContributors():
 
 def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
-                 getAngles=False,getCentroid=False,getType=False,getDuration=False):
+                 getAngles=False,getCentroid=False,getType=False,getDuration=False,
+                 verbose=False):
     """Download a list of event dictionaries that could be represented in csv or tab separated format.
 
     The data will include, but not be limited to:
@@ -156,6 +243,12 @@ def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
         urlparams['minlatitude'] = bounds[2]
         urlparams['maxlatitude'] = bounds[3]
 
+        #fix possible issues with 180 meridian crossings
+        minwest = urlparams['minlongitude'] > 0 and urlparams['minlongitude'] < 180
+        maxeast = urlparams['maxlongitude'] < 0 and urlparams['maxlongitude'] > -180
+        if minwest and maxeast:
+            urlparams['maxlongitude'] += 360
+
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
         urlparams['maxmagnitude'] = magrange[1]
@@ -179,6 +272,8 @@ def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
     for feature in fdict['features']:
         eventdict = {}
         eventdict['id'] = feature['id']
+        if verbose:
+            sys.stderr.write('Fetching data for event %s...\n' % eventdict['id'])
         eventdict['time'] = datetime.utcfromtimestamp(feature['properties']['time']/1000)
         eventdict['lat'] = feature['geometry']['coordinates'][1]
         eventdict['lon'] = feature['geometry']['coordinates'][0]
@@ -187,13 +282,13 @@ def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
         types = feature['properties']['types'].strip(',').split(',')
         hasMoment = 'moment-tensor' in types
         hasFocal = 'focal-mechanism' in types
+        eurl = feature['properties']['url']+'.json'
+        fh = urllib2.urlopen(eurl)
+        data = fh.read()
+        fh.close()
+        edict = json.loads(data)
         if getComponents:
             if hasMoment:
-                eurl = feature['properties']['url']+'.json'
-                fh = urllib2.urlopen(eurl)
-                data = fh.read()
-                fh.close()
-                edict = json.loads(data)
                 mrr,mtt,mpp,mrt,mrp,mtp = getMomentComponents(edict)
                 eventdict['mrr'] = mrr
                 eventdict['mtt'] = mtt
@@ -305,6 +400,12 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
         urlparams['maxlongitude'] = bounds[1]
         urlparams['minlatitude'] = bounds[2]
         urlparams['maxlatitude'] = bounds[3]
+
+        #fix possible issues with 180 meridian crossings
+        minwest = urlparams['minlongitude'] > 0 and urlparams['minlongitude'] < 180
+        maxeast = urlparams['maxlongitude'] < 0 and urlparams['maxlongitude'] > -180
+        if minwest and maxeast:
+            urlparams['maxlongitude'] += 360
 
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
