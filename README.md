@@ -10,6 +10,7 @@ code includes (so far):
 
 Usage for getcomcat.py
 --------
+<pre>
 usage: getcomcat.py [-h] [-o OUTPUTFOLDER] [-b lonmin lonmax latmin latmax]
                     [-s STARTTIME] [-e ENDTIME] [-m minmag maxmag]
                     [-c CATALOG] [-n CONTRIBUTOR] [-v EVENTID]
@@ -51,9 +52,10 @@ optional arguments:
                         Event property (alert:yellow, status:REVIEWED, etc.).
   -l, --list-url        Only list urls for contents in events that match
                         criteria.
-
+</pre>
 Usage for getcsv.py
 --------
+<pre>
 usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
                  [-e ENDTIME] [-m minmag maxmag] [-c CATALOG] [-n CONTRIBUTOR]
                  [-o] [-a] [-t] [-f {csv,tab}]
@@ -86,6 +88,4 @@ optional arguments:
                         available
   -f {csv,tab}, --format {csv,tab}
                         Output format
-
-
-
+</pre>
