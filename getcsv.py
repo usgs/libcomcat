@@ -88,9 +88,9 @@ if __name__ == '__main__':
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
     parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
-                        help='Start time for search (defaults to ~30 days ago).')
+                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
-                        help='End time for search (defaults to current date/time).')
+                        help='End time for search (defaults to current date/time).  YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
                         help='Min/max magnitude to restrict search.')
     parser.add_argument('-c','--catalog', dest='catalog', 

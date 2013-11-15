@@ -58,7 +58,7 @@ Usage for getcsv.py
 <pre>
 usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
                  [-e ENDTIME] [-m minmag maxmag] [-c CATALOG] [-n CONTRIBUTOR]
-                 [-o] [-a] [-t] [-f {csv,tab}]
+                 [-o] [-a] [-t] [-f {csv,tab}] [-v]
 
 Download basic earthquake information in line format (csv, tab, etc.).
 
@@ -69,8 +69,10 @@ optional arguments:
                         latmax]
   -s STARTTIME, --start-time STARTTIME
                         Start time for search (defaults to ~30 days ago).
+                        YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
   -e ENDTIME, --end-time ENDTIME
                         End time for search (defaults to current date/time).
+                        YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
   -m minmag maxmag, --mag-range minmag maxmag
                         Min/max magnitude to restrict search.
   -c CATALOG, --catalog CATALOG
@@ -88,4 +90,5 @@ optional arguments:
                         available
   -f {csv,tab}, --format {csv,tab}
                         Output format
+  -v, --verbose         Print progress
 </pre>
