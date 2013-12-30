@@ -13,6 +13,7 @@ import shutil
 
 #third-party imports
 from pagermap import distance
+import isf 
 
 URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
 CHECKBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/%s'
@@ -321,6 +322,178 @@ def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
         eventlist.append(eventdict.copy())
     return eventlist
 
+def getPhaseData(bounds = None,starttime = None,endtime = None,
+                 magrange = None,catalog = None,contributor = None,
+                 eventid = None,eventProperties=None,productProperties=None):
+    """Fetch origin, moment tensor and phase data for earthquakes matching input parameters.
+
+    @keyword bounds: Sequence of (lonmin,lonmax,latmin,latmax)
+    @keyword starttime: Start time for search (defaults to ~30 days ago). YYYY-mm-ddTHH:MM:SS
+    @keyword endtime: End time for search (defaults to now). YYYY-mm-ddTHH:MM:SS
+    @keyword magrange: Sequence of (minmag,maxmag)
+    @keyword catalog: Product catalog to use to constrain the search (centennial,nc, etc.).
+    @keyword contributor: Product contributor, or who sent the product to ComCat (us,nc,etc.).
+    @keyword eventid: Event id to search for - restricts search to a single event (usb000ifva)
+    @keyword eventProperties: Dictionary of event properties to match. {'reviewstatus':'approved'}
+    @keyword productProperties: Dictionary of event properties to match. {'alert':'yellow'}
+    @return: List of dictionaries, where the fields are:
+             - eventcode (usually) 10 character event code
+             - magerr Magnitude uncertainty
+             - origins List of origin dictionaries, with fields:
+               - time Datetime object
+               - year, month, day, hour, minute and (fractional) second
+               - timefixed Flag indicating whether time was fixed for inversion.
+               - time_error (seconds)
+               - timerms Root mean square of time residuals
+               - lat, lon Position (degrees)
+               - epifixed Flag indicating whether epicenter was fixed for inversion.
+               - semimajor Semi-major axis of error ellipse
+               - semiminor Semi-minor axis of error ellipse
+               - errorazimuth Azimuth of error ellipse
+               - depth (km)
+               - depthfixed Flag indicating whether depth was fixed for inversion.
+               - deptherr (km)
+               - numphases Number of defining phases
+               - numstations Number of defining stations
+               - azgap Gap in azimuthal coverage (degrees)
+               - mindist Distance to closest station (degrees)
+               - maxdist Distance to furthest station (degrees)
+               - analysistype (a=automatic, m=manual)
+               - locmethod (i=inversion)
+               - event_type (ke = known earthquake, se= suspected earthquake)
+               - author Author of the origin
+               - originID ID of the origin
+             -phases List of phase dictionaries, with fields:
+               - stationcode Station code
+               - stationdist Event to station distance (degrees)
+               - stationaz Event to station azimuth (degrees)
+               - phasecode Phase code
+               - time Phase arrival time (datetime)
+               - hour, minute, (fractional) second Phase arrival time
+               - timeres Time residual (seconds)
+               - azimuth Observed azimuth (degrees)
+               - azres Azimuth residual (degrees)
+               - slowness Observed slowness
+               - slowres Slowness residuals
+               - timeflag Time defining flag
+               - azflag Azimuth defining flag
+               - slowflag Slowness defining flag
+               - snr Signal to noise ratio
+               - amplitude Amplitude (nanometers)
+               - period (seconds)
+               - picktype (a=automatic,m=manual)
+               - direction Direction of short period motion
+               - quality Onset quality
+               - magtype (mb, ms, etc.)
+               - minmax Min max indicator
+               - mag Magnitude value
+               - arrid Arrival ID
+             -tensors List of moment tensor dictionaries, with fields:
+               - m0 Scalar moment (no exponent)
+               - exponent Exponent of the moment tensor and MXX fields.
+               - scalarmoment Scalar moment, divided by 10^exponent
+               - fclvd Fraction of moment released as a compensated linear vector dipole
+               - mrr radial-radial element of moment tensor
+               - mtt theta-theta element of moment tensor
+               - mpp phi-phi element of moment tensor
+               - mrt radial-theta element of moment tensor
+               - mtp theta-phi element of moment tensor
+               - phi-radial element of moment tensor
+               - nbodystations Number of body wave stations used
+               - nsurfacestations Number of surface wave stations used
+               - author Author of the moment tensor
+               - momenterror Error in scalar moment
+               - clvderror Error in clvd
+               - errormrr, errormtt, errormpp, errormrt,errormrp,errormtp Errors in elements
+               - nbody Number of body wave components used
+               - nsurface Number of surface wave components used
+               - duration Source duration (seconds)
+    """
+    if catalog is not None and catalog not in checkCatalogs():
+        raise Exception,'Unknown catalog %s' % catalog
+    if contributor is not None and contributor not in checkContributors():
+        raise Exception,'Unknown contributor %s' % contributor
+    
+    #if someone asks for a specific eventid, then we can shortcut all of this stuff
+    #below, and just parse the event json
+    if eventid is not None:
+        try:
+            eqdict = getEventPhase(eventid)
+            return [eqdict]
+        except:
+            raise Exception,'Could not retrieve data for eventid "%s"' % eventid
+
+    #start creating the url parameters
+    urlparams = {}
+    urlparams['producttype'] = 'phase-data'
+    if starttime is not None:
+        urlparams['starttime'] = starttime.strftime(TIMEFMT)
+        if endtime is None:
+            urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
+    if endtime is not None:
+        urlparams['endtime'] = endtime.strftime(TIMEFMT)
+        if starttime is None:
+            urlparams['starttime'] = datetime(1900,1,1,0,0,0).strftime(TIMEFMT)
+
+    #we're using a rectangle search here
+    if bounds is not None:
+        urlparams['minlongitude'] = bounds[0]
+        urlparams['maxlongitude'] = bounds[1]
+        urlparams['minlatitude'] = bounds[2]
+        urlparams['maxlatitude'] = bounds[3]
+
+        #fix possible issues with 180 meridian crossings
+        minwest = urlparams['minlongitude'] > 0 and urlparams['minlongitude'] < 180
+        maxeast = urlparams['maxlongitude'] < 0 and urlparams['maxlongitude'] > -180
+        if minwest and maxeast:
+            urlparams['maxlongitude'] += 360
+
+    if magrange is not None:
+        urlparams['minmagnitude'] = magrange[0]
+        urlparams['maxmagnitude'] = magrange[1]
+    
+    if catalog is not None:
+        urlparams['catalog'] = catalog
+    if contributor is not None:
+        urlparams['contributor'] = contributor
+
+    #search parameters we're not making available to the user (yet)
+    urlparams['orderby'] = 'time-asc'
+    urlparams['format'] = 'geojson'
+    params = urllib.urlencode(urlparams)
+    url = URLBASE % params
+
+    fh = urllib2.urlopen(url)
+    feed_data = fh.read()
+    fh.close()
+
+    fdict = json.loads(feed_data)
+    outfiles = []
+    eqlist = []
+    for feature in fdict['features']:
+        eid = feature['id']
+        location = feature['properties']['place']
+        ptypes = feature['properties']['types'].strip(',').split(',')
+        if 'phase-data' not in ptypes:
+            continue
+        furl = feature['properties']['url']+'.json'
+        try:
+            fh = urllib2.urlopen(furl)
+            event_data = fh.read()
+            fh.close()
+            edict = json.loads(event_data)
+            quakeurl = edict['products']['phase-data'][0]['contents']['quakeml.xml']['url']
+            fh = urllib2.urlopen(quakeurl)
+            quakedata = fh.read()
+            fh.close()
+            eqdict = isf.readQuakeMLData(quakedata)
+            eqdict['location'] = location
+            eqdict['url'] = quakeurl
+            eqlist.append(eqdict.copy())
+        except Exception,msg:
+            pass
+    return eqlist
+        
 def getContents(product,contentlist,outfolder=None,bounds = None,
                 starttime = None,endtime = None,magrange = None,
                 catalog = None,contributor = None,eventid = None,
