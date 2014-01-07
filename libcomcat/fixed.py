@@ -5,6 +5,8 @@ from xml.dom.minidom import parseString
 import sys
 import datetime
 import math
+import urllib2
+import copy
 
 #third party imports
 import numpy as np
@@ -30,16 +32,17 @@ ORIGINHDR = [((4,7),'a4'),
              ((119,124),'a6'),
              ((131,136),'a6')]
 
-ORIGINFMT = [((1,4),'i4'),
+#optional third element boolean indicates zero-padding (dates, usually)
+ORIGINFMT = [((1,4),'i4',True), #year
           ((5,5),'a1'),
-          ((6,7),'i2'),
+          ((6,7),'i2',True), #month
           ((8,8),'a1'),
-          ((9,10),'i2'),
-          ((12,13),'i2'),
+          ((9,10),'i2',True), #day
+          ((12,13),'i2',True), #hour
           ((14,14),'a1'),
-          ((15,16),'i2'),
+          ((15,16),'i2',True), #minute
           ((17,17),'a1'),
-          ((18,22),'f5.2'),
+          ((18,22),'f5.2',True), #second
           ((23,23),'a1'),
           ((25,29),'f5.2'),
           ((31,35),'f5.2'),
@@ -99,15 +102,15 @@ PHASEHDR = [((1,3),'a3'),
 PHASELBL = ['Sta','Dist','EvAz','Phase','Time','TRes','Azim','AzRes','Slow',
             'SRes','Def','SNR','Amp','Per','Qual','Magnitude','ArrID']
 
-PHASEFMT = [((1,5),'a5'),
-            ((7,12),'f6.2'),
-            ((14,18),'f5.1'),
-            ((20,27),'a8'),
-            ((29,30),'i2'),
+PHASEFMT = [((1,5),'a5'), #station code
+            ((7,12),'f6.2'), #station distance
+            ((14,18),'f5.1'), #station azimuth
+            ((20,27),'a8'), #phase code
+            ((29,30),'i2',True), #hour
             ((31,31),'a1'),
-            ((32,33),'i2'),
+            ((32,33),'i2',True), #minute
             ((34,34),'a1'),
-            ((35,40),'f6.3'),
+            ((35,40),'f6.3',True), #second
             ((42,46),'f5.1'),
             ((48,52),'f5.1'),
             ((54,58),'f5.1'),
@@ -191,6 +194,79 @@ MOMENTFMT2 = [((2,2),'a1'),
               ((74,77),'i4'),
               ((79,86),'f8.2')]
 
+#ftp://hazards.cr.usgs.gov/weekly/ehdf.txt
+EHDRFMT = [((1,2),'a2'), #GS
+               ((3,4),'a2'), #blank
+               ((5,8),'i4'), #year
+               ((9,10),'i2',True), #month
+               ((11,12),'i2',True), #day
+               ((13,14),'i2',True), #hour
+               ((15,16),'i2',True), #minute
+               ((17,18),'i2',True), #second
+               ((19,20),'i2',True), #hundredths of a second (??)
+               ((21,25),'f5.3'), #lat
+               ((26,26),'a1'), #N or S
+               ((27,32),'f6.3'), #lon
+               ((33,33),'a1'), #E or W
+               ((34,37),'i4'), #depth
+               ((38,38),'a1'), #depth quality (A, D, G, N, * or ?)
+               ((39,40),'i2'), #num depth phases (saturates at 99)
+               ((41,43),'i3'), #num P or PKP arrivals
+               ((44,46),'f3.2'), #std dev
+               ((47,47),'a1'),#quality flag (&, *, % or ?)
+               ((48,49),'i2'), #MB value
+               ((50,51),'i2'), #number of amplitudes (saturates at 99)
+               ((52,53),'i2'), #Ms value
+               ((54,55),'i2'), #number of amps used (saturates at 99)
+               ((56,56),'a1'), #component
+               ((57,59),'i3'), #magnitude
+               ((60,61),'a2'),#magtype
+               ((62,66),'a5'),#contributor
+               ((67,69),'i3'), #mag 2
+               ((70,71),'a2'),#magtype 2
+               ((72,76),'a5'),#contributor 2
+               ((77,79),'i3'), #FE number
+               ((80,80),'a1'), #max MMI
+               ((81,81),'a1'), #macroseismic (H=heard, F=felt, D=damage, C=casualties)
+               ((82,82),'a1'), #moment tensor (any source) published in monthly listing (M)
+               ((83,83),'a1'), #isoseismal/intensity map (P = PDE or Monthly Listing or U = U.S. Earthquakes)
+               ((84,84),'a1'),#GS fault plane solution (F)
+               ((85,85),'a1'),#IDE event (X) -- prior to PDE 01, 2004 event quality flag (A,B,C,D,H,N) -- begin with PDE 01, 2004
+               ((86,86),'a1'),#diastrophic phenomena (U = uplift, S = subsidence, F = faulting, 3 = U & S, 4 = U & F, 5 = S & F, 6 = all)
+               ((87,87),'a1'),#tsunami (T or Q)
+               ((88,88),'a1'),#seiche (S or Q)
+               ((89,89),'a1'),#volcanism (V)
+               ((90,90),'a1'),#non-tectonic source (E = explosion, I = collapse,C = coalbump or rockburst in coal mine, R = rockburst,M = meteoritic source)
+               ((91,91),'a1'),#guided waves in atmosphere/ocean (T = t wave, A = acoustic wave, G = gravity wave, B = gravity and acoustic waves, M = multiple effects)
+               ((92,92),'a1'),#ground, soil, water table and atmospheric phenomena (L = liquefaction, G = geyser, S = landslide/avalanche,B = sand blows, C = ground cracks not known to be an expression of faulting, V = visual/lights,O = unusual odors, M = multiple effects)
+               ((93,93),'a1'), #<
+               ((94,98),'a5'), #contributor
+               ((99,99),'a1')] #>
+
+EHDF_EVENT_TYPES = {'explosion':'E','collapse':'I','rock burst':'R','meteorite':'M'}
+
+def getFERegion(lat,lon):
+    """
+    Return the FE region number, or NaN if it cannot be found.
+    lat: Latitude of input point.
+    lat: Latitude of input point.
+    Returns FE region number.
+    """
+    url = 'http://geohazards.cr.usgs.gov/cfusion/fe_regions.cfc?method=getRegion&lat=LAT&lon=LON'
+    url = url.replace('LAT',str(lat))
+    url = url.replace('LON',str(lon))
+    locnum = float('nan')
+    try:
+        fh = urllib2.urlopen(url)
+        regstr = fh.read()
+        fh.close()
+        parts = regstr.split('|')
+        locnum = int(parts[0].strip())
+    except:
+        pass
+    
+    return locnum
+
 def readQuakeML(quakemlfile):
     data = open(quakemlfile,'rt').read()
     return readQuakeMLData(data)
@@ -265,12 +341,18 @@ def getOrigin(origin,event):
     else:
         deptherr = float('nan')
     if len(origin.getElementsByTagName('quality')):
-        rms = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('standardError')[0].firstChild.data)
+        if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('standardError')):
+            rms = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('standardError')[0].firstChild.data)
+        else:
+            rms = float('nan')
         if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')):
             ndef = int(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')[0].firstChild.data)
         else:
             ndef = float('nan')
-        azgap = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')[0].firstChild.data)
+        if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')):
+            azgap = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')[0].firstChild.data)
+        else:
+            azgap = float('nan')
     else:
         rms = float('nan')
         ndef = float('nan')
@@ -503,6 +585,12 @@ def readQuakeMLData(data):
     eqdict['eventcode'] = event.getAttribute('catalog:dataid')
     eqdict['location'] = ''
     eqdict['url'] = ''
+    eqdict['type'] = 'earthquake'
+    cnodenames = []
+    for c in event.childNodes:
+        if c.nodeType == c.ELEMENT_NODE and c.tagName == 'type':
+            eqdict['type'] = c.firstChild.data
+            break
 
     #fetch the origin elements
     origins = []
@@ -542,6 +630,107 @@ def readQuakeMLData(data):
     dom.unlink()
     return eqdict
 
+def renderEHDF(eqdict):
+    yr = eqdict['origins'][0]['time'].year
+    mo = eqdict['origins'][0]['time'].month
+    da = eqdict['origins'][0]['time'].day
+    hr = eqdict['origins'][0]['time'].hour
+    mi = eqdict['origins'][0]['time'].minute
+    se = eqdict['origins'][0]['time'].second
+    th = int(float(eqdict['origins'][0]['time'].microsecond)/1e4)
+    lat = eqdict['origins'][0]['lat']
+    NS = 'N'
+    if lat < 0:
+        NS = 'S'
+        lat = abs(lat)
+    lon = eqdict['origins'][0]['lon']
+    EW = 'E'
+    if lon < 0:
+        EW = 'W'
+        lon = abs(lon)
+    dep = eqdict['origins'][0]['depth']
+    depflag = '?' #what should this be?
+    numdep = eqdict['origins'][0]['numphases'] #these are the number of phases for the hypocenter... ok
+    if numdep > 99:
+        numdep = 99
+    nump = numdep #??
+    std = float('nan')
+    hypq = '?' #hypocenter quality - ??
+    magmb = float('nan')
+    magmbsta = float('nan')
+    magms = float('nan')
+    magmssta = float('nan')
+    magmscomp = 'Z'
+    mag1 = float('nan') #contrib mag 1
+    mag2 = float('nan') #contrib mag 2
+    mag1t = '' #contrib mag 1 type
+    mag2t = '' #contrib mag 2 type
+    mag1s = '' #contrib mag 1 source
+    mag2s = '' #contrib mag 2 source
+    magtypes = [mag['magtype'].lower() for mag in eqdict['magnitudes']]
+    copymags = copy.copy(eqdict['magnitudes'])
+    mag1,mag1t,mag1s,idx = getEHDFMagnitude(copymags)
+    if idx >= 0:
+        copymags.pop(idx)
+    mag2,mag2t,mag2s,idx = getEHDFMagnitude(copymags)
+    if idx >= 0:
+        copymags.pop(idx)
+    if 'mb' in magtypes:
+        idx = magtypes.index('mb')
+        magmb = int(eqdict['magnitudes'][idx]['mag']*10)
+        magmbsta = eqdict['magnitudes'][idx]['nstations']
+    if 'ms' in magtypes:
+        idx = magtypes.index('ms')
+        magms = int(eqdict['magnitudes'][idx]['mag']*10)
+        magmssta = eqdict['magnitudes'][idx]['nstations']
+
+    fenum = getFERegion(lat,lon)
+    maxmi = 'T' #?? what is unknown value
+    #putting blanks for all flags for now - get Paul to fill in
+    msflag = ''
+    mtflag = ''
+    if len(eqdict['tensors']):
+        mtflag = 'M'
+    iiflag = '' #??
+    fpflag = '' #??
+    ieflag = ''
+    dpflag = ''
+    tsflag = ''
+    seflag = ''
+    voflag = ''
+    ntflag = ''
+    if eqdict['type'] in EHDF_EVENT_TYPES.keys():
+        ntflag = EHDF_EVENT_TYPES[eqdict['type']]
+    gwflag = ''
+    gpflag = ''
+    author = '%-5s' % (eqdict['origins'][0]['author'])
+    vlist = ['GS','',yr,mo,da,hr,mi,se,th,lat,NS,lon,EW,dep,depflag,numdep,nump,std,hypq,
+             magmb,magmbsta,magms,magmssta,magmscomp,mag1,mag1t,mag1s,mag2,mag2t,mag2s,
+             fenum,maxmi,msflag,mtflag,iiflag,fpflag,ieflag,dpflag,tsflag,seflag,voflag,
+             ntflag,gwflag,gpflag,'<',author,'>']
+    try:
+        line = fixed.getFixedFormatString(EHDRFMT,vlist)
+    except Exception,msg:
+        sys.stderr.write('Could not create line for %s' % (eqdict['eventcode'])
+    return line
+
+
+def getEHDFMagnitude(maglist):
+    magtypes = [mag['magtype'].lower() for mag in maglist]
+    hierarchy = ['mww','mw','ml','lg','rg','md','cl','mg']
+    mag = float('nan')
+    magtype = ''
+    magsrc = ''
+    midx = -1
+    for mtype in hierarchy:
+        if mtype in magtypes:
+            midx = magtypes.index(mtype)
+            mag = int(maglist[midx]['mag']*100)
+            magtype = maglist[midx]['magtype']
+            magsrc = maglist[midx]['author']
+            break
+    return (mag,magtype,magsrc,midx)
+    
 def renderISF(eqdict):
     #render ISF as a string
     isf = 'BEGIN IMS2.0\n'
@@ -585,13 +774,12 @@ def renderISF(eqdict):
         vlist = [m['magtype'],' ',m['mag'],m['magerr'],m['nstations'],m['author'],m['magid']]
         line = fixed.getFixedFormatString(MAGFMT,vlist)
         isf += line+'\n'
-
-    
         
     line = fixed.getFixedFormatString(PHASEHDR,PHASELBL)
     isf += line + '\n'
     for p in eqdict['phases']:
-        vlist = [p['stationcode'],p['stationdist'],p['stationaz'],p['phasecode'],
+        stacode = '%-5s' % (p['stationcode'])
+        vlist = [stacode,p['stationdist'],p['stationaz'],p['phasecode'],
                  p['hour'],':',p['minute'],':',p['second'],p['timeres'],
                  p['azimuth'],p['azres'],p['slowness'],p['slowres'],p['timeflag'],
                  p['azflag'],p['slowflag'],p['snr'],p['amplitude'],p['period'],
@@ -699,5 +887,8 @@ if __name__ == '__main__':
     eqdict = readQuakeML(sys.argv[1])
     isf = renderISF(eqdict)
     print isf
+    print
+    ehdf = renderEHDF(eqdict)
+    print ehdr
         
     

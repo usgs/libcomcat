@@ -13,7 +13,7 @@ import shutil
 
 #third-party imports
 from pagermap import distance
-import isf 
+import fixed
 
 URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
 CHECKBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/%s'
@@ -486,7 +486,10 @@ def getPhaseData(bounds = None,starttime = None,endtime = None,
             fh = urllib2.urlopen(quakeurl)
             quakedata = fh.read()
             fh.close()
-            eqdict = isf.readQuakeMLData(quakedata)
+            try:
+                eqdict = fixed.readQuakeMLData(quakedata)
+            except Exception,ex:
+                pass
             eqdict['location'] = location
             eqdict['url'] = quakeurl
             eqlist.append(eqdict.copy())

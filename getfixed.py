@@ -8,7 +8,7 @@ import os
 
 #third party
 from libcomcat.comcat import getPhaseData
-from libcomcat import isf
+from libcomcat import fixed
 
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 DATEFMT = '%Y-%m-%d'
@@ -83,7 +83,7 @@ def makedict(dictstring):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Download basic earthquake information in line format (csv, tab, etc.).')
+    parser = argparse.ArgumentParser(description='Download earthquake information in a fixed-width format.')
     #optional arguments
     parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
                         dest='bounds', type=float, nargs=4,
@@ -98,8 +98,10 @@ if __name__ == '__main__':
                         help='Source catalog from which products derive (atlas, centennial, etc.)')
     parser.add_argument('-n','--contributor', dest='contributor', 
                         help='Source contributor (who loaded product) (us, nc, etc.)')
-    parser.add_argument('-v','--verbose', dest='verbose', action='store_true',
-                        help='Print progress')
+    parser.add_argument('format',choices=['isf','ehdf'],
+                        help='Output data in ISF format')
+    parser.add_argument('-d','--ehdf', dest='ehdf', action='store_true',
+                        help='Output data in EHDF format')
     
     args = parser.parse_args()
 
@@ -107,6 +109,9 @@ if __name__ == '__main__':
                              magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
     
     for event in eventlist:
-        isftext = isf.renderISF(event)
-        print isftext
+        if args.format == 'isf':
+            text = fixed.renderISF(event)
+        elif args.format == 'ehdf':
+            text = fixed.renderEHDF(event)
+        print text
         
