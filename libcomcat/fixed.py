@@ -315,6 +315,9 @@ def getStationInfo(origin,event):
 
 def getOrigin(origin,event):
     originid = origin.getAttribute('catalog:eventid')
+    publicid = origin.getAttribute('publicID')
+    if not len(origin.getElementsByTagName('time')):
+        return None
     timestr = origin.getElementsByTagName('time')[0].getElementsByTagName('value')[0].firstChild.data
     timestr = timestr.rstrip('Z')
     timeel = origin.getElementsByTagName('time')[0]
@@ -392,7 +395,8 @@ def getOrigin(origin,event):
             'time_error':errortime,'timerms':rms,'lat':lat,'lon':lon,'epifixed':epifixed,'semimajor':smaj,
             'semiminor':smin,'errorazimuth':az,'depth':depth,'depthfixed':depthfixed,'deptherr':deptherr,
             'numphases':ndef,'numstations':nst,'azgap':azgap,'mindist':mindist,'maxdist':maxdist,
-            'analysistype':status,'locmethod':locmethod,'event_type':event_type,'author':author,'originid':originid}
+            'analysistype':status,'locmethod':locmethod,'event_type':event_type,'author':author,
+            'originid':originid,'publicid':publicid}
     return orig
 
 def getPhase(pick,origin,event):
@@ -490,12 +494,16 @@ def getPhase(pick,origin,event):
 def getMomentTensor(momentTensor):
     mdict = {}
     m0 = float(momentTensor.getElementsByTagName('scalarMoment')[0].getElementsByTagName('value')[0].firstChild.data)
+    if len(momentTensor.getElementsByTagName('clvd')):
+        fclvd = float(momentTensor.getElementsByTagName('clvd')[0].firstChild.data)
+        if fclvd > 1:
+            fclvd = fclvd/100.0
+    else:
+        fclvd = float('nan')
+    
     exponent = math.floor(math.log10(m0))
     scalarMoment = m0/math.pow(10,exponent)
-    if fclvd > 1:
-        fclvd = float(momentTensor.getElementsByTagName('clvd')[0].firstChild.data)/100.0
-    else:
-        fclvd = float(momentTensor.getElementsByTagName('clvd')[0].firstChild.data)
+    
     tensor = momentTensor.getElementsByTagName('tensor')[0]
     mrr = float(tensor.getElementsByTagName('Mrr')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
     mtt = float(tensor.getElementsByTagName('Mtt')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
@@ -592,11 +600,20 @@ def readQuakeMLData(data):
             eqdict['type'] = c.firstChild.data
             break
 
+    #get preferred origin idx
+    prefid = event.getElementsByTagName('preferredOriginID')[0].firstChild.data
+        
     #fetch the origin elements
     origins = []
+    idx = 0
     for origin in originelements:
+        publicid = origin.getAttribute('publicID')
+        if publicid == prefid:
+            prefidx = idx
         orig = getOrigin(origin,event)
-        origins.append(orig.copy())
+        if orig is not None:
+            origins.append(orig.copy())
+        idx += 1
     eqdict['origins'] = origins
 
     #fetch the magnitude elements
@@ -622,10 +639,13 @@ def readQuakeMLData(data):
     picks = event.getElementsByTagName('pick')
     phases = []
     for pick in picks:
-        phase = getPhase(pick,originelements[0],event)
+        phase = getPhase(pick,originelements[prefidx],event)
         if phase is not None:
             phases.append(phase.copy())
-    eqdict['phases'] = phases    
+
+    if len(phases):
+        phases = sorted(phases,key=lambda k:k['stationdist'])
+    eqdict['phases'] = phases
     
     dom.unlink()
     return eqdict
@@ -711,7 +731,7 @@ def renderEHDF(eqdict):
     try:
         line = fixed.getFixedFormatString(EHDRFMT,vlist)
     except Exception,msg:
-        sys.stderr.write('Could not create line for %s' % (eqdict['eventcode'])
+        sys.stderr.write('Could not create line for %s' % (eqdict['eventcode']))
     return line
 
 

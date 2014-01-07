@@ -489,7 +489,7 @@ def getPhaseData(bounds = None,starttime = None,endtime = None,
             try:
                 eqdict = fixed.readQuakeMLData(quakedata)
             except Exception,ex:
-                pass
+                sys.stderr.write('Could not parse phase data for event %s\n' % eid)
             eqdict['location'] = location
             eqdict['url'] = quakeurl
             eqlist.append(eqdict.copy())
