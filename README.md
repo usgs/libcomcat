@@ -113,6 +113,8 @@ optional arguments:
   -v, --verbose         Print progress
 </pre>
 
+Usage for getcomcat.py
+--------
 <pre>
 usage: getfixed.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
                    [-e ENDTIME] [-m minmag maxmag] [-c CATALOG]
