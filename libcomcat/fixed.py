@@ -10,7 +10,7 @@ import copy
 
 #third party imports
 import numpy as np
-from pagerio import fixed
+from neicio import fixed
 
 ORIGINHDR = [((4,7),'a4'),
              ((15,18),'a4'),

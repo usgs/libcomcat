@@ -3,10 +3,30 @@ Introduction
 
 libcomcat is a project provide command line equivalents to the NEIC ComCat search API.  This 
 code includes (so far):
- * Two scripts:
+ * Three scripts:
    * getcomcat.py A script to download ComCat product contents (shakemap grids, origin quakeml, etc.)
    * getcsv.py A script to generate csv or tab separated text files with basic earthquake information.
+   * getfixed.py A script to generate text files in one of two fixed-width formats: ISF and EHDF.
  * One code module, libcomcat/comcat.py, with functions supporting the above scripts.
+
+Installation and Dependencies
+-----------------------------
+
+This package depends on numpy, the fundamental package for scientific computing with Python.
+<a href="http://www.numpy.org/">http://www.numpy.org/</a>
+
+and neicmap and neicio, part of an effort at the NEIC to create generally useful Python libraries.
+
+The best way to install numpy is to use one of the Python distributions described here:
+
+<a href="http://www.scipy.org/install.html">http://www.scipy.org/install.html</a>
+
+Most of those distributions should include <em>pip</em>, a tool for installing and managing Python packages.
+
+To install neicmap and neicio:
+
+pip install git+git://github.com/mhearne-usgs/neicmap.git
+pip install git+git://github.com/mhearne-usgs/neicio.git
 
 Usage for getcomcat.py
 --------
@@ -91,4 +111,36 @@ optional arguments:
   -f {csv,tab}, --format {csv,tab}
                         Output format
   -v, --verbose         Print progress
+</pre>
+
+<pre>
+usage: getfixed.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
+                   [-e ENDTIME] [-m minmag maxmag] [-c CATALOG]
+                   [-n CONTRIBUTOR] [-d]
+                   {isf,ehdf}
+
+Download earthquake information in a fixed-width format.
+
+positional arguments:
+  {isf,ehdf}            Output data in ISF format
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -b lonmin lonmax latmin latmax, --bounds lonmin lonmax latmin latmax
+                        Bounds to constrain event search [lonmin lonmax latmin
+                        latmax]
+  -s STARTTIME, --start-time STARTTIME
+                        Start time for search (defaults to ~30 days ago).
+                        YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
+  -e ENDTIME, --end-time ENDTIME
+                        End time for search (defaults to current date/time).
+                        YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
+  -m minmag maxmag, --mag-range minmag maxmag
+                        Min/max magnitude to restrict search.
+  -c CATALOG, --catalog CATALOG
+                        Source catalog from which products derive (atlas,
+                        centennial, etc.)
+  -n CONTRIBUTOR, --contributor CONTRIBUTOR
+                        Source contributor (who loaded product) (us, nc, etc.)
+  -d, --ehdf            Output data in EHDF format
 </pre>

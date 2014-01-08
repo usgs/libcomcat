@@ -12,7 +12,7 @@ import sys
 import shutil
 
 #third-party imports
-from pagermap import distance
+from neicmap import distance
 import fixed
 
 URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
