@@ -28,6 +28,9 @@ To install neicmap and neicio:
 pip install git+git://github.com/mhearne-usgs/neicmap.git
 pip install git+git://github.com/mhearne-usgs/neicio.git
 
+To install this package:
+pip install git+git://github.com/mhearne-usgs/libcomcat.git
+
 Usage for getcomcat.py
 --------
 <pre>
