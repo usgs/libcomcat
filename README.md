@@ -1,7 +1,7 @@
 Introduction
 ------------
 
-libcomcat is a project provide command line equivalents to the NEIC ComCat search API.  This 
+libcomcat is a project designed to provide command line equivalents to the NEIC ComCat search API.  This 
 code includes (so far):
  * Three scripts:
    * getcomcat.py A script to download ComCat product contents (shakemap grids, origin quakeml, etc.)
