@@ -418,10 +418,11 @@ def getPhaseData(bounds = None,starttime = None,endtime = None,
     #below, and just parse the event json
     if eventid is not None:
         try:
-            eqdict = getEventPhase(eventid)
-            return [eqdict]
-        except:
-            raise Exception,'Could not retrieve data for eventid "%s"' % eventid
+            phaseml = getEventPhase(eventid)
+            return [phaseml]
+        except Exception,msg:
+            sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eventid,msg.message))
+            return None
 
     #start creating the url parameters
     urlparams = {}
@@ -470,33 +471,51 @@ def getPhaseData(bounds = None,starttime = None,endtime = None,
     fdict = json.loads(feed_data)
     outfiles = []
     eqlist = []
+    ic = 0
     for feature in fdict['features']:
         eid = feature['id']
+        #REMOVE
+        sys.stderr.write('Fetching event %s (%i of %i)\n' % (eid,ic,len(fdict['features'])))
         location = feature['properties']['place']
         ptypes = feature['properties']['types'].strip(',').split(',')
         if 'phase-data' not in ptypes:
             continue
-        furl = feature['properties']['url']+'.json'
         try:
-            fh = urllib2.urlopen(furl)
-            event_data = fh.read()
-            fh.close()
-            edict = json.loads(event_data)
-            quakeurl = edict['products']['phase-data'][0]['contents']['quakeml.xml']['url']
-            fh = urllib2.urlopen(quakeurl)
-            quakedata = fh.read()
-            fh.close()
-            try:
-                eqdict = fixed.readQuakeMLData(quakedata)
-            except Exception,ex:
-                sys.stderr.write('Could not parse phase data for event %s\n' % eid)
-            eqdict['location'] = location
-            eqdict['url'] = quakeurl
-            eqlist.append(eqdict.copy())
+            phaseml = getEventPhase(eid)
+            eqlist.append(phaseml)
         except Exception,msg:
-            pass
+            sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eid,msg.message))
+        ic += 1
     return eqlist
-        
+
+def getEventPhase(eventid):
+    urlbase = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
+    url = urlbase.replace('[EVENTID]',eventid)
+    try:
+        req = urllib2.Request(url)
+        req.add_unredirected_header('User-Agent', 'Custom User-Agent')
+        fh = urllib2.urlopen(req)
+        #fh = urllib2.urlopen(url)
+        event_data = fh.read()
+        fh.close()
+        edict = json.loads(event_data)
+        if not edict['products']['phase-data'][0]['contents'].has_key('quakeml.xml'):
+            raise LookupError,'Event %s does not have a phase data quakeml file' % eventid
+        quakeurl = edict['products']['phase-data'][0]['contents']['quakeml.xml']['url']
+        req = urllib2.Request(quakeurl)
+        req.add_unredirected_header('User-Agent', 'Custom User-Agent')
+        fh = urllib2.urlopen(req)
+        quakedata = fh.read()
+        fh.close()
+        try:
+            phaseml = fixed.PhaseML()
+            phaseml.readFromString(quakedata,url=quakeurl)
+        except Exception,ex:
+            raise Exception('Could not parse phase data for event %s - error "%s"\n' % (eventid,ex.message))
+    except Exception,msg:
+        raise Exception('Could not parse phase data for event %s - error "%s"\n' % (eventid,msg.message))
+    return phaseml    
+
 def getContents(product,contentlist,outfolder=None,bounds = None,
                 starttime = None,endtime = None,magrange = None,
                 catalog = None,contributor = None,eventid = None,

@@ -63,7 +63,7 @@ ORIGINFMT = [((1,4),'i4',True), #year
           ((112,112),'a1'),
           ((114,114),'a1'),
           ((116,117),'a2'),
-          ((119,127),'a9'),
+          ((119,127),'a9',False,True),
           ((129,136),'a8')]
 
 MAGHDR = [((1,9),'a9'),
@@ -72,12 +72,12 @@ MAGHDR = [((1,9),'a9'),
           ((21,26),'a6'),
           ((33,38),'a6')]
 
-MAGFMT = [((1,5),'a5'),
+MAGFMT = [((1,5),'a5',False,True),
           ((6,6),'a1'),
           ((7,10),'f4.1'),
           ((12,14),'f3.1'),
           ((16,19),'i4'),
-          ((21,29),'a9'),
+          ((21,29),'a9',False,True),
           ((31,38),'a8')]
            
 
@@ -102,10 +102,10 @@ PHASEHDR = [((1,3),'a3'),
 PHASELBL = ['Sta','Dist','EvAz','Phase','Time','TRes','Azim','AzRes','Slow',
             'SRes','Def','SNR','Amp','Per','Qual','Magnitude','ArrID']
 
-PHASEFMT = [((1,5),'a5'), #station code
+PHASEFMT = [((1,5),'a5',False,True), #station code
             ((7,12),'f6.2'), #station distance
             ((14,18),'f5.1'), #station azimuth
-            ((20,27),'a8'), #phase code
+            ((20,27),'a8',False,True), #phase code
             ((29,30),'i2',True), #hour
             ((31,31),'a1'),
             ((32,33),'i2',True), #minute
@@ -196,719 +196,833 @@ MOMENTFMT2 = [((2,2),'a1'),
 
 #ftp://hazards.cr.usgs.gov/weekly/ehdf.txt
 EHDRFMT = [((1,2),'a2'), #GS
-               ((3,4),'a2'), #blank
-               ((5,8),'i4'), #year
-               ((9,10),'i2',True), #month
-               ((11,12),'i2',True), #day
-               ((13,14),'i2',True), #hour
-               ((15,16),'i2',True), #minute
-               ((17,18),'i2',True), #second
-               ((19,20),'i2',True), #hundredths of a second (??)
-               ((21,25),'f5.3'), #lat
-               ((26,26),'a1'), #N or S
-               ((27,32),'f6.3'), #lon
-               ((33,33),'a1'), #E or W
-               ((34,37),'i4'), #depth
-               ((38,38),'a1'), #depth quality (A, D, G, N, * or ?)
-               ((39,40),'i2'), #num depth phases (saturates at 99)
-               ((41,43),'i3'), #num P or PKP arrivals
-               ((44,46),'f3.2'), #std dev
-               ((47,47),'a1'),#quality flag (&, *, % or ?)
-               ((48,49),'i2'), #MB value
-               ((50,51),'i2'), #number of amplitudes (saturates at 99)
-               ((52,53),'i2'), #Ms value
-               ((54,55),'i2'), #number of amps used (saturates at 99)
-               ((56,56),'a1'), #component
-               ((57,59),'i3'), #magnitude
-               ((60,61),'a2'),#magtype
-               ((62,66),'a5'),#contributor
-               ((67,69),'i3'), #mag 2
-               ((70,71),'a2'),#magtype 2
-               ((72,76),'a5'),#contributor 2
-               ((77,79),'i3'), #FE number
-               ((80,80),'a1'), #max MMI
-               ((81,81),'a1'), #macroseismic (H=heard, F=felt, D=damage, C=casualties)
-               ((82,82),'a1'), #moment tensor (any source) published in monthly listing (M)
-               ((83,83),'a1'), #isoseismal/intensity map (P = PDE or Monthly Listing or U = U.S. Earthquakes)
-               ((84,84),'a1'),#GS fault plane solution (F)
-               ((85,85),'a1'),#IDE event (X) -- prior to PDE 01, 2004 event quality flag (A,B,C,D,H,N) -- begin with PDE 01, 2004
-               ((86,86),'a1'),#diastrophic phenomena (U = uplift, S = subsidence, F = faulting, 3 = U & S, 4 = U & F, 5 = S & F, 6 = all)
-               ((87,87),'a1'),#tsunami (T or Q)
-               ((88,88),'a1'),#seiche (S or Q)
-               ((89,89),'a1'),#volcanism (V)
-               ((90,90),'a1'),#non-tectonic source (E = explosion, I = collapse,C = coalbump or rockburst in coal mine, R = rockburst,M = meteoritic source)
-               ((91,91),'a1'),#guided waves in atmosphere/ocean (T = t wave, A = acoustic wave, G = gravity wave, B = gravity and acoustic waves, M = multiple effects)
-               ((92,92),'a1'),#ground, soil, water table and atmospheric phenomena (L = liquefaction, G = geyser, S = landslide/avalanche,B = sand blows, C = ground cracks not known to be an expression of faulting, V = visual/lights,O = unusual odors, M = multiple effects)
-               ((93,93),'a1'), #<
-               ((94,98),'a5'), #contributor
-               ((99,99),'a1')] #>
+           ((3,4),'a2'), #blank
+           ((5,8),'i4'), #year
+           ((9,10),'i2',True), #month
+           ((11,12),'i2',True), #day
+           ((13,14),'i2',True), #hour
+           ((15,16),'i2',True), #minute
+           ((17,18),'i2',True), #second
+           ((19,20),'i2',True), #hundredths of a second (??)
+           ((21,25),'i5'), #lat
+           ((26,26),'a1'), #N or S
+           ((27,32),'i6'), #lon
+           ((33,33),'a1'), #E or W
+           ((34,37),'i4'), #depth
+           ((38,38),'a1'), #depth quality (A, D, G, N, * or ?)
+           ((39,40),'i2'), #num depth phases (saturates at 99)
+           ((41,43),'i3'), #num P or PKP arrivals
+           ((44,46),'i3'), #std dev
+           ((47,47),'a1'),#quality flag (&, *, % or ?)
+           ((48,49),'i2'), #MB value
+           ((50,51),'i2'), #number of amplitudes (saturates at 99)
+           ((52,53),'i2'), #Ms value
+           ((54,55),'i2'), #number of amps used (saturates at 99)
+           ((56,56),'a1'), #component
+           ((57,59),'i3'), #magnitude
+           ((60,61),'a2'),#magtype
+           ((62,66),'a5'),#contributor
+           ((67,69),'i3'), #mag 2
+           ((70,71),'a2'),#magtype 2
+           ((72,76),'a5'),#contributor 2
+           ((77,79),'i3'), #FE number
+           ((80,80),'a1'), #max MMI
+           ((81,81),'a1'), #macroseismic (H=heard, F=felt, D=damage, C=casualties)
+           ((82,82),'a1'), #moment tensor (any source) published in monthly listing (M)
+           ((83,83),'a1'), #isoseismal/intensity map (P = PDE or Monthly Listing or U = U.S. Earthquakes)
+           ((84,84),'a1'),#GS fault plane solution (F)
+           ((85,85),'a1'),#IDE event (X) -- prior to PDE 01, 2004 event quality flag (A,B,C,D,H,N) -- begin with PDE 01, 2004
+           ((86,86),'a1'),#diastrophic phenomena (U = uplift, S = subsidence, F = faulting, 3 = U & S, 4 = U & F, 5 = S & F, 6 = all)
+           ((87,87),'a1'),#tsunami (T or Q)
+           ((88,88),'a1'),#seiche (S or Q)
+           ((89,89),'a1'),#volcanism (V)
+           ((90,90),'a1'),#non-tectonic source (E = explosion, I = collapse,C = coalbump or rockburst in coal mine, R = rockburst,M = meteoritic source)
+           ((91,91),'a1'),#guided waves in atmosphere/ocean (T = t wave, A = acoustic wave, G = gravity wave, B = gravity and acoustic waves, M = multiple effects)
+           ((92,92),'a1'),#ground, soil, water table and atmospheric phenomena (L = liquefaction, G = geyser, S = landslide/avalanche,B = sand blows, C = ground cracks not known to be an expression of faulting, V = visual/lights,O = unusual odors, M = multiple effects)
+           ((93,93),'a1'), #<
+           ((94,98),'a5'), #contributor
+           ((99,99),'a1')] #>
 
 EHDF_EVENT_TYPES = {'explosion':'E','collapse':'I','rock burst':'R','meteorite':'M'}
 
-def getFERegion(lat,lon):
-    """
-    Return the FE region number, or NaN if it cannot be found.
-    lat: Latitude of input point.
-    lat: Latitude of input point.
-    Returns FE region number.
-    """
-    url = 'http://geohazards.cr.usgs.gov/cfusion/fe_regions.cfc?method=getRegion&lat=LAT&lon=LON'
-    url = url.replace('LAT',str(lat))
-    url = url.replace('LON',str(lon))
-    locnum = float('nan')
-    try:
-        fh = urllib2.urlopen(url)
-        regstr = fh.read()
-        fh.close()
-        parts = regstr.split('|')
-        locnum = int(parts[0].strip())
-    except:
-        pass
-    
-    return locnum
+class PhaseML(object):
+    def __init__(self):
+        self.AmpKeys = []
 
-def readQuakeML(quakemlfile):
-    data = open(quakemlfile,'rt').read()
-    return readQuakeMLData(data)
+    def readFromFile(self,xmlfile):
+        data = open(xmlfile,'rt').read()
+        self.readFromString(data)
 
-def getNSCL(waveform):
-    nc = waveform.getAttribute('networkCode')
-    sta = waveform.getAttribute('stationCode')
-    comp = waveform.getAttribute('channelCode')
-    loc = waveform.getAttribute('locationCode')
-    REPL = '--'
-    if nc == '':
-        nc = REPL
-    if sta == '':
-        sta = REPL
-    if comp == '':
-        comp = REPL
-    if loc == '':
-        loc = REPL
-    nscl = '%s.%s.%s.%s' % (nc,sta,comp,loc)
-    return nscl
+    def readFromString(self,data,url=None):
+        root = parseString(data)
+        self.url = url
+        self.event = root.getElementsByTagName('event')[0]
+        self.eventcode = self.event.getAttribute('catalog:dataid')
+        self.getPicks() #sets self.picks
+        self.getArrivals() #sets self.arrivals
+        self.EventType = self.getEventType()
+        self.getOrigins() #sets self.prefid,self.origins
+        self.getFERegion(self.preferredOrigin['lat'],self.preferredOrigin['lon']) #sets self.location and self.FENumber
+        self.getAmplitudes() #sets self.amplitudes
+        self.getStationMagnitudes() #sets self.stationMagnitudes
+        self.getMagnitudes() #sets self.magnitudes
+        self.getTensors() #sets self.tensors
+        self.getPhases() #sets self.phases - combines pick, arrival, amplitude and stationMagnitude
+        root.unlink()
+        
+    def renderISF(self):
+        isf = 'BEGIN IMS1.0\n'
+        isf += 'MSG_TYPE DATA\n'
+        isf += 'MSG_ID %s\n' % self.eventcode.upper()
+        isf += 'DATA_TYPE BULLETIN IMS2.0:SHORT\n'
+        preforigin = self.preferredOrigin
+        if preforigin['analysistype'] == 'm':
+            isf += 'The following is a MANUALLY REVIEWED LOCATION from the USGS/NEIC National Seismic Network System\n'
+        else:
+            isf += 'The following is an AUTOMATICALLY REVIEWED LOCATION from the USGS/NEIC National Seismic Network System\n'
+        
+        isf += 'Event   %s %s\n\n' % (self.eventcode.upper(),self.location)
+
+        #if there is a url field, render that as a comment.  This should help with QA/QC
+        if self.url is not None:
+            isf += ' (%s)' % self.url
+            isf += '\n\n'
+
+        #render the origin block
+        hdrvalues = ('Date','Time','Err','RMS','Latitude','Longitude',
+                   'Smaj','Smin','Az','Depth','Err','Ndef','Nst',
+                   'Gap','mdist','Mdist','Qual','Author','OrigID')
+        line = fixed.getFixedFormatString(ORIGINHDR,hdrvalues)
+        isf += line+'\n'
+        for o in self.origins:
+            #TODO - calculate these surface values from confidence ellipsoid at depth
+            semimajor = float('nan')
+            semiminor = float('nan')
+            majorazimuth = float('nan')
+            second = o['time'].second + o['time'].microsecond/1e6
+            vlist = [o['time'].year,'/',o['time'].month,'/',o['time'].day,
+            o['time'].hour,':',o['time'].minute,':',second,o['timefixed'],
+            o['time_error'],o['timerms'],o['lat'],o['lon'],o['epifixed'],semimajor,
+            semiminor,majorazimuth,o['depth'],o['depthfixed'],o['deptherr'],
+            o['numphases'],o['numstations'],o['azgap'],o['mindist'],o['maxdist'],
+            o['analysistype'],o['locmethod'],o['event_type'],o['author'],' ']
+            line = fixed.getFixedFormatString(ORIGINFMT,vlist)
+            isf += line+'\n'
+
+        isf += '\n'
+
+        #render the magnitude block
+        line = fixed.getFixedFormatString(MAGHDR,['Magnitude','Err','Nsta','Author','OrigID'])
+        isf += line + '\n'
+        for m in self.magnitudes:
+            vlist = [m['magtype'],' ',m['magnitude'],m['magerr'],m['nstations'],m['author'],m['magid']]
+            line = fixed.getFixedFormatString(MAGFMT,vlist)
+            isf += line+'\n'
+
+        #render the moment tensor comment block
+        isf += '\n'
+        for m in self.tensors:
+            line = fixed.getFixedFormatString(MOMENTHDR1,MOMENTLBL1)
+            isf += line+'\n'
+            line = fixed.getFixedFormatString(MOMENTHDR2,MOMENTLBL2)
+            isf += line+'\n'
+            vlist = ['(','#',m['exponent'],m['scalarmoment'],m['fclvd'],
+                     m['mrr'],m['mtt'],m['mpp'],m['mrt'],m['mtp'],m['mrp'],
+                     m['nbodystations'],m['nsurfacestations'],m['author']]
+            line = fixed.getFixedFormatString(MOMENTFMT1,vlist)
+            isf += line + '\n'
+            vlist = ['(','#',m['momenterror'],m['clvderror'],
+                     m['mrrerror'],m['mtterror'],m['mpperror'],
+                     m['mrterror'],m['mrperror'],m['mtperror'],
+                     m['nbodycomp'],m['nsurfacecomp'],m['duration']]
+            line = fixed.getFixedFormatString(MOMENTFMT2,vlist)
+            isf += line + '\n'
+
+        isf += '\n'
+            
+        #render the phase block
+        line = fixed.getFixedFormatString(PHASEHDR,PHASELBL)
+        isf += line + '\n'
+        for p in self.phases:
+            stacode = p['station']
+            second = p['time'].second + p['time'].microsecond/1e6
+            vlist = [stacode,p['distance'],p['stationazimuth'],p['phasetype'],
+                     p['time'].hour,':',p['time'].minute,':',second,p['timeres'],
+                     p['azimuth'],p['azres'],p['slowness'],p['slowres'],p['timeflag'],
+                     p['azflag'],p['slowflag'],p['snr'],p['amplitude'],p['period'],
+                     p['picktype'],p['direction'],p['quality'],p['magtype'],
+                     p['minmax'],p['mag'],p['arrid']]
+            line = fixed.getFixedFormatString(PHASEFMT,vlist)
+            isf += line+'\n'
+
+        isf += '\n'
+        
+        isf += 'STOP\n'
+        
+        return isf
+
+    def renderEHDF(self):
+        magtrans = {'Mww':'Mw'} #magnitude translation table to get to 2 character magnitude types
+        preforigin = self.preferredOrigin
+        yr,mo,da,hr,mi,se,th = self.getTimePieces(preforigin['time'])
+        lat = preforigin['lat']
+        lon = preforigin['lon']
+        lat,NS,lon,EW = self.getLatLon(lat,lon)
+        lat = int(lat * 1000)
+        lon = int(lon * 1000)
+        dep = int(preforigin['depth']*10)
+        depthtype = preforigin['depthtype']
+        #Depth type fields are:
+        # from location
+        # from moment tensor inversion
+        # from from modeling of broad-band P waveforms
+        # constrained by depth phases
+        # constrained by direct phases
+        # constrained by depth and direct phases
+        # operator assigned
+        # other.
+        if depthtype.find('operator') > -1:
+            depflag = 'G'
+        else:
+            deptherror = preforigin['deptherr']
+            if not math.isnan(deptherror):
+                if deptherror > 8.5 and deptherror <= 16.0:
+                    depflag = '*'
+                elif deptherror > 16.0:
+                    depflag = '?'
+                else:
+                    depflag = ' '
+            else:
+                depflag = ' '
+        numdep = preforigin['numphases'] #these are the number of phases for the hypocenter... ok
+        if numdep > 99:
+            numdep = 99
+        nump = numdep #??
+        std = float('nan')
+        #assign hypocenter quality
+        axesmean = math.sqrt(preforigin['semimajor'] * preforigin['semiminor'])
+        if axesmean <= 8.5:
+            hypq = '%'
+        elif axesmean > 8.5 and axesmean <= 16.0:
+            hypq = '*'
+        else:
+            hypq = '?'
+        magmb = float('nan')
+        magmbsta = float('nan')
+        magms = float('nan')
+        magmssta = float('nan')
+        magmscomp = 'Z'
+        mag1 = float('nan') #contrib mag 1
+        mag2 = float('nan') #contrib mag 2
+        mag1t = '' #contrib mag 1 type
+        mag2t = '' #contrib mag 2 type
+        mag1s = '' #contrib mag 1 source
+        mag2s = '' #contrib mag 2 source
+        magtypes = [mag['magtype'].lower() for mag in self.magnitudes]
+        copymags = copy.copy(self.magnitudes)
+        mag1,mag1t,mag1s,idx = self.getEHDFMagnitude(copymags)
+        if idx >= 0:
+            copymags.pop(idx)
+        mag2,mag2t,mag2s,idx = self.getEHDFMagnitude(copymags)
+        if idx >= 0:
+            copymags.pop(idx)
+        if 'mb' in magtypes:
+            idx = magtypes.index('mb')
+            magmb = int(self.magnitudes[idx]['magnitude']*10)
+            magmbsta = self.magnitudes[idx]['nstations']
+        if 'ms' in magtypes:
+            idx = magtypes.index('ms')
+            magms = int(self.magnitudes[idx]['magnitude']*10)
+            magmssta = self.magnitudes[idx]['nstations']
+
+        #Make sure that all magnitude types are two characters
+        if mag1t in magtrans.keys():
+            mag1t = magtrans[mag1t]
+        if mag2t in magtrans.keys():
+            mag2t = magtrans[mag2t]
+
+        #make sure that magnitude contributors are 5 characters or less
+        if len(mag1s) > 5:
+            mag1s = mag1s[0:5]
+        if len(mag2s) > 5:
+            mag2s = mag2s[0:5]
+
+        fenum = self.FENumber
+        maxmi = 'T' #?? what is unknown value
+        #putting blanks for all flags for now - get Paul to fill in
+        msflag = ''
+        mtflag = ''
+        if len(self.tensors):
+            mtflag = 'M'
     
-def getStationInfo(origin,event):
-    arrivals = origin.getElementsByTagName('arrival')
-    stations = []
-    mindist = 99999999999999
-    maxdist = -99999999999999
-    for arrival in arrivals:
-        arrid = arrival.getElementsByTagName('pickID')[0].firstChild.data
-        picks = event.getElementsByTagName('pick')
-        station = None
-        for pick in picks:
-            pickid = pick.getAttribute('publicID')
-            if pickid == arrid:
-                station = getNSCL(pick.getElementsByTagName('waveformID')[0])
+        iiflag = '' #??
+        fpflag = '' #??
+        ieflag = ''
+        dpflag = ''
+        tsflag = ''
+        seflag = ''
+        voflag = ''
+        ntflag = ''
+        if self.EventType in EHDF_EVENT_TYPES.keys():
+            ntflag = EHDF_EVENT_TYPES[eqdict['type']]
+        gwflag = ''
+        gpflag = ''
+        author = '%-5s' % (preforigin['author'])
+        if len(author) > 5:
+            author = author[0:5]
+        vlist = ['GS','',yr,mo,da,hr,mi,se,th,lat,NS,lon,EW,dep,depflag,numdep,nump,std,hypq,
+                 magmb,magmbsta,magms,magmssta,magmscomp,mag1,mag1t,mag1s,mag2,mag2t,mag2s,
+                 fenum,maxmi,msflag,mtflag,iiflag,fpflag,ieflag,dpflag,tsflag,seflag,voflag,
+                 ntflag,gwflag,gpflag,'<',author,'>']
+        try:
+            line = fixed.getFixedFormatString(EHDRFMT,vlist)
+            return line
+        except Exception,msg:
+            sys.stderr.write('Could not create line for %s - error "%s"\n' % (self.eventcode,msg.message))
+            return None
+    
+    def getPhases(self):
+        #combine picks, arrivals, amplitudes and stationMagnitudes into a list of phase dictionaries
+        self.phases = []
+        #phase has: station,distance,stationazimuth,phasetype,
+        #           time,timeres,azimuth,azres,slowness,slowres,timeflag,
+        #           azflag,slowflag,snr,amplitude,period,
+        #           picktype,direction,quality,magtype,minmax,mag,arrid
+        for pickid in self.picks.keys():
+            pdict = {}
+            pick = self.picks[pickid]
+            if not self.arrivals.has_key(pickid):
+                continue
+            arrival = self.arrivals[pickid]
+            pdict['station'] = pick['nscl'].split('.')[1]
+            pdict['distance'] = arrival['distance']
+            pdict['stationazimuth'] = arrival['azimuth']
+            pdict['phasetype'] = arrival['phase']
+            pdict['time'] = pick['time']
+            pdict['timeres'] = arrival['timeresidual']
+            pdict['azimuth'] = float('nan')
+            pdict['azres'] = float('nan')
+            pdict['slowness'] = float('nan')
+            pdict['slowres'] = float('nan')
+            pdict['timeflag'] = 'T'
+            pdict['azflag'] = '_'
+            pdict['slowflag'] = '_'
+            pdict['snr'] = float('nan')
+            pdict['amplitude'] = float('nan')
+            pdict['period'] = float('nan')
+            pdict['picktype'] = pick['mode'][0]
+            pdict['direction'] = '_'
+            pdict['quality'] = '_'
+            pdict['magtype'] = ' '
+            pdict['minmax'] = ' '
+            pdict['mag'] = float('nan')
+            pdict['arrid'] = ' '
+            self.phases.append(pdict.copy())
+            #now we need to find all of other kind of phase - the ones with amplitude and magnitude
+            magphases = self.getMagPhases(pick['nscl'],arrival['distance'],arrival['azimuth'])
+            self.phases += magphases
+            self.phases = sorted(self.phases,key = lambda k: k['distance'])
+
+    def getMagPhases(self,nscl,distance,azimuth):
+        phases = []
+        for amplitude in self.amplitudes:
+            if amplitude['nscl'] != nscl:
+                continue
+            pdict = {}
+            ampid = amplitude['ampid']
+            pdict['station'] = amplitude['nscl'].split('.')[1]
+            pdict['distance'] = distance
+            pdict['stationazimuth'] = azimuth
+            pdict['timeres'] = float('nan')
+            pdict['azimuth'] = float('nan')
+            pdict['azres'] = float('nan')
+            pdict['slowness'] = float('nan')
+            pdict['slowres'] = float('nan')
+            pdict['timeflag'] = '_'
+            pdict['azflag'] = '_'
+            pdict['slowflag'] = '_'
+            pdict['snr'] = float('nan')
+            pdict['phasetype'] = 'I'+amplitude['type']
+            pdict['amplitude'] = amplitude['amplitude']*1e9
+            pdict['period'] = amplitude['period']
+            pdict['picktype'] = amplitude['mode'][0]
+            ampkey = pdict['station']+pdict['picktype']
+            if ampkey in self.AmpKeys:
+                continue
+            pdict['direction'] = '_'
+            pdict['quality'] = '_'
+            pdict['mag'] = self.stationMagnitudes[ampid]['magnitude']
+            pdict['magtype'] = self.stationMagnitudes[ampid]['magtype']
+            pdict['minmax'] = ' '
+            pdict['arrid'] = ' '
+            pdict['time'] = amplitude['time']
+            phases.append(pdict)
+            self.AmpKeys.append(ampkey)
+        return phases
+            
+            
+    def getTimePieces(self,time):
+        yr = time.year
+        mo = time.month
+        da = time.day
+        hr = time.hour
+        mi = time.minute
+        se = time.second
+        th = int(float(time.microsecond)/1e4)        
+        return (yr,mo,da,hr,mi,se,th)
+
+    def getLatLon(self,lat,lon):
+        NS = 'N'
+        if lat < 0:
+            NS = 'S'
+            lat = abs(lat)
+        EW = 'E'
+        if lon < 0:
+            EW = 'W'
+            lon = abs(lon)
+        return (lat,NS,lon,EW)
+
+    def getEHDFMagnitude(self,maglist):
+        magtypes = [mag['magtype'].lower() for mag in maglist]
+        hierarchy = ['mww','mw','ml','lg','rg','md','cl','mg']
+        mag = float('nan')
+        magtype = ''
+        magsrc = ''
+        midx = -1
+        for mtype in hierarchy:
+            if mtype in magtypes:
+                midx = magtypes.index(mtype)
+                mag = int(maglist[midx]['magnitude']*100)
+                magtype = maglist[midx]['magtype']
+                magsrc = maglist[midx]['author']
                 break
-        if station is None:
-            continue
-        if station not in stations:
-            stations.append(station)
-        adist = float(arrival.getElementsByTagName('distance')[0].firstChild.data)
-        if adist < mindist:
-            mindist = adist
-        if adist > maxdist:
-            maxdist = adist
-    return (len(stations),mindist,maxdist)
+        return (mag,magtype,magsrc,midx)
 
-def getOrigin(origin,event):
-    originid = origin.getAttribute('catalog:eventid')
-    publicid = origin.getAttribute('publicID')
-    if not len(origin.getElementsByTagName('time')):
-        return None
-    timestr = origin.getElementsByTagName('time')[0].getElementsByTagName('value')[0].firstChild.data
-    timestr = timestr.rstrip('Z')
-    timeel = origin.getElementsByTagName('time')[0]
-    if len(timeel.getElementsByTagName('uncertainty')):
-        errortime = float(timeel.getElementsByTagName('uncertainty')[0].firstChild.data)
-    else:
-        errortime = float('nan')
-    if len(timestr) > 19:
-        time = datetime.datetime.strptime(timestr,'%Y-%m-%dT%H:%M:%S.%f')
-    else:
-        time = datetime.datetime.strptime(timestr,'%Y-%m-%dT%H:%M:%S')
-    year = time.year
-    month = time.month
-    day = time.day
-    hour = time.hour
-    minute = time.minute
-    second = float(time.second) + float(time.microsecond)/1e6
-    lat = float(origin.getElementsByTagName('latitude')[0].getElementsByTagName('value')[0].firstChild.data)
-    lon = float(origin.getElementsByTagName('longitude')[0].getElementsByTagName('value')[0].firstChild.data)
-    depth = float(origin.getElementsByTagName('depth')[0].getElementsByTagName('value')[0].firstChild.data)/1000.0
-    depthel = origin.getElementsByTagName('depth')[0]
-    if len(depthel.getElementsByTagName('uncertainty')):
-        deptherr = float(depthel.getElementsByTagName('uncertainty')[0].firstChild.data)/1000.0
-    else:
-        deptherr = float('nan')
-    if len(origin.getElementsByTagName('quality')):
-        if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('standardError')):
-            rms = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('standardError')[0].firstChild.data)
+    def getFERegion(self,lat,lon):
+        """
+        Return the FE region number, or NaN if it cannot be found.
+        lat: Latitude of input point.
+        lat: Latitude of input point.
+        Returns FE region number.
+        """
+        url = 'http://geohazards.cr.usgs.gov/cfusion/fe_regions.cfc?method=getRegion&lat=LAT&lon=LON'
+        url = url.replace('LAT',str(lat))
+        url = url.replace('LON',str(lon))
+        locnum = float('nan')
+        locstr = '%.4f,%.4f' % (lat,lon)
+        try:
+            fh = urllib2.urlopen(url)
+            regstr = fh.read()
+            fh.close()
+            parts = regstr.split('|')
+            locnum = int(parts[0].strip())
+            locstr = parts[3].strip()
+        except:
+            pass
+
+        self.location = locstr
+        self.FENumber = locnum
+
+    def getTensorMetadata(self,tensor):
+        m0 = float(tensor.getElementsByTagName('scalarMoment')[0].getElementsByTagName('value')[0].firstChild.data)
+        if len(tensor.getElementsByTagName('clvd')):
+            fclvd = float(tensor.getElementsByTagName('clvd')[0].firstChild.data)
+            if fclvd > 1:
+                fclvd = fclvd/100.0
+        else:
+            fclvd = float('nan')
+    
+        exponent = math.floor(math.log10(m0))
+        scalarMoment = m0/math.pow(10,exponent)
+        return (m0,exponent,fclvd,scalarMoment)
+
+    def getTensorComponents(self,tensor,exponent):
+        if len(tensor.getElementsByTagName('tensor')):
+            tensorel = tensor.getElementsByTagName('tensor')[0]
+        else:
+            return {'Mrr':(float('nan'),float('nan')),
+                    'Mtt':(float('nan'),float('nan')),
+                    'Mpp':(float('nan'),float('nan')),
+                    'Mrt':(float('nan'),float('nan')),
+                    'Mrp':(float('nan'),float('nan')),
+                    'Mtp':(float('nan'),float('nan'))}
+        compdict = {}
+        for component in ['Mrr','Mtt','Mpp','Mrt','Mrp','Mtp']:
+            comp = tensor.getElementsByTagName(component)[0]
+            value = float(comp.getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
+            if len(comp.getElementsByTagName('uncertainty')):
+                error = float(comp.getElementsByTagName('uncertainty')[0].firstChild.data)/math.pow(10,exponent)
+            else:
+                error = float('nan')
+            compdict[component] = (value,error)
+        return compdict
+
+    def getTensorDataUsed(self,tensor):
+        #return number of stations and components used
+        #p-waves and mantle waves are both defined here as being body waves
+        #find the number of components used
+        nbodycomponents = 0
+        nsurfacecomponents = 0
+        nbodystations = 0
+        nsurfacestations = 0
+        if len(tensor.getElementsByTagName('dataUsed')):
+            for dataused in tensor.getElementsByTagName('dataUsed'):
+                wavetype = dataused.getElementsByTagName('waveType')[0].firstChild.data
+                if wavetype == 'surface':
+                    if len(dataused.getElementsByTagName('componentCount')):
+                        nsurfacecomponents += int(dataused.getElementsByTagName('componentCount')[0].firstChild.data)
+                    if len(dataused.getElementsByTagName('stationCount')):
+                        nsurfacestations += int(dataused.getElementsByTagName('stationCount')[0].firstChild.data)
+                else:
+                    if len(dataused.getElementsByTagName('componentCount')):
+                        nbodycomponents += int(dataused.getElementsByTagName('componentCount')[0].firstChild.data)
+                    if len(dataused.getElementsByTagName('stationCount')):
+                        nbodystations += int(dataused.getElementsByTagName('stationCount')[0].firstChild.data)
+
+        return (nbodycomponents,nsurfacecomponents,nbodystations,nsurfacestations)
+    
+    def getTensors(self):
+        self.tensors = []
+        mechs = self.event.getElementsByTagName('focalMechanism')
+        for mech in mechs:
+            for tensor in mech.getElementsByTagName('momentTensor'):
+                m0,exponent,fclvd,scalarMoment = self.getTensorMetadata(tensor)
+                compdict = self.getTensorComponents(tensor,exponent)
+                nbodycomp,nsurfacecomp,nbodystations,nsurfacestations = self.getTensorDataUsed(tensor)
+                #Get the duration, if provided
+                sourcetimelist = tensor.getElementsByTagName('sourceTimeFunction')
+                if len(sourcetimelist):
+                    duration = float(sourcetimelist[0].getElementsByTagName('duration')[0].firstChild.data)
+                else:
+                    duration = float('nan')
+
+                #get the author
+                if len(tensor.getElementsByTagName('creationInfo')):
+                    creationinfo = tensor.getElementsByTagName('creationInfo')[0]
+                    author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
+                else:
+                    author = ''
+                mrr,mrrerror = compdict['Mrr']
+                mtt,mtterror = compdict['Mtt']
+                mpp,mpperror = compdict['Mpp']
+                mrt,mrterror = compdict['Mrt']
+                mrp,mrperror = compdict['Mrp']
+                mtp,mtperror = compdict['Mtp']
+                self.tensors.append({'m0':m0,'exponent':exponent,'fclvd':fclvd,
+                                     'mrr':mrr,'mtt':mtt,'mpp':mpp,
+                                     'mrt':mrt,'mrp':mrp,'mtp':mtp,
+                                     'mrrerror':mrrerror,'mtterror':mtterror,'mpperror':mpperror,
+                                     'mrterror':mrterror,'mrperror':mrperror,'mtperror':mtperror,
+                                     'nbodycomp':nbodycomp,'nsurfacecomp':nsurfacecomp,
+                                     'nbodystations':nbodystations,'nsurfacestations':nsurfacestations,
+                                     'duration':duration,'scalarmoment':scalarMoment,
+                                     'author':author,'momenterror':float('nan'),'clvderror':float('nan')})
+        
+    def getMagnitudes(self):
+        self.magnitudes = []
+        for mag in self.event.getElementsByTagName('magnitude'):
+            magel = mag.getElementsByTagName('mag')[0]
+            magnitude = float(magel.getElementsByTagName('value')[0].firstChild.data)
+            magtype = mag.getElementsByTagName('type')[0].firstChild.data
+            if len(magel.getElementsByTagName('uncertainty')):
+                magerr = float(magel.getElementsByTagName('uncertainty')[0].firstChild.data)
+            else:
+                magerr = float('nan')
+            if len(magel.getElementsByTagName('stationCount')):
+                nstations = int(magel.getElementsByTagName('stationCount'))
+            else:
+                nstations = float('nan')
+            mode = mag.getElementsByTagName('evaluationMode')[0].firstChild.data
+            status = mag.getElementsByTagName('evaluationStatus')[0].firstChild.data
+            creationinfo = mag.getElementsByTagName('creationInfo')[0]
+            if len(creationinfo.getElementsByTagName('agencyID')):
+                author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
+            else:
+                author = ''
+            self.magnitudes.append({'magnitude':magnitude,'magtype':magtype,'mode':mode,
+                                    'status':status,'author':author,'magerr':magerr,
+                                    'nstations':nstations,'magid':''})
+            
+        
+    def getStationMagnitudes(self):
+        self.stationMagnitudes = {}
+        for smag in self.event.getElementsByTagName('stationMagnitude'):
+            if not len(smag.getElementsByTagName('amplitudeID')):
+                continue
+            ampid = smag.getElementsByTagName('amplitudeID')[0].firstChild.data
+            if len(smag.getElementsByTagName('originID')) and smag.getElementsByTagName('originID')[0].firstChild is not None:
+                originid = smag.getElementsByTagName('originID')[0].firstChild.data
+            else:
+                originid = ''
+            magel = smag.getElementsByTagName('mag')[0]
+            magnitude = float(magel.getElementsByTagName('value')[0].firstChild.data)
+            magtype = smag.getElementsByTagName('type')[0].firstChild.data
+            self.stationMagnitudes[ampid] = ({'originid':originid,'magnitude':magnitude,
+                                              'magtype':magtype})
+            
+        
+    def getAmplitudes(self):
+        self.amplitudes = []
+        for amplitude in self.event.getElementsByTagName('amplitude'):
+            units = amplitude.getElementsByTagName('unit')[0].firstChild.data
+            if units.strip() != 'm':
+                continue
+            try:
+                amptype = amplitude.getElementsByTagName('type')[0].firstChild.data
+            except:
+                continue #skip if there is no amplitude type information
+            ampid = amplitude.getAttribute('publicID')
+            try:
+                generic = amplitude.getElementsByTagName('genericAmplitude')[0]
+                ampvalue = float(generic.getElementsByTagName('value')[0].firstChild.data)
+                amptype = amplitude.getElementsByTagName('type')[0].firstChild.data
+                if len(amplitude.getElementsByTagName('period')):
+                    periodel = amplitude.getElementsByTagName('period')[0]
+                    period = float(periodel.getElementsByTagName('value')[0].firstChild.data)
+                else:
+                    period = float('nan')
+                if not len(amplitude.getElementsByTagName('timeWindow')):
+                    continue
+                timewindow = amplitude.getElementsByTagName('timeWindow')[0]
+                timestr = timewindow.getElementsByTagName('reference')[0].firstChild.data
+                time = self.parseTime(timestr)
+                waveform = amplitude.getElementsByTagName('waveformID')[0]
+                nc = waveform.getAttribute('networkCode')
+                sta = waveform.getAttribute('stationCode')
+                comp = waveform.getAttribute('channelCode')
+                loc = waveform.getAttribute('locationCode')
+                nscl = '%s.%s.%s.%s' % (nc,sta,comp,loc)
+                maghint = amplitude.getElementsByTagName('magnitudeHint')[0].firstChild.data
+                mode = amplitude.getElementsByTagName('evaluationMode')[0].firstChild.data
+            except:
+                pass
+            self.amplitudes.append({'amplitude':ampvalue,'type':amptype,'period':period,
+                                     'nscl':nscl,'time':time,'maghint':maghint,'ampid':ampid,
+                                     'mode':mode})
+            
+        
+    def getArrivals(self):
+        self.arrivals = {}
+        for origin in self.event.getElementsByTagName('origin'):
+            originid = origin.getAttribute('publicID')
+            for arrival in origin.getElementsByTagName('arrival'):
+                pickid = arrival.getElementsByTagName('pickID')[0].firstChild.data
+                phase = arrival.getElementsByTagName('phase')[0].firstChild.data
+                azimuth = float(arrival.getElementsByTagName('azimuth')[0].firstChild.data)
+                if len(arrival.getElementsByTagName('distance')):
+                    distance = float(arrival.getElementsByTagName('distance')[0].firstChild.data)
+                else:
+                    continue
+                timeresidual = float(arrival.getElementsByTagName('timeResidual')[0].firstChild.data)
+                if len(arrival.getElementsByTagName('creationInfo')):
+                    creationinfo = arrival.getElementsByTagName('creationInfo')[0]
+                    if len(creationinfo.getElementsByTagName('author')):
+                        author = creationinfo.getElementsByTagName('author')[0].firstChild.data
+                    else:
+                        author = ''
+                else:
+                    author = ''
+                self.arrivals[pickid] = {'phase':phase,'azimuth':azimuth,'distance':distance,
+                                         'timeresidual':timeresidual,'author':author,'originid':originid}
+            
+    def parseTime(self,timestr):
+        timestr = timestr.rstrip('Z')
+        if len(timestr) > 19:
+            time = datetime.datetime.strptime(timestr,'%Y-%m-%dT%H:%M:%S.%f')
+        else:
+            time = datetime.datetime.strptime(timestr,'%Y-%m-%dT%H:%M:%S')
+        return time
+        
+    def getPicks(self):
+        self.picks = {}
+        for pick in self.event.getElementsByTagName('pick'):
+            pickid = pick.getAttribute('publicID')
+            timestr = pick.getElementsByTagName('time')[0].getElementsByTagName('value')[0].firstChild.data
+            time = self.parseTime(timestr)
+            waveform = pick.getElementsByTagName('waveformID')[0]
+            nc = waveform.getAttribute('networkCode')
+            sta = waveform.getAttribute('stationCode')
+            comp = waveform.getAttribute('channelCode')
+            loc = waveform.getAttribute('locationCode')
+            nscl = '%s.%s.%s.%s' % (nc,sta,comp,loc)
+            pickid = pick.getAttribute('publicID')
+            if len(pick.getElementsByTagName('creationInfo')):
+                creationinfo = pick.getElementsByTagName('creationInfo')[0]
+                author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
+            else:
+                author = ''
+            mode = pick.getElementsByTagName('evaluationMode')[0].firstChild.data
+            self.picks[pickid] = {'time':time,'nscl':nscl,'author':author,'mode':mode}
+        
+    def getEventType(self):
+        etype = 'earthquake'
+        for c in self.event.childNodes:
+            if c.nodeType == c.ELEMENT_NODE and c.tagName == 'type':
+                etype = c.firstChild.data
+                break
+        return etype
+        
+    def getOrigins(self):
+        self.prefid = self.event.getElementsByTagName('preferredOriginID')[0].firstChild.data
+        self.origins = []
+        idx = 0
+        for origin in self.event.getElementsByTagName('origin'):
+            publicid = origin.getAttribute('publicID')
+            orig = self.getOrigin(origin)
+            if orig is not None:
+                self.origins.append(orig.copy())
+                if orig['publicid'] == self.prefid:
+                    self.preferredOrigin = orig.copy()
+
+            
+    def getOrigin(self,origin):
+        originid = origin.getAttribute('catalog:eventid')
+        publicid = origin.getAttribute('publicID')
+        if not len(origin.getElementsByTagName('time')):
+            return None
+        timestr = origin.getElementsByTagName('time')[0].getElementsByTagName('value')[0].firstChild.data
+        time = self.parseTime(timestr)
+        timeel = origin.getElementsByTagName('time')[0]
+        if len(timeel.getElementsByTagName('uncertainty')):
+            errortime = float(timeel.getElementsByTagName('uncertainty')[0].firstChild.data)
+        else:
+            errortime = float('nan')
+        lat = float(origin.getElementsByTagName('latitude')[0].getElementsByTagName('value')[0].firstChild.data)
+        lon = float(origin.getElementsByTagName('longitude')[0].getElementsByTagName('value')[0].firstChild.data)
+        depth = float(origin.getElementsByTagName('depth')[0].getElementsByTagName('value')[0].firstChild.data)/1000.0
+        depthel = origin.getElementsByTagName('depth')[0]
+        if len(origin.getElementsByTagName('depthType')):
+            depthtype = origin.getElementsByTagName('depthType')[0].firstChild.data
+        else:
+            depthtype = ''
+        if len(depthel.getElementsByTagName('uncertainty')):
+            deptherr = float(depthel.getElementsByTagName('uncertainty')[0].firstChild.data)/1000.0
+        else:
+            deptherr = float('nan')
+        if len(origin.getElementsByTagName('quality')):
+            if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('standardError')):
+                rms = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('standardError')[0].firstChild.data)
+            else:
+                rms = float('nan')
+            if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')):
+                ndef = int(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')[0].firstChild.data)
+            else:
+                ndef = float('nan')
+            if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')):
+                azgap = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')[0].firstChild.data)
+            else:
+                azgap = float('nan')
         else:
             rms = float('nan')
-        if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')):
-            ndef = int(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')[0].firstChild.data)
-        else:
             ndef = float('nan')
-        if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')):
-            azgap = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')[0].firstChild.data)
-        else:
             azgap = float('nan')
-    else:
-        rms = float('nan')
-        ndef = float('nan')
-        azgap = float('nan')
-    
-    nst,mindist,maxdist = getStationInfo(origin,event)
-    
-    timefixed = ' '
-    epifixed = ' '
-    depthfixed = ' '
-    if len(origin.getElementsByTagName('creationInfo')):
-        author = origin.getElementsByTagName('creationInfo')[0].getElementsByTagName('agencyID')[0].firstChild.data.upper()
-    else:
-        author = ''
-    if len(origin.getElementsByTagName('evaluationMode')):
-        status = origin.getElementsByTagName('evaluationMode')[0].firstChild.data
-    else:
-        status = 'automatic'
-    if status == 'manual':
-        status = 'm'
-    else:
-        status = 'a'
-    locmethod = 'i'
-    if len(origin.getElementsByTagName('type')):
-        event_type = origin.getElementsByTagName('type')[0].firstChild.data
-    else:
-        event_type = 'earthquake'
 
-    if event_type == 'earthquake':
-        event_type = 'ke'
-    else:
-        event_type = 'se'
-    smaj = float('nan')
-    smin = float('nan')
-    az = 0
-    orig = {'time':time,'year':year,'month':month,'day':day,'hour':hour,'minute':minute,'second':second,'timefixed':timefixed,
-            'time_error':errortime,'timerms':rms,'lat':lat,'lon':lon,'epifixed':epifixed,'semimajor':smaj,
-            'semiminor':smin,'errorazimuth':az,'depth':depth,'depthfixed':depthfixed,'deptherr':deptherr,
-            'numphases':ndef,'numstations':nst,'azgap':azgap,'mindist':mindist,'maxdist':maxdist,
-            'analysistype':status,'locmethod':locmethod,'event_type':event_type,'author':author,
-            'originid':originid,'publicid':publicid}
-    return orig
+        nst,mindist,maxdist = self.getStationInfo(origin)
 
-def getPhase(pick,origin,event):
-    phase = {}
-    waveform = pick.getElementsByTagName('waveformID')[0]
-    nc = waveform.getAttribute('networkCode')
-    sta = waveform.getAttribute('stationCode')
-    comp = waveform.getAttribute('channelCode')
-    loc = waveform.getAttribute('locationCode')
-    nscl = '%s.%s.%s.%s' % (nc,sta,comp,loc)
-    pickid = pick.getAttribute('publicID')
-    dist = None
-    azimuth = None
-    ptype = None
-    ptimestr = (pick.getElementsByTagName('time')[0].getElementsByTagName('value')[0].firstChild.data)
-    ptimestr = ptimestr.rstrip('Z')
-    if len(ptimestr) > 19:
-        ptime = datetime.datetime.strptime(ptimestr,'%Y-%m-%dT%H:%M:%S.%f')
-    else:
-        ptime = datetime.datetime.strptime(ptimestr,'%Y-%m-%dT%H:%M:%S')
-    ptres = None
-    picktype = None
-    for arrival in origin.getElementsByTagName('arrival'):
-        arrid = arrival.getElementsByTagName('pickID')[0].firstChild.data
-        if arrid == pickid:
-            dist = float(arrival.getElementsByTagName('distance')[0].firstChild.data)
-            azimuth = float(arrival.getElementsByTagName('azimuth')[0].firstChild.data)
-            ptype = arrival.getElementsByTagName('phase')[0].firstChild.data
-            ptres = float(arrival.getElementsByTagName('timeResidual')[0].firstChild.data)
-            if len(arrival.getElementsByTagName('creationInfo')):
-                authors = arrival.getElementsByTagName('creationInfo')[0].getElementsByTagName('author')
-                if len(authors):
-                    try:
-                        picktype = authors[0].firstChild.data
-                        if picktype == 'manual':
-                            picktype = 'm'
-                        else:
-                            picktype = 'a'
-                    except:
-                        pass
-                else:
-                    picktype = 'a'
-                break
-            else:
-                picktype = 'a'
-    if ptres is None:
-        return None
-    amp = None
-    period = None
-    phasemag = None
-    for amplitude in event.getElementsByTagName('amplitude'):
-        ampid = amplitude.getElementsByTagName('waveformID')
-        nc = waveform.getAttribute('networkCode')
-        sta = waveform.getAttribute('stationCode')
-        comp = waveform.getAttribute('channelCode')
-        loc = waveform.getAttribute('locationCode')
-        amp_nscl = '%s.%s.%s.%s' % (nc,sta,comp,loc)
-        if amp_nscl == nscl:
-            amp = float(amplitude.getElementsByTagName('genericAmplitude')[0].getElementsByTagName('value')[0].firstChild.data)
-            period = float(amplitude.getElementsByTagName('period')[0].getElementsByTagName('value')[0].firstChild.data)
-            magtype = amplitude.getElementsByTagName('magnitudeHint')[0].firstChild.data
-            break
-    if not len(event.getElementsByTagName('amplitude')):
-        amp = float('nan')
-        period = float('nan')
-        magtype = ' '
-    phase['stationcode'] = sta
-    phase['stationdist'] = dist
-    phase['stationaz'] = azimuth
-    phase['phasecode'] = ptype
-    phase['time'] = ptime
-    phase['hour'] = ptime.hour
-    phase['minute'] = ptime.minute
-    phase['second'] = float(ptime.second) + float(ptime.microsecond)/1000000.0
-    phase['timeres'] = ptres
-    phase['azimuth'] = azimuth
-    phase['azres'] = float('nan')
-    phase['slowness'] = float('nan')
-    phase['slowres'] = float('nan')
-    phase['timeflag'] = '_'
-    phase['azflag'] = '_'
-    phase['slowflag'] = '_'
-    phase['snr'] = float('nan')
-    phase['amplitude'] = amp
-    phase['period'] = period
-    phase['picktype'] = picktype
-    phase['direction'] = '_'
-    phase['quality'] = '_'
-    phase['magtype'] = magtype
-    phase['minmax'] = ' '
-    phase['mag'] = float('nan')
-    phase['arrid'] = ' '
-    return phase    
-
-def getMomentTensor(momentTensor):
-    mdict = {}
-    m0 = float(momentTensor.getElementsByTagName('scalarMoment')[0].getElementsByTagName('value')[0].firstChild.data)
-    if len(momentTensor.getElementsByTagName('clvd')):
-        fclvd = float(momentTensor.getElementsByTagName('clvd')[0].firstChild.data)
-        if fclvd > 1:
-            fclvd = fclvd/100.0
-    else:
-        fclvd = float('nan')
-    
-    exponent = math.floor(math.log10(m0))
-    scalarMoment = m0/math.pow(10,exponent)
-    
-    tensor = momentTensor.getElementsByTagName('tensor')[0]
-    mrr = float(tensor.getElementsByTagName('Mrr')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
-    mtt = float(tensor.getElementsByTagName('Mtt')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
-    mpp = float(tensor.getElementsByTagName('Mpp')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
-    mrt = float(tensor.getElementsByTagName('Mrt')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
-    mrp = float(tensor.getElementsByTagName('Mrp')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
-    mtp = float(tensor.getElementsByTagName('Mtp')[0].getElementsByTagName('value')[0].firstChild.data)/math.pow(10,exponent)
-
-    nbodystations = 0
-    nsurfacestations = 0
-    
-    momenterror = float('nan')
-    clvderror = float('nan')
-    errormrr = float('nan')/math.pow(10,exponent)
-    errormtt = float('nan')/math.pow(10,exponent)
-    errormpp = float('nan')/math.pow(10,exponent)
-    errormrp = float('nan')/math.pow(10,exponent)
-    errormrt = float('nan')/math.pow(10,exponent)
-    errormtp = float('nan')/math.pow(10,exponent)
-
-    #find the number of components used
-    if len(momentTensor.getElementsByTagName('dataUsed')):
-        data_used = momentTensor.getElementsByTagName('dataUsed')[0]
-        wavetype = data_used.getElementsByTagName('waveType')[0].firstChild.data
-
-        if wavetype == 'body waves':
-            nsurface = 0
-            nbody = int(data_used.getElementsByTagName('componentCount')[0].firstChild.data)
+        timefixed = ' '
+        epifixed = ' '
+        depthfixed = ' '
+        if len(origin.getElementsByTagName('creationInfo')):
+            author = origin.getElementsByTagName('creationInfo')[0].getElementsByTagName('agencyID')[0].firstChild.data.upper()
         else:
-            nbody = 0
-            nsurface = int(data_used.getElementsByTagName('componentCount')[0].firstChild.data)
-    else:
-        nsurface = float('nan')
-        nbody = float('nan')
+            author = ''
+        if len(origin.getElementsByTagName('evaluationMode')):
+            status = origin.getElementsByTagName('evaluationMode')[0].firstChild.data
+        else:
+            status = 'automatic'
+        if status == 'manual':
+            status = 'm'
+        else:
+            status = 'a'
+        locmethod = ''
+        # if len(origin.getElementsByTagName('type')):
+        #     event_type = origin.getElementsByTagName('type')[0].firstChild.data
+        # else:
+        #     event_type = 'earthquake'
 
-    #Get the duration, if provided
-    sourcetimelist = momentTensor.getElementsByTagName('sourceTimeFunction')
-    if len(sourcetimelist):
-        duration = float(sourcetimelist[0].getElementsByTagName('duration')[0].firstChild.data)
-    else:
-        duration = float('nan')
-
-    #get the author
-    if len(momentTensor.getElementsByTagName('creationInfo')):
-        author = momentTensor.getElementsByTagName('creationInfo')[0].getElementsByTagName('agencyID')[0].firstChild.data
-    else:
-        author = ''
+        if self.EventType == 'earthquake':
+            event_type = 'ke'
+        else:
+            event_type = 'se'
+        #get the elements of the confidence ellipsoid, if present
+        majoraxis = float('nan')
+        minoraxis = float('nan')
+        intermediateaxis = float('nan')
+        majorplunge = float('nan')
+        majorazimuth = float('nan')
+        majorrotation = float('nan')
+        if len(origin.getElementsByTagName('confidenceEllipsoid')):
+            ellipse = origin.getElementsByTagName('confidenceEllipsoid')[0]
+            majoraxis = float(ellipse.getElementsByTagName('semiMajorAxisLength')[0].firstChild.data)/1000 #now in km
+            minoraxis = float(ellipse.getElementsByTagName('semiMinorAxisLength')[0].firstChild.data)/1000 #now in km
+            intermediateaxis = float(ellipse.getElementsByTagName('semiIntermediateAxisLength')[0].firstChild.data)/1000 #now in km
+            majorplunge = float(ellipse.getElementsByTagName('majorAxisPlunge')[0].firstChild.data)
+            majorazimuth = float(ellipse.getElementsByTagName('majorAxisAzimuth')[0].firstChild.data)
+            majorrotation = float(ellipse.getElementsByTagName('majorAxisRotation')[0].firstChild.data)
         
-    mdict = {'m0':m0,'exponent':exponent,'scalarmoment':scalarMoment,'fclvd':fclvd,
-             'mrr':mrr,'mtt':mtt,'mpp':mpp,'mrt':mrt,'mrp':mrp,'mtp':mtp,
-             'nbodystations':nbodystations,'nsurfacestations':nsurfacestations,
-             'momenterror':momenterror,'clvderror':clvderror,
-             'errormrr':errormrr,'errormtt':errormtt,'errormpp':errormpp,
-             'errormrt':errormrt,'errormrp':errormrp,'errormtp':errormtp,
-             'nbody':nbody,'nsurface':nsurface,'duration':duration,'author':author}
-    return mdict
-    
-def getMagnitude(magnitude):
-    mag = float(magnitude.getElementsByTagName('mag')[0].getElementsByTagName('value')[0].firstChild.data)
-    if len(magnitude.getElementsByTagName('mag')[0].getElementsByTagName('uncertainty')):
-        magerr = float(magnitude.getElementsByTagName('mag')[0].getElementsByTagName('uncertainty')[0].firstChild.data)
-    else:
-        magerr = float('nan')
-    if len(magnitude.getElementsByTagName('mag')[0].getElementsByTagName('stationCount')):
-        nstations = int(magnitude.getElementsByTagName('mag')[0].getElementsByTagName('stationCount'))
-    else:
-        nstations = float('nan')
-    try:
-        author = magnitude.getElementsByTagName('creationInfo')[0].getElementsByTagName('author')[0].firstChild.data
-    except:
-        author = ''
-    mtype = magnitude.getElementsByTagName('type')[0].firstChild.data
-    magdict = {}
-    magdict['mag'] = mag
-    magdict['magtype'] = mtype
-    magdict['magerr'] = magerr
-    magdict['nstations'] = nstations
-    magdict['author'] = author
-    magdict['magid'] = ''
-    return magdict
-
-def readQuakeMLData(data):
-    dom = parseString(data)
-    event = dom.getElementsByTagName('eventParameters')[0].getElementsByTagName('event')[0]
-    originelements = event.getElementsByTagName('origin')
-    eqdict = {}
-    eqdict['eventcode'] = event.getAttribute('catalog:dataid')
-    eqdict['location'] = ''
-    eqdict['url'] = ''
-    eqdict['type'] = 'earthquake'
-    cnodenames = []
-    for c in event.childNodes:
-        if c.nodeType == c.ELEMENT_NODE and c.tagName == 'type':
-            eqdict['type'] = c.firstChild.data
-            break
-
-    #get preferred origin idx
-    prefid = event.getElementsByTagName('preferredOriginID')[0].firstChild.data
         
-    #fetch the origin elements
-    origins = []
-    idx = 0
-    for origin in originelements:
-        publicid = origin.getAttribute('publicID')
-        if publicid == prefid:
-            prefidx = idx
-        orig = getOrigin(origin,event)
-        if orig is not None:
-            origins.append(orig.copy())
-        idx += 1
-    eqdict['origins'] = origins
+        orig = {'time':time,'timefixed':timefixed,'time_error':errortime,'timerms':rms,'lat':lat,'lon':lon,
+                'epifixed':epifixed,
+                'semimajor':majoraxis,'semiminor':minoraxis,'intermediateaxis':intermediateaxis,
+                'majorplunge':majorplunge,'majorazimuth':majorazimuth,'majorrotation':majorrotation,
+                'depth':depth,'depthfixed':depthfixed,'deptherr':deptherr,'numphases':ndef,'numstations':nst,
+                'azgap':azgap,'mindist':mindist,'maxdist':maxdist,'analysistype':status,
+                'locmethod':locmethod,'event_type':event_type,'author':author,'originid':originid,
+                'publicid':publicid,'depthtype':depthtype}
+        return orig
 
-    #fetch the magnitude elements
-    magnitudes = event.getElementsByTagName('magnitude')
-    maglist = []
-    for magnitude in magnitudes: 
-        magdict = getMagnitude(magnitude)
-        maglist.append(magdict.copy())
-    eqdict['magnitudes'] = maglist
-
-    #get the moment tensors, if there are any
-    momentTensors = []
-    mechs = event.getElementsByTagName('focalMechanism')
-    for mech in mechs:
-        tensors = mech.getElementsByTagName('momentTensor')
-        for tensor in tensors:
-            mdict = getMomentTensor(tensor)
-            momentTensors.append(mdict.copy())
-
-    eqdict['tensors'] = momentTensors
-
-    #get the phases
-    picks = event.getElementsByTagName('pick')
-    phases = []
-    for pick in picks:
-        phase = getPhase(pick,originelements[prefidx],event)
-        if phase is not None:
-            phases.append(phase.copy())
-
-    if len(phases):
-        phases = sorted(phases,key=lambda k:k['stationdist'])
-    eqdict['phases'] = phases
-    
-    dom.unlink()
-    return eqdict
-
-def renderEHDF(eqdict):
-    yr = eqdict['origins'][0]['time'].year
-    mo = eqdict['origins'][0]['time'].month
-    da = eqdict['origins'][0]['time'].day
-    hr = eqdict['origins'][0]['time'].hour
-    mi = eqdict['origins'][0]['time'].minute
-    se = eqdict['origins'][0]['time'].second
-    th = int(float(eqdict['origins'][0]['time'].microsecond)/1e4)
-    lat = eqdict['origins'][0]['lat']
-    NS = 'N'
-    if lat < 0:
-        NS = 'S'
-        lat = abs(lat)
-    lon = eqdict['origins'][0]['lon']
-    EW = 'E'
-    if lon < 0:
-        EW = 'W'
-        lon = abs(lon)
-    dep = eqdict['origins'][0]['depth']
-    depflag = '?' #what should this be?
-    numdep = eqdict['origins'][0]['numphases'] #these are the number of phases for the hypocenter... ok
-    if numdep > 99:
-        numdep = 99
-    nump = numdep #??
-    std = float('nan')
-    hypq = '?' #hypocenter quality - ??
-    magmb = float('nan')
-    magmbsta = float('nan')
-    magms = float('nan')
-    magmssta = float('nan')
-    magmscomp = 'Z'
-    mag1 = float('nan') #contrib mag 1
-    mag2 = float('nan') #contrib mag 2
-    mag1t = '' #contrib mag 1 type
-    mag2t = '' #contrib mag 2 type
-    mag1s = '' #contrib mag 1 source
-    mag2s = '' #contrib mag 2 source
-    magtypes = [mag['magtype'].lower() for mag in eqdict['magnitudes']]
-    copymags = copy.copy(eqdict['magnitudes'])
-    mag1,mag1t,mag1s,idx = getEHDFMagnitude(copymags)
-    if idx >= 0:
-        copymags.pop(idx)
-    mag2,mag2t,mag2s,idx = getEHDFMagnitude(copymags)
-    if idx >= 0:
-        copymags.pop(idx)
-    if 'mb' in magtypes:
-        idx = magtypes.index('mb')
-        magmb = int(eqdict['magnitudes'][idx]['mag']*10)
-        magmbsta = eqdict['magnitudes'][idx]['nstations']
-    if 'ms' in magtypes:
-        idx = magtypes.index('ms')
-        magms = int(eqdict['magnitudes'][idx]['mag']*10)
-        magmssta = eqdict['magnitudes'][idx]['nstations']
-
-    fenum = getFERegion(lat,lon)
-    maxmi = 'T' #?? what is unknown value
-    #putting blanks for all flags for now - get Paul to fill in
-    msflag = ''
-    mtflag = ''
-    if len(eqdict['tensors']):
-        mtflag = 'M'
-    iiflag = '' #??
-    fpflag = '' #??
-    ieflag = ''
-    dpflag = ''
-    tsflag = ''
-    seflag = ''
-    voflag = ''
-    ntflag = ''
-    if eqdict['type'] in EHDF_EVENT_TYPES.keys():
-        ntflag = EHDF_EVENT_TYPES[eqdict['type']]
-    gwflag = ''
-    gpflag = ''
-    author = '%-5s' % (eqdict['origins'][0]['author'])
-    vlist = ['GS','',yr,mo,da,hr,mi,se,th,lat,NS,lon,EW,dep,depflag,numdep,nump,std,hypq,
-             magmb,magmbsta,magms,magmssta,magmscomp,mag1,mag1t,mag1s,mag2,mag2t,mag2s,
-             fenum,maxmi,msflag,mtflag,iiflag,fpflag,ieflag,dpflag,tsflag,seflag,voflag,
-             ntflag,gwflag,gpflag,'<',author,'>']
-    try:
-        line = fixed.getFixedFormatString(EHDRFMT,vlist)
-    except Exception,msg:
-        sys.stderr.write('Could not create line for %s' % (eqdict['eventcode']))
-    return line
-
-
-def getEHDFMagnitude(maglist):
-    magtypes = [mag['magtype'].lower() for mag in maglist]
-    hierarchy = ['mww','mw','ml','lg','rg','md','cl','mg']
-    mag = float('nan')
-    magtype = ''
-    magsrc = ''
-    midx = -1
-    for mtype in hierarchy:
-        if mtype in magtypes:
-            midx = magtypes.index(mtype)
-            mag = int(maglist[midx]['mag']*100)
-            magtype = maglist[midx]['magtype']
-            magsrc = maglist[midx]['author']
-            break
-    return (mag,magtype,magsrc,midx)
-    
-def renderISF(eqdict):
-    #render ISF as a string
-    isf = 'BEGIN IMS2.0\n'
-    isf += 'MSG_TYPE DATA\n'
-    isf += 'MSG_ID %s\n' % eqdict['eventcode'].upper()
-    isf += 'DATA_TYPE BULLETIN IMS2.0:SHORT\n'
-    if eqdict['origins'][0]['analysistype'] == 'm':
-        isf += 'The following is a MANUALLY REVIEWED LOCATION from the USGS/NEIC National Seismic Network System\n'
-    else:
-        isf += 'The following is an AUTOMATICALLY REVIEWED LOCATION from the USGS/NEIC National Seismic Network System\n'
-    isf += 'Event   %s %s\n\n' % (eqdict['eventcode'].upper(),eqdict['location'])
-
-    #if there is a url field, render that as a comment.  This should help with QA/QC
-    if eqdict['url']:
-        isf += ' (%s)' % eqdict['url']
-        isf += '\n\n'
-    
-    #render the origin block
-    hdrvalues = ('Date','Time','Err','RMS','Latitude','Longitude',
-               'Smaj','Smin','Az','Depth','Err','Ndef','Nst',
-               'Gap','mdist','Mdist','Qual','Author','OrigID')
-    line = fixed.getFixedFormatString(ORIGINHDR,hdrvalues)
-    isf += line+'\n'
-
-    for o in eqdict['origins']:
-        vlist = [o['year'],'/',o['month'],'/',o['day'],
-        o['hour'],':',o['minute'],':',o['second'],o['timefixed'],
-        o['time_error'],o['timerms'],o['lat'],o['lon'],o['epifixed'],o['semimajor'],
-        o['semiminor'],o['errorazimuth'],o['depth'],o['depthfixed'],o['deptherr'],
-        o['numphases'],o['numstations'],o['azgap'],o['mindist'],o['maxdist'],
-        o['analysistype'],o['locmethod'],o['event_type'],o['author'],o['originid']]
-        line = fixed.getFixedFormatString(ORIGINFMT,vlist)
-        isf += line+'\n'
-
-    isf += '\n'
-       
-    #render the magnitude block
-    line = fixed.getFixedFormatString(MAGHDR,['Magnitude','Err','Nsta','Author','OrigID'])
-    isf += line + '\n'
-    for m in eqdict['magnitudes']:
-        vlist = [m['magtype'],' ',m['mag'],m['magerr'],m['nstations'],m['author'],m['magid']]
-        line = fixed.getFixedFormatString(MAGFMT,vlist)
-        isf += line+'\n'
-        
-    line = fixed.getFixedFormatString(PHASEHDR,PHASELBL)
-    isf += line + '\n'
-    for p in eqdict['phases']:
-        stacode = '%-5s' % (p['stationcode'])
-        vlist = [stacode,p['stationdist'],p['stationaz'],p['phasecode'],
-                 p['hour'],':',p['minute'],':',p['second'],p['timeres'],
-                 p['azimuth'],p['azres'],p['slowness'],p['slowres'],p['timeflag'],
-                 p['azflag'],p['slowflag'],p['snr'],p['amplitude'],p['period'],
-                 p['picktype'],p['direction'],p['quality'],p['magtype'],
-                 p['minmax'],p['mag'],p['arrid']]
-        line = fixed.getFixedFormatString(PHASEFMT,vlist)
-        isf += line+'\n'
-
-    isf += '\n'
-    for m in eqdict['tensors']:
-        line = fixed.getFixedFormatString(MOMENTHDR1,MOMENTLBL1)
-        isf += line+'\n'
-        line = fixed.getFixedFormatString(MOMENTHDR2,MOMENTLBL2)
-        isf += line+'\n'
-        vlist = ['(','#',m['exponent'],m['scalarmoment'],m['fclvd'],
-                 m['mrr'],m['mtt'],m['mpp'],m['mrt'],m['mtp'],m['mrp'],
-                 m['nbodystations'],m['nsurfacestations'],m['author']]
-        line = fixed.getFixedFormatString(MOMENTFMT1,vlist)
-        isf += line + '\n'
-        vlist = ['(','#',m['momenterror'],m['clvderror'],
-                 m['errormrr'],m['errormtt'],m['errormpp'],
-                 m['errormrt'],m['errormrp'],m['errormtp'],
-                 m['nbody'],m['nsurface'],m['duration']]
-        line = fixed.getFixedFormatString(MOMENTFMT2,vlist)
-        isf += line + '\n'
-    isf += '\nSTOP\n'
-    return isf
-
-def quakemlToISF(quakemlfile,outfolder=None):
-    eqdict = readQuakeML(quakemlfile)
-    if outfolder is None:
-        outfolder = os.cwd()
-    fpath,ffile = os.path.split(quakemlfile)
-    fname,fext = os.path.splitext(ffile)
-    outfilename = os.path.join(outfolder,fname+'.isf')
-    outfile = open(outfilename,'wt')
-    isftext = renderISF(eqdict)
-    outfile.write(isftext)
-    outfile.close()
-    
-    
-
-# def errcon(numphases,depthfixed,stderr,axes):
-#     #    /********************************************************************************
-#     # * errcon                                                                       *
-#     # *                                                                              *
-#     # * Errcon returns the principal axes for the two dimensional tangential error   *
-#     # * ellipse. If depth is held fixed, the principal axes are unchanged. If        *
-#     # * depth is free, the error matrix is reconstituted from the principal axes,    *
-#     # * re-decomposed, and the two dimensional principal axes are recomputed.        *
-#     # *                                                                              *
-#     # * variables:                                                                   *
-#     # * numphases - number of phases used                                            *
-#     # * depthfixed - 1 for a free depth solution and >1 for a fixed depth solution.  *
-#     # * stderr - standard error                                                      *
-#     # * axes - principal axes of the error ellipse (3x3 matrix)                      *
-#     # *  Note that axes[i][0] is the azimuth of the ith principal axis in degrees,   *
-#     # *            axes[i][1] is the dip of the ith principal axis in degrees, and   *
-#     # *            axes[i][2] is the length of the ith semi-axis in kilometers (at   *
-#     # *                      the 90% confidence level)                               *
-#     # *                                                                              *
-#     # * Ported from FORTRAN code written by Ray Buland
-#     # Re-ported to Python from C++ code written by Hydra team                        *
-#     # *                                                                              *
-#     # ********************************************************************************/
-#     #/* initialize some values */
-#     nFree = 8
-#     tol   = 1.0e-15
-#     tol2  = 2.0e-15
-#     m     = 3
-#     m1    = 2
-#     m2    = 4
-
-#     # /* Take care of the easy case (fixed depth). 
-#     #  * Nothing to do; just return */
-#     if depthfixed > 1:
-#         return axes
-
-#     a = np.zeros(m1,m1)
-#     # /* Fisher F distribution */
-#     s2  = (nFree + (n-m2)*se*se)/(nFree + n - m2)
-#     f10,rc = Fisher10(m, nFree + n - m2)
-#     if (not rc):
-#         return rc
-#     fac = 1.0/(m * s2 * f10);
-
-# def fisher10(nu1, nu2):
-#     xnu = np.array([1.0/30.0, 1.0/40.0, 1.0/60.0, 1.0/120.0, 0.0])
-#     tab = np.array([49.50,  9.00,  5.46,  4.32,  3.78,  3.46,  3.26,  3.11,
-#                          3.01,  2.92,  2.86,  2.81,  2.76,  2.73,  2.70,  2.67,
-#                          2.64,  2.62,  2.61,  2.59,  2.57,  2.56,  2.55,  2.54,
-#                          2.53,  2.52,  2.51,  2.50,  2.50,  2.49,  2.44,  2.39,
-#                          2.35,  2.30, 53.59,  9.16,  5.39,  4.19,  3.62,  3.29, 
-#                          3.07,  2.92,  2.81,  2.73,  2.66,  2.61,  2.56,  2.52, 
-#                          2.49,  2.46,  2.44,  2.42,  2.40,  2.38,  2.36,  2.35, 
-#                          2.34,  2.33,  2.32,  2.31,  2.30,  2.29,  2.28,  2.28, 
-#                          2.23,  2.18,  2.13,  2.08, 55.83,  9.24,  5.34,  4.11, 
-#                          3.52,  3.18,  2.96,  2.81,  2.69,  2.61,  2.54,  2.48, 
-#                          2.43,  2.39,  2.36,  2.33,  2.31,  2.29,  2.27,  2.25, 
-#                          2.23,  2.22,  2.21,  2.19,  2.18,  2.17,  2.17,  2.16, 
-#                          2.15,  2.14,  2.09,  2.04,  1.99,  1.94};
-#     return (rc,f10)
+    def getStationInfo(self,origin):
+        originid = origin.getAttribute('publicID')
+        stations = []
+        mindist = 99999999999999
+        maxdist = -99999999999999
+        for pickid in self.arrivals.keys():
+            arrival = self.arrivals[pickid]
+            if arrival['originid'] != originid:
+                continue
+            station = self.picks[pickid]['nscl']
+            if station not in stations:
+                stations.append(station)
+            if arrival['distance'] > maxdist:
+                maxdist = arrival['distance']
+            if arrival['distance'] < maxdist:
+                mindist = arrival['distance']
+        if mindist == 99999999999999:
+            mindist = float('nan')
+            maxdist = float('nan')
+        return (len(stations),mindist,maxdist)
+            
+        arrivals = origin.getElementsByTagName('arrival')
+        stations = []
+        mindist = 99999999999999
+        maxdist = -99999999999999
+        for arrival in arrivals:
+            arrid = arrival.getElementsByTagName('pickID')[0].firstChild.data
+            station = None
+            for pick in picks:
+                pickid = pick.getAttribute('publicID')
+                if pickid == arrid:
+                    station = getNSCL(pick.getElementsByTagName('waveformID')[0])
+                    break
+            if station is None:
+                continue
+            if station not in stations:
+                stations.append(station)
+            adist = float(arrival.getElementsByTagName('distance')[0].firstChild.data)
+            if adist < mindist:
+                mindist = adist
+            if adist > maxdist:
+                maxdist = adist
+        return (len(stations),mindist,maxdist)
     
 if __name__ == '__main__':
-    eqdict = readQuakeML(sys.argv[1])
-    isf = renderISF(eqdict)
+    xmlfile = sys.argv[1]
+    phaseml = PhaseML()
+    phaseml.readFromFile(xmlfile)
+    isf = phaseml.renderISF()
     print isf
-    print
-    ehdf = renderEHDF(eqdict)
-    print ehdr
+    ehdf = phaseml.renderEHDF()
+    print 
+    print ehdf
         
     

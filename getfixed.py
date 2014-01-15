@@ -100,18 +100,19 @@ if __name__ == '__main__':
                         help='Source contributor (who loaded product) (us, nc, etc.)')
     parser.add_argument('format',choices=['isf','ehdf'],
                         help='Output data in ISF format')
-    parser.add_argument('-d','--ehdf', dest='ehdf', action='store_true',
+    parser.add_argument('-i','--id', dest='eventid',
                         help='Output data in EHDF format')
     
     args = parser.parse_args()
-
+    
     eventlist = getPhaseData(bounds=args.bounds,starttime=args.startTime,endtime=args.endTime,
-                             magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
+                             magrange=args.magRange,catalog=args.catalog,
+                             contributor=args.contributor,eventid=args.eventid)
     
     for event in eventlist:
         if args.format == 'isf':
-            text = fixed.renderISF(event)
+            text = event.renderISF()
         elif args.format == 'ehdf':
-            text = fixed.renderEHDF(event)
+            text = event.renderEHDF()
         print text
         
