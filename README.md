@@ -118,12 +118,12 @@ optional arguments:
   -v, --verbose         Print progress
 </pre>
 
-Usage for getcomcat.py
+Usage for getfixed.py
 --------
 <pre>
 usage: getfixed.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
                    [-e ENDTIME] [-m minmag maxmag] [-c CATALOG]
-                   [-n CONTRIBUTOR] [-d]
+                   [-n CONTRIBUTOR] [-i EVENTID]
                    {isf,ehdf}
 
 Download earthquake information in a fixed-width format.
@@ -149,5 +149,6 @@ optional arguments:
                         centennial, etc.)
   -n CONTRIBUTOR, --contributor CONTRIBUTOR
                         Source contributor (who loaded product) (us, nc, etc.)
-  -d, --ehdf            Output data in EHDF format
+  -i EVENTID, --id EVENTID
+                        Output data in EHDF format
 </pre>
