@@ -32,7 +32,16 @@ def makedict(dictstring):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Download product files from USGS ComCat.')
+    desc = '''Download product files from USGS ComCat.
+
+    To download ShakeMap grid.xml files for a box around New Zealand during 2013:
+
+    getcomcat.py shakemap grid.xml -o /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+
+    Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
+    as you would if you were not crossing that meridian.
+    '''
+    parser = argparse.ArgumentParser(description=desc)
     #positional arguments
     parser.add_argument('product', metavar='PRODUCT', 
                         help='The name of the desired product (shakemap, dyfi, etc.)')
@@ -54,7 +63,7 @@ if __name__ == '__main__':
                         help='Source catalog from which products derive (atlas, centennial, etc.)')
     parser.add_argument('-n','--contributor', dest='contributor', 
                         help='Source contributor (who loaded product) (us, nc, etc.)')
-    parser.add_argument('-v','--event-id', dest='eventid', 
+    parser.add_argument('-i','--event-id', dest='eventid', 
                         help='Event ID from which to download product contents.')
     parser.add_argument('-p','--product-property', dest='productProperties', type=makedict,
                         help='Product property (reviewstatus:approved).')

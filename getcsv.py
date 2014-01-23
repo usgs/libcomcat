@@ -82,7 +82,19 @@ def makedict(dictstring):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Download basic earthquake information in line format (csv, tab, etc.).')
+    desc = '''Download basic earthquake information in line format (csv, tab, etc.).
+
+    To download basic event information (time,lat,lon,depth,magnitude) and moment tensor components for a box around New Zealand
+    during 2013:
+
+    getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 > nz.csv
+
+    Events which do not have a value for a given field (moment tensor components, for example), will have the string "nan" instead.
+
+    Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
+    as you would if you were not crossing that meridian.
+    '''
+    parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #optional arguments
     parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
                         dest='bounds', type=float, nargs=4,

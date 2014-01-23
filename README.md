@@ -40,6 +40,12 @@ To install this package:
 
 pip install git+git://github.com/mhearne-usgs/libcomcat.git
 
+The last command will install getcomcat.py, getcsv.py, and getfixed.py in your path.  The library code will be installed in 
+<PATH_TO_PYTHON>/lib/pythonX.Y/site-packages/libcomcat/.  Developers should be able to use the functions in comcat.py and fixed.py by importing them:
+
+>>from libcomcat import comcat
+>>from libcomcat import fixed
+
 Uninstalling and Updating
 -------------------------
 
@@ -57,11 +63,16 @@ Usage for getcomcat.py
 <pre>
 usage: getcomcat.py [-h] [-o OUTPUTFOLDER] [-b lonmin lonmax latmin latmax]
                     [-s STARTTIME] [-e ENDTIME] [-m minmag maxmag]
-                    [-c CATALOG] [-n CONTRIBUTOR] [-v EVENTID]
+                    [-c CATALOG] [-n CONTRIBUTOR] [-i EVENTID]
                     [-p PRODUCTPROPERTIES] [-t EVENTPROPERTIES] [-l]
                     PRODUCT [CONTENTLIST [CONTENTLIST ...]]
 
-Download product files from USGS ComCat.
+Download product files from USGS ComCat. To download ShakeMap grid.xml files
+for a box around New Zealand during 2013: getcomcat.py shakemap grid.xml -o
+/home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e
+2014-01-01 Note that when specifying a search box that crosses the -180/180
+meridian, you simply specify longitudes as you would if you were not crossing
+that meridian.
 
 positional arguments:
   PRODUCT               The name of the desired product (shakemap, dyfi, etc.)
@@ -88,7 +99,7 @@ optional arguments:
                         centennial, etc.)
   -n CONTRIBUTOR, --contributor CONTRIBUTOR
                         Source contributor (who loaded product) (us, nc, etc.)
-  -v EVENTID, --event-id EVENTID
+  -i EVENTID, --event-id EVENTID
                         Event ID from which to download product contents.
   -p PRODUCTPROPERTIES, --product-property PRODUCTPROPERTIES
                         Product property (reviewstatus:approved).
@@ -105,6 +116,17 @@ usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
                  [-o] [-a] [-t] [-f {csv,tab}] [-v]
 
 Download basic earthquake information in line format (csv, tab, etc.).
+
+    To download basic event information (time,lat,lon,depth,magnitude) and moment tensor components for a box around New Zealand
+    during 2013:
+
+    getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 > nz.csv
+
+    Events which do not have a value for a given field (moment tensor components, for example), will have the string "nan" instead.
+
+    Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
+    as you would if you were not crossing that meridian.
+    
 
 optional arguments:
   -h, --help            show this help message and exit
