@@ -24,8 +24,11 @@ The best way to install numpy is to use one of the Python distributions describe
 
 Anaconda and Enthought distributions have been successfully tested with libcomcat.
 
-Most of those distributions should include <em>pip</em>, a tool for installing and 
-managing Python packages.  You will use pip to install the other dependencies and libcomcat itself.
+Most of those distributions should include <em>pip</em>, a command line tool for installing and 
+managing Python packages.  You will use pip to install the other dependencies and libcomcat itself.  
+ 
+You may need to open a new terminal window to ensure that the newly installed versions of python and pip
+are in your path.
 
 To install neicmap and neicio:
 
@@ -36,6 +39,18 @@ pip install git+git://github.com/mhearne-usgs/neicio.git
 To install this package:
 
 pip install git+git://github.com/mhearne-usgs/libcomcat.git
+
+Uninstalling and Updating
+-------------------------
+
+To uninstall, use pip:
+
+pip uninstall libcomcat
+
+To update, uninstall as above, then:
+
+pip install git+git://github.com/mhearne-usgs/libcomcat.git
+
 
 Usage for getcomcat.py
 --------
@@ -130,7 +145,32 @@ usage: getfixed.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
                    [-n CONTRIBUTOR] [-i EVENTID]
                    {isf,ehdf}
 
-Download earthquake information in a fixed-width format.
+Download earthquake information in a fixed-width (ISF or EHDF) format.
+
+    Retrieving many events:
+
+    getfixed.py isf -b -105.010 -109.090 37.049 37.475 -s 2014-01-01 -e 2014-01-24 > southern_colorado.isf
+
+    This should print (to stderr) the ids of the events found in the search box, and then print (to stdout)
+    the results in ISF format.
+
+    Retrieving a single event:
+
+    getfixed.py isf -i usb000m4lb > usb000m4lb.isf
+
+    To retrieve events using a search box that spans the -180/180 meridian, simply specify longitudes
+    as you would if you were not crossing that meridian:
+
+    ./getfixed.py isf -b 177.605 -175.83 49.86 53.593 -s 2014-01-01 -e 2014-01-24 > aleutians.isf
+
+    You can repeat these procedures for the EHDF format.
+
+    The ISF format is described here:
+    http://www.isc.ac.uk/standards/isf/
+
+    The EHDF format is described here:
+    ftp://hazards.cr.usgs.gov/weekly/ehdf.txt
+    
 
 positional arguments:
   {isf,ehdf}            Output data in ISF format

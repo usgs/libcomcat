@@ -83,7 +83,33 @@ def makedict(dictstring):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Download earthquake information in a fixed-width format.')
+    desc = '''Download earthquake information in a fixed-width (ISF or EHDF) format.
+
+    Retrieving many events:
+
+    getfixed.py isf -b -105.010 -109.090 37.049 37.475 -s 2014-01-01 -e 2014-01-24 > southern_colorado.isf
+
+    This should print (to stderr) the ids of the events found in the search box, and then print (to stdout)
+    the results in ISF format.
+
+    Retrieving a single event:
+
+    getfixed.py isf -i usb000m4lb > usb000m4lb.isf
+
+    To retrieve events using a search box that spans the -180/180 meridian, simply specify longitudes
+    as you would if you were not crossing that meridian:
+
+    ./getfixed.py isf -b 177.605 -175.83 49.86 53.593 -s 2014-01-01 -e 2014-01-24 > aleutians.isf
+
+    You can repeat these procedures for the EHDF format.
+
+    The ISF format is described here:
+    http://www.isc.ac.uk/standards/isf/
+
+    The EHDF format is described here:
+    ftp://hazards.cr.usgs.gov/weekly/ehdf.txt
+    '''
+    parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #optional arguments
     parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
                         dest='bounds', type=float, nargs=4,
