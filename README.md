@@ -1,13 +1,13 @@
 Introduction
 ------------
 
-libcomcat is a project designed to provide command line equivalents to the NEIC ComCat search API.  This 
-code includes (so far):
+libcomcat is a project designed to provide command line equivalents to the ANSS ComCat search 
+<a href="http://comcat.cr.usgs.gov/fdsnws/event/1/">API</a>.  This code includes (so far):
  * Three scripts:
    * getcomcat.py A script to download ComCat product contents (shakemap grids, origin quakeml, etc.)
    * getcsv.py A script to generate csv or tab separated text files with basic earthquake information.
    * getfixed.py A script to generate text files in one of two fixed-width formats: ISF and EHDF.
- * One code module, libcomcat/comcat.py, with functions supporting the above scripts.
+ * Two code modules, libcomcat/comcat.py, and libcomcat/fixed.py, with functions supporting the above scripts.
 
 Installation and Dependencies
 -----------------------------
@@ -15,13 +15,17 @@ Installation and Dependencies
 This package depends on numpy, the fundamental package for scientific computing with Python.
 <a href="http://www.numpy.org/">http://www.numpy.org/</a>
 
-and neicmap and neicio, part of an effort at the NEIC to create generally useful Python libraries.
+and neicmap and neicio, part of an effort at the NEIC to create generally useful Python libraries from
+the <a href="http://earthquake.usgs.gov/earthquakes/pager/">PAGER</a> source code.
 
 The best way to install numpy is to use one of the Python distributions described here:
 
 <a href="http://www.scipy.org/install.html">http://www.scipy.org/install.html</a>
 
-Most of those distributions should include <em>pip</em>, a tool for installing and managing Python packages.
+Anaconda and Enthought distributions have been successfully tested with libcomcat.
+
+Most of those distributions should include <em>pip</em>, a tool for installing and 
+managing Python packages.  You will use pip to install the other dependencies and libcomcat itself.
 
 To install neicmap and neicio:
 
