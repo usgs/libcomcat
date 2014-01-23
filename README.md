@@ -43,13 +43,13 @@ pip install git+git://github.com/mhearne-usgs/libcomcat.git
 Uninstalling and Updating
 -------------------------
 
-To uninstall, use pip:
+To uninstall:
 
 pip uninstall libcomcat
 
-To update, uninstall as above, then:
+To update:
 
-pip install git+git://github.com/mhearne-usgs/libcomcat.git
+pip install -U git+git://github.com/mhearne-usgs/libcomcat.git
 
 
 Usage for getcomcat.py
