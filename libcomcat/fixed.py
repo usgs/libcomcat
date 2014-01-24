@@ -728,12 +728,18 @@ class PhaseML(object):
                 magerr = float(magel.getElementsByTagName('uncertainty')[0].firstChild.data)
             else:
                 magerr = float('nan')
-            if len(magel.getElementsByTagName('stationCount')):
-                nstations = int(magel.getElementsByTagName('stationCount'))
+            if len(mag.getElementsByTagName('stationCount')):
+                nstations = int(mag.getElementsByTagName('stationCount')[0].firstChild.data)
             else:
                 nstations = float('nan')
-            mode = mag.getElementsByTagName('evaluationMode')[0].firstChild.data
-            status = mag.getElementsByTagName('evaluationStatus')[0].firstChild.data
+            if len(mag.getElementsByTagName('evaluationMode')):
+                mode = mag.getElementsByTagName('evaluationMode')[0].firstChild.data
+            else:
+                mode = 'automatic'
+            if len(mag.getElementsByTagName('evaluationStatus')):
+                status = mag.getElementsByTagName('evaluationStatus')[0].firstChild.data
+            else:
+                status = 'preliminary'
             creationinfo = mag.getElementsByTagName('creationInfo')[0]
             if len(creationinfo.getElementsByTagName('agencyID')):
                 author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
