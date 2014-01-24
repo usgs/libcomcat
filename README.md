@@ -171,7 +171,7 @@ Download earthquake information in a fixed-width (ISF or EHDF) format.
 
     Retrieving many events:
 
-    getfixed.py isf -b -105.010 -109.090 37.049 37.475 -s 2014-01-01 -e 2014-01-24 > southern_colorado.isf
+    getfixed.py isf -b -105.010 -104.090 37.049 37.475 -s 2014-01-01 -e 2014-01-24 > southern_colorado.isf
 
     This should print (to stderr) the ids of the events found in the search box, and then print (to stdout)
     the results in ISF format.
