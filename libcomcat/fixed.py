@@ -178,7 +178,7 @@ MOMENTFMT1 = [((2,2),'a1'),
               ((62,67),'f6.3'),
               ((69,72),'i4'),
               ((74,77),'i4'),
-              ((79,87),'a9')]
+              ((79,87),'a9',False,True)]
 
 MOMENTFMT2 = [((2,2),'a1'),
               ((3,3),'a1'),
@@ -315,7 +315,7 @@ class PhaseML(object):
         line = fixed.getFixedFormatString(MAGHDR,['Magnitude','Err','Nsta','Author','OrigID'])
         isf += line + '\n'
         for m in self.magnitudes:
-            vlist = [m['magtype'],' ',m['magnitude'],m['magerr'],m['nstations'],m['author'],m['magid']]
+            vlist = [m['magtype'],' ',m['magnitude'],m['magerr'],m['nstations'],m['author'],m['dataid']]
             line = fixed.getFixedFormatString(MAGFMT,vlist)
             isf += line+'\n'
 
@@ -328,7 +328,7 @@ class PhaseML(object):
             isf += line+'\n'
             vlist = ['(','#',m['exponent'],m['scalarmoment'],m['fclvd'],
                      m['mrr'],m['mtt'],m['mpp'],m['mrt'],m['mtp'],m['mrp'],
-                     m['nbodystations'],m['nsurfacestations'],m['author']]
+                     m['nbodystations'],m['nsurfacestations'],m['dataid']]
             line = fixed.getFixedFormatString(MOMENTFMT1,vlist)
             isf += line + '\n'
             vlist = ['(','#',m['momenterror'],m['clvderror'],
@@ -521,7 +521,7 @@ class PhaseML(object):
             #now we need to find all of other kind of phase - the ones with amplitude and magnitude
             magphases = self.getMagPhases(pick['nscl'],arrival['distance'],arrival['azimuth'])
             self.phases += magphases
-            self.phases = sorted(self.phases,key = lambda k: k['distance'])
+            self.phases = sorted(self.phases,key = lambda k: (k['distance'],k['time']))
 
     def getMagPhases(self,nscl,distance,azimuth):
         phases = []
@@ -680,11 +680,33 @@ class PhaseML(object):
                         nbodystations += int(dataused.getElementsByTagName('stationCount')[0].firstChild.data)
 
         return (nbodycomponents,nsurfacecomponents,nbodystations,nsurfacestations)
-    
+
+    def getDataID(self,dataid):
+        #we need to munge the dataid a little bit to get it down below 8 characters (hopefully)
+        #dataid values can look like this: "us_c000lvb5_mww", or "us_c000lvb5_mwc_gcmt".
+        #in the first case we want "us_mww", and in the second we want "gcmt_mwc".
+        #first, split the dataid into pieces:
+        parts = dataid.split('_')
+        mtypes = ['mww','mwc','mwb','mwr','mb']
+        networks = ['us','ak','ci','nc','hv','uu','ld','pn','pr','gcmt']
+        network = None
+        mtype = None
+        for part in parts:
+            if part in mtypes:
+                mtype = part
+            if part in networks:
+                network = part #since gcmt is at the end, this should trump us
+        if len('%s_%s' % (network,mtype)) > 8:
+            dataid = mtype
+        else:
+            dataid = '%s_%s' % (network,mtype)
+        return dataid
+            
     def getTensors(self):
         self.tensors = []
         mechs = self.event.getElementsByTagName('focalMechanism')
         for mech in mechs:
+            dataid = self.getDataID(mech.getAttribute('catalog:dataid'))
             for tensor in mech.getElementsByTagName('momentTensor'):
                 m0,exponent,fclvd,scalarMoment = self.getTensorMetadata(tensor)
                 compdict = self.getTensorComponents(tensor,exponent)
@@ -716,12 +738,14 @@ class PhaseML(object):
                                      'nbodycomp':nbodycomp,'nsurfacecomp':nsurfacecomp,
                                      'nbodystations':nbodystations,'nsurfacestations':nsurfacestations,
                                      'duration':duration,'scalarmoment':scalarMoment,
-                                     'author':author,'momenterror':float('nan'),'clvderror':float('nan')})
+                                     'author':author,'momenterror':float('nan'),
+                                     'clvderror':float('nan'),'dataid':dataid})
         
     def getMagnitudes(self):
         self.magnitudes = []
         for mag in self.event.getElementsByTagName('magnitude'):
             magel = mag.getElementsByTagName('mag')[0]
+            dataid = self.getDataID(mag.getAttribute('catalog:dataid'))
             magnitude = float(magel.getElementsByTagName('value')[0].firstChild.data)
             magtype = mag.getElementsByTagName('type')[0].firstChild.data
             if len(magel.getElementsByTagName('uncertainty')):
@@ -747,7 +771,7 @@ class PhaseML(object):
                 author = ''
             self.magnitudes.append({'magnitude':magnitude,'magtype':magtype,'mode':mode,
                                     'status':status,'author':author,'magerr':magerr,
-                                    'nstations':nstations,'magid':''})
+                                    'nstations':nstations,'magid':'','dataid':dataid})
             
         
     def getStationMagnitudes(self):
