@@ -89,8 +89,13 @@ if __name__ == '__main__':
 
     getfixed.py isf -b -105.010 -104.090 37.049 37.475 -s 2014-01-01 -e 2014-01-24 > southern_colorado.isf
 
+      
     This should print (to stderr) the ids of the events found in the search box, and then print (to stdout)
     the results in ISF format.
+
+    Doing a radius search for multiple events:
+    
+    getfixed.py isf -r 35.786 -97.475 10 30 -s 2014-01-01 -e 2014-02-18 > oklahoma.isf
 
     Retrieving a single event:
 
@@ -114,6 +119,8 @@ if __name__ == '__main__':
     parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
+    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmin','rmax'),type=float,
+                        nargs=4,help='Min/max search radius in KM (use instead of bounding box)')
     parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
                         help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
@@ -131,8 +138,8 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    eventlist = getPhaseData(bounds=args.bounds,starttime=args.startTime,endtime=args.endTime,
-                             magrange=args.magRange,catalog=args.catalog,
+    eventlist = getPhaseData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,
+                             endtime=args.endTime,magrange=args.magRange,catalog=args.catalog,
                              contributor=args.contributor,eventid=args.eventid)
     
     for event in eventlist:

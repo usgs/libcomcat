@@ -162,9 +162,10 @@ optional arguments:
 Usage for getfixed.py
 --------
 <pre>
-usage: getfixed.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
-                   [-e ENDTIME] [-m minmag maxmag] [-c CATALOG]
-                   [-n CONTRIBUTOR] [-i EVENTID]
+usage: getfixed.py [-h] [-b lonmin lonmax latmin latmax]
+                   [-r lat lon rmin rmax] [-s STARTTIME] [-e ENDTIME]
+                   [-m minmag maxmag] [-c CATALOG] [-n CONTRIBUTOR]
+                   [-i EVENTID]
                    {isf,ehdf}
 
 Download earthquake information in a fixed-width (ISF or EHDF) format.
@@ -173,8 +174,13 @@ Download earthquake information in a fixed-width (ISF or EHDF) format.
 
     getfixed.py isf -b -105.010 -104.090 37.049 37.475 -s 2014-01-01 -e 2014-01-24 > southern_colorado.isf
 
+      
     This should print (to stderr) the ids of the events found in the search box, and then print (to stdout)
     the results in ISF format.
+
+    Doing a radius search for multiple events:
+    
+    getfixed.py isf -r 35.786 -97.475 10 30 -s 2014-01-01 -e 2014-02-18 > oklahoma.isf
 
     Retrieving a single event:
 
@@ -202,6 +208,9 @@ optional arguments:
   -b lonmin lonmax latmin latmax, --bounds lonmin lonmax latmin latmax
                         Bounds to constrain event search [lonmin lonmax latmin
                         latmax]
+  -r lat lon rmin rmax, --radius lat lon rmin rmax
+                        Min/max search radius in KM (use instead of bounding
+                        box)
   -s STARTTIME, --start-time STARTTIME
                         Start time for search (defaults to ~30 days ago).
                         YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS

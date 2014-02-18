@@ -322,12 +322,13 @@ def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
         eventlist.append(eventdict.copy())
     return eventlist
 
-def getPhaseData(bounds = None,starttime = None,endtime = None,
+def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
                  magrange = None,catalog = None,contributor = None,
                  eventid = None,eventProperties=None,productProperties=None):
     """Fetch origin, moment tensor and phase data for earthquakes matching input parameters.
 
     @keyword bounds: Sequence of (lonmin,lonmax,latmin,latmax)
+    @keyword radius: Sequence of (lat,lon,radiusmin [km],radiusmax [km]).
     @keyword starttime: Start time for search (defaults to ~30 days ago). YYYY-mm-ddTHH:MM:SS
     @keyword endtime: End time for search (defaults to now). YYYY-mm-ddTHH:MM:SS
     @keyword magrange: Sequence of (minmag,maxmag)
@@ -409,6 +410,11 @@ def getPhaseData(bounds = None,starttime = None,endtime = None,
                - nsurface Number of surface wave components used
                - duration Source duration (seconds)
     """
+
+    #Make sure user is not specifying bounds search AND radius search
+    if bounds is not None and radius is not None:
+        raise Exception,'Cannot choose bounds search AND radius search.'
+    
     if catalog is not None and catalog not in checkCatalogs():
         raise Exception,'Unknown catalog %s' % catalog
     if contributor is not None and contributor not in checkContributors():
@@ -448,6 +454,12 @@ def getPhaseData(bounds = None,starttime = None,endtime = None,
         maxeast = urlparams['maxlongitude'] < 0 and urlparams['maxlongitude'] > -180
         if minwest and maxeast:
             urlparams['maxlongitude'] += 360
+
+    if radius is not None:
+        urlparams['latitude'] = radius[0]
+        urlparams['longitude'] = radius[1]
+        urlparams['minradiuskm'] = radius[2]
+        urlparams['maxradiuskm'] = radius[3]
 
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
