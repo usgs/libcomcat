@@ -93,9 +93,9 @@ if __name__ == '__main__':
     This should print (to stderr) the ids of the events found in the search box, and then print (to stdout)
     the results in ISF format.
 
-    Doing a radius search for multiple events:
+    Doing a radius search for multiple events (from 0 km to 30 km):
     
-    getfixed.py isf -r 35.786 -97.475 10 30 -s 2014-01-01 -e 2014-02-18 > oklahoma.isf
+    getfixed.py isf -r 35.786 -97.475 0 30 -s 2014-01-01 -e 2014-02-18 > oklahoma.isf
 
     Retrieving a single event:
 
@@ -141,7 +141,10 @@ if __name__ == '__main__':
     eventlist = getPhaseData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,
                              endtime=args.endTime,magrange=args.magRange,catalog=args.catalog,
                              contributor=args.contributor,eventid=args.eventid)
-    
+    if not len(eventlist):
+        sys.stderr.write('No events found.  Exiting.\n')
+        sys.exit(0)
+        
     for event in eventlist:
         if args.format == 'isf':
             text = event.renderISF()

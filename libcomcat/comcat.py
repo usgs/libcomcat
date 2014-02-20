@@ -144,6 +144,8 @@ def getMomentType(edict):
     mtype = 'NA'
     if edict['products']['moment-tensor'][0]['properties'].has_key('beachball-type'):
         mtype = edict['products']['moment-tensor'][0]['properties']['beachball-type']
+    if edict['products']['moment-tensor'][0]['properties'].has_key('derived-magnitude-type'):
+        mtype = edict['products']['moment-tensor'][0]['properties']['derived-magnitude-type']
     return mtype
         
 
@@ -191,7 +193,7 @@ def checkContributors():
         raise Exception,"Could not open %s to search for list of contributors" % url
     return contributors    
 
-def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
+def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
                  getAngles=False,getCentroid=False,getType=False,getDuration=False,
                  verbose=False):
@@ -226,6 +228,10 @@ def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
     if contributor is not None and contributor not in checkContributors():
         raise Exception,'Unknown contributor %s' % contributor
 
+    #Make sure user is not specifying bounds search AND radius search
+    if bounds is not None and radius is not None:
+        raise Exception,'Cannot choose bounds search AND radius search.'
+    
     #start creating the url parameters
     urlparams = {}
     if starttime is not None:
@@ -250,6 +256,12 @@ def getEventData(bounds = None,starttime = None,endtime = None,magrange = None,
         if minwest and maxeast:
             urlparams['maxlongitude'] += 360
 
+    if radius is not None:
+        urlparams['latitude'] = radius[0]
+        urlparams['longitude'] = radius[1]
+        urlparams['minradiuskm'] = radius[2]
+        urlparams['maxradiuskm'] = radius[3]
+            
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
         urlparams['maxmagnitude'] = magrange[1]
