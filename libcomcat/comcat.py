@@ -543,7 +543,7 @@ def getEventPhase(eventid):
 def getContents(product,contentlist,outfolder=None,bounds = None,
                 starttime = None,endtime = None,magrange = None,
                 catalog = None,contributor = None,eventid = None,
-                eventProperties=None,productProperties=None,listURL=False):
+                eventProperties=None,productProperties=None,listURL=False,since=None):
     """
     Download product contents for event(s) from ComCat, given a product type and list of content files for that product.
 
@@ -573,6 +573,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     @keyword eventid: Event id to search for - restricts search to a single event (usb000ifva)
     @keyword eventProperties: Dictionary of event properties to match. {'reviewstatus':'approved'}
     @keyword productProperties: Dictionary of event properties to match. {'alert':'yellow'}
+    @keyword since: Limit to events after the specified time (datetime). 
     @return: List of output files.
     @raise Exception: When:
       - Input catalog is invalid.
@@ -613,6 +614,10 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
         if starttime is None:
             urlparams['starttime'] = datetime(1900,1,1,0,0,0).strftime(TIMEFMT)
 
+    #if specified, only get events updated after a particular time
+    if since is not None:
+        urlparams['updatedafter'] = since.strftime(TIMEFMT)
+            
     #we're using a rectangle search here
     if bounds is not None:
         urlparams['minlongitude'] = bounds[0]

@@ -57,6 +57,8 @@ if __name__ == '__main__':
                         help='Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
                         help='End time for search (defaults to current date/time). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
+    parser.add_argument('-a','--after', dest='after', type=maketime,
+                        help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
                         help='Min/max magnitude to restrict search.')
     parser.add_argument('-c','--catalog', dest='catalog', 
@@ -78,6 +80,6 @@ if __name__ == '__main__':
                         starttime=args.startTime,endtime=args.endTime,magrange=args.magRange,
                         catalog=args.catalog,contributor=args.contributor,eventid=args.eventid,
                         listURL=args.listURL,eventProperties=args.eventProperties,
-                        productProperties=args.productProperties)
+                        productProperties=args.productProperties,since=args.after)
     print
     print '%i files were downloaded to %s' % (len(files),args.outputFolder)
