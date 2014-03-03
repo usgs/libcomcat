@@ -41,7 +41,7 @@ if __name__ == '__main__':
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
     '''
-    parser = argparse.ArgumentParser(description=desc)
+    parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #positional arguments
     parser.add_argument('product', metavar='PRODUCT', 
                         help='The name of the desired product (shakemap, dyfi, etc.)')
