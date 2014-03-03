@@ -38,7 +38,7 @@ pip install git+git://github.com/mhearne-usgs/neicio.git
 
 To install this package:
 
-pip install git+git://github.com/mhearne-usgs/libcomcat.git
+pip install git+git://github.com/usgs/libcomcat.git
 
 The last command will install getcomcat.py, getcsv.py, and getfixed.py in your path.  The library code will be installed in 
 <PATH_TO_PYTHON>/lib/pythonX.Y/site-packages/libcomcat/.  Developers should be able to use the functions in comcat.py and fixed.py by importing them:
@@ -55,7 +55,7 @@ pip uninstall libcomcat
 
 To update:
 
-pip install -U git+git://github.com/mhearne-usgs/libcomcat.git
+pip install -U git+git://github.com/usgs/libcomcat.git
 
 
 Usage for getcomcat.py
@@ -227,3 +227,9 @@ optional arguments:
   -i EVENTID, --id EVENTID
                         Output data in EHDF format
 </pre>
+
+libcomcat API for Developers
+----------------------------
+The functions that are most likely of interest to developers are in 
+<a href="html/index.html">libcomcat/comcat</a>
+

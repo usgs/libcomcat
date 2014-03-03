@@ -22,7 +22,7 @@ TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
 
-def getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
+def __getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
     dd = distance.sdist(lat1,lon1,lat2,lon2)/1000.0
     normd = dd/dwindow
     if time2 > time1:
@@ -34,7 +34,7 @@ def getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
     euclid = numpy.sqrt(normd**2 + normt**2)
     return (euclid,dd,nsecs)
 
-def associate(self,event,distancewindow=100,timewindow=16,catalog=""):
+def __associate(event,distancewindow=100,timewindow=16,catalog=""):
     """
     Find possible matching events from ComCat for an input event.
     @param event: Dictionary containing fields ['lat','lon','time']
@@ -56,8 +56,8 @@ def associate(self,event,distancewindow=100,timewindow=16,catalog=""):
     lon = event['lon']
     etime = event['time']
     APITIMEFMT = '%Y-%m-%dT%H:%M:%S.%f'
-    mintime = etime - datetime.timedelta(seconds=timewindow)
-    maxtime = etime + datetime.timedelta(seconds=timewindow)
+    mintime = etime - timedelta(seconds=timewindow)
+    maxtime = etime + timedelta(seconds=timewindow)
     minlat = lat - distancewindow * KM2DEG
     maxlat = lat + distancewindow * KM2DEG
     minlon = lon - distancewindow * KM2DEG * (1/distance.cosd(lat))
@@ -92,7 +92,7 @@ def associate(self,event,distancewindow=100,timewindow=16,catalog=""):
             eventdict['time'] = parseTime(otime)
             idlist = feature['properties']['ids'].strip(',').split(',')
             eventdict['id'] = idlist[0]
-            euclid,ddist,tdist = getEuclidean(lat,lon,etime,eventdict['lat'],eventdict['lon'],eventdict['time'])
+            euclid,ddist,tdist = __getEuclidean(lat,lon,etime,eventdict['lat'],eventdict['lon'],eventdict['time'])
             eventdict['euclidean'] = euclid
             eventdict['timedelta'] = tdist
             eventdict['distance'] = ddist
@@ -104,7 +104,7 @@ def associate(self,event,distancewindow=100,timewindow=16,catalog=""):
         raise exception_object,'Could not reach "%s"' % searchurl
 
 
-def getMomentComponents(edict):
+def __getMomentComponents(edict):
     mrr = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrr'])
     mtt = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtt'])
     mpp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mpp'])
@@ -113,7 +113,7 @@ def getMomentComponents(edict):
     mtp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtp'])
     return (mrr,mtt,mpp,mrt,mrp,mtp)
 
-def getFocalAngles(edict):
+def __getFocalAngles(edict):
     product = 'focal-mechanism'
     backup_product = None
     if 'moment-tensor' in edict['products'].keys():
@@ -125,13 +125,13 @@ def getFocalAngles(edict):
     rake = float('nan')
     if not edict['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
         if backup_product is not None and edict['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
-            strike,dip,rake = _getAngles(edict['products'][0][backup_product])
+            strike,dip,rake = __getAngles(edict['products'][0][backup_product])
         else:
             return (strike,dip,rake)
-    strike,dip,rake = _getAngles(edict['products'][product][0])
+    strike,dip,rake = __getAngles(edict['products'][product][0])
     return (strike,dip,rake)
 
-def _getAngles(product):
+def __getAngles(product):
     strike = float(product['properties']['nodal-plane-1-strike'])
     dip = float(product['properties']['nodal-plane-1-dip'])
     if product['properties'].has_key('nodal-plane-1-rake'):
@@ -140,7 +140,7 @@ def _getAngles(product):
         rake = float(product['properties']['nodal-plane-1-slip'])
     return (strike,dip,rake)
 
-def getMomentType(edict):
+def __getMomentType(edict):
     mtype = 'NA'
     if edict['products']['moment-tensor'][0]['properties'].has_key('beachball-type'):
         mtype = edict['products']['moment-tensor'][0]['properties']['beachball-type']
@@ -152,6 +152,7 @@ def getMomentType(edict):
 def checkCatalogs():
     """
     Return the list of valid ComCat catalogs.
+    @return: List of valid ComCat catalog strings.
     """
     url = CHECKBASE % 'catalogs'
     catalogs = []
@@ -174,6 +175,7 @@ def checkCatalogs():
 def checkContributors():
     """
     Return the list of valid ComCat contributors.
+    @return: List of valid ComCat contributor strings.
     """
     url = CHECKBASE % 'contributors'
     contributors = []
@@ -195,7 +197,7 @@ def checkContributors():
 
 def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
-                 getAngles=False,getCentroid=False,getType=False,getDuration=False,
+                 getAngles=False,getType=False,
                  verbose=False):
     """Download a list of event dictionaries that could be represented in csv or tab separated format.
 
@@ -207,7 +209,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
      - depth
      - magnitude
 
-     optionally, you can select to download (when available):
+    optionally, you can select to download (when available):
      - moment tensor components:
        - mrr
        - mtt
@@ -222,6 +224,17 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
      - Centroid lat,lon, depth, time
      - Magnitude type (Mwc, Mwb, Mww, etc.)
      - Duration
+    @keyword bounds: (lonmin,lonmax,latmin,latmax) Bounding box of search. (dd)
+    @keyword radius: (centerlat,centerlon,minradius,maxradius) Radius search parameters (dd,dd,km,km)
+    @keyword starttime: Start time of search (datetime)
+    @keyword endtime: End  time of search (datetime)
+    @keyword magrange: (magmin,magmax) Magnitude range.
+    @keyword catalog: Name of contributing catalog (see checkCatalogs()).
+    @keyword contributor: Name of contributing catalog (see checkContributors()).
+    @keyword getComponents: Boolean indicating whether to retrieve moment tensor components (if available).
+    @keyword getAngles: Boolean indicating whether to retrieve nodal plane angles (if available).
+    @keyword getType: Boolean indicating whether to retrieve moment tensor type (if available).
+    @keyword verbose: Boolean indicating whether to print message to stderr for every event being retrieved. 
     """
     if catalog is not None and catalog not in checkCatalogs():
         raise Exception,'Unknown catalog %s' % catalog
@@ -302,7 +315,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         edict = json.loads(data)
         if getComponents:
             if hasMoment:
-                mrr,mtt,mpp,mrt,mrp,mtp = getMomentComponents(edict)
+                mrr,mtt,mpp,mrt,mrp,mtp = __getMomentComponents(edict)
                 eventdict['mrr'] = mrr
                 eventdict['mtt'] = mtt
                 eventdict['mpp'] = mpp
@@ -318,7 +331,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['mtp'] = NAN
         if getAngles:
             if hasFocal or hasMoment:
-                strike,dip,rake = getFocalAngles(edict)
+                strike,dip,rake = __getFocalAngles(edict)
                 eventdict['strike'] = strike
                 eventdict['dip'] = dip
                 eventdict['rake'] = rake
@@ -328,7 +341,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['rake'] = NAN
         if getType:
             if hasFocal or hasMoment:
-                eventdict['type'] = getMomentType(edict)
+                eventdict['type'] = __getMomentType(edict)
             else:
                 eventdict['type'] = 'NA'
         eventlist.append(eventdict.copy())
@@ -436,7 +449,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     #below, and just parse the event json
     if eventid is not None:
         try:
-            phaseml = getEventPhase(eventid)
+            phaseml = __getEventPhase(eventid)
             return [phaseml]
         except Exception,msg:
             sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eventid,msg.message))
@@ -505,14 +518,14 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
         if 'phase-data' not in ptypes:
             continue
         try:
-            phaseml = getEventPhase(eid)
+            phaseml = __getEventPhase(eid)
             eqlist.append(phaseml)
         except Exception,msg:
             sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eid,msg.message))
         ic += 1
     return eqlist
 
-def getEventPhase(eventid):
+def __getEventPhase(eventid):
     urlbase = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
     url = urlbase.replace('[EVENTID]',eventid)
     try:
@@ -573,6 +586,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     @keyword eventid: Event id to search for - restricts search to a single event (usb000ifva)
     @keyword eventProperties: Dictionary of event properties to match. {'reviewstatus':'approved'}
     @keyword productProperties: Dictionary of event properties to match. {'alert':'yellow'}
+    @keyword listURL: Boolean indicating whether URL for each product source should be printed to stdout.
     @keyword since: Limit to events after the specified time (datetime). 
     @return: List of output files.
     @raise Exception: When:
@@ -683,6 +697,8 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
     @param contentlist: List of desired contents.
     @param outfolder: Local directory where output files should be written (defaults to current working directory).
     @param eid: Event ID to search for.
+    @param listURL: Boolean indicating whether URL for each product source should be printed to stdout.
+    @param productProperties: Dictionary of event properties to match. {'alert':'yellow'}
     @returns: List of downloaded files.
     @raise Exception: When eventid URL could not be parsed.
     """

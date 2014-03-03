@@ -12,12 +12,10 @@ class DimensionError(Exception):
       pass
 
 def jacobi(A, eps=1e-12):
-    """
-    @brief This routine finds eigenvalues and -vectors for a symmetric matrix by a cyclic Jacobi
-    rotation algorithm.
-    @param A The matrix (NumPy array) whos eigenvalues and -vectors are to be determined.
-    @param eps The desired accuracy (zeroing limit).
-    @return [E, V, s] Numpy array of eigenvalues and of eigenvectors, as well as number of sweeps used.
+    """This routine finds eigenvalues and -vectors for a symmetric matrix by a cyclic Jacobi rotation algorithm.
+    @param A: A The matrix (NumPy array) whos eigenvalues and -vectors are to be determined.
+    @keyword eps: The desired accuracy (zeroing limit).
+    @return: [E, V, s] Numpy array of eigenvalues and of eigenvectors, as well as number of sweeps used.
     """
     [n,m] = A.shape
     #Error conditions
@@ -48,11 +46,12 @@ def jacobi(A, eps=1e-12):
 
 def rotate(p,q,A,V):
     """
-    @brief This subroutine performs Jacobi rotation on a matrix A, eliminating A[pq].
-    @param [p, q] indices of the element to be eliminated.
-    @param A The matrix to be diagonalised.
-    @param V The matrix of eigenvectors.
-    @return [A, V] Updated A and V matrices.
+    This subroutine performs Jacobi rotation on a matrix A, eliminating A[pq].
+    @param p: indices of the element to be eliminated.
+    @param q: indices of the element to be eliminated.
+    @param A: The matrix to be diagonalised.
+    @param V: The matrix of eigenvectors.
+    @return: [A, V] Updated A and V matrices.
     """  
     n = A.shape[0]
     App, Aqq, Apq  = A[p,p], A[q,q], A[p,q]   #Initial values
