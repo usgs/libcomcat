@@ -104,7 +104,7 @@ if __name__ == '__main__':
     To retrieve events using a search box that spans the -180/180 meridian, simply specify longitudes
     as you would if you were not crossing that meridian:
 
-    ./getfixed.py isf -b 177.605 -175.83 49.86 53.593 -s 2014-01-01 -e 2014-01-24 > aleutians.isf
+    getfixed.py isf -b 177.605 -175.83 49.86 53.593 -s 2014-01-01 -e 2014-01-24 > aleutians.isf
 
     You can repeat these procedures for the EHDF format.
 
