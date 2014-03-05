@@ -349,7 +349,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
 
 def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
                  magrange = None,catalog = None,contributor = None,
-                 eventid = None,eventProperties=None,productProperties=None):
+                 eventid = None,eventProperties=None,productProperties=None,verbose=False):
     """Fetch origin, moment tensor and phase data for earthquakes matching input parameters.
 
     @keyword bounds: Sequence of (lonmin,lonmax,latmin,latmax)
@@ -452,7 +452,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
             phaseml = __getEventPhase(eventid)
             return [phaseml]
         except Exception,msg:
-            sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eventid,msg.message))
+            sys.stderr.write('Could not retrieve phase data for eventid "%s" - error "%s"\n' % (eventid,msg.message))
             return None
 
     #start creating the url parameters
@@ -521,7 +521,8 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
             phaseml = __getEventPhase(eid)
             eqlist.append(phaseml)
         except Exception,msg:
-            sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eid,msg.message))
+            if verbose:
+                sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eid,msg.message))
         ic += 1
     return eqlist
 
@@ -529,10 +530,16 @@ def __getEventPhase(eventid):
     urlbase = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
     url = urlbase.replace('[EVENTID]',eventid)
     try:
-        req = urllib2.Request(url)
-        req.add_unredirected_header('User-Agent', 'Custom User-Agent')
-        fh = urllib2.urlopen(req)
-        #fh = urllib2.urlopen(url)
+        try:
+            fh = urllib2.urlopen(url)
+        except:
+            try:
+                req = urllib2.Request(url)
+                req.add_unredirected_header('User-Agent', 'Custom User-Agent')
+                fh = urllib2.urlopen(req)
+            except:
+                raise Exception('Could not open url "%s"' % url)
+            
         event_data = fh.read()
         fh.close()
         edict = json.loads(event_data)
