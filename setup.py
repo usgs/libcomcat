@@ -8,4 +8,7 @@ setup(name='libcomcat',
       url='',
       packages=['libcomcat'],
       scripts = ['getcomcat.py','getcsv.py','getfixed.py'],
+      classifiers = [
+        'License :: Public Domain',
+      ]
 )
