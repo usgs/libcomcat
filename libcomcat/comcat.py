@@ -23,6 +23,51 @@ TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
 
+def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor,getComponents,getAngles,getType):
+    """
+    Return a list of datetime (start,end) tuples which will result in searches less than 20,000 events.
+    @param segments: (Initially) empty list of (start,end) datetime tuples.
+    @param bounds: Tuple of (lonmin,lonmax,latmin,latmax) spatial bounds or None.
+    @param radius: Tuple of (lat,lon,minradiuskm,maxradiuskm) radius search parameters or None.
+    @param starttime: Datetime of desired start time for search.
+    @param endtime: Datetime of desired end time for search.
+    @param magrange: Tuple of magnitude range (min,max).
+    @param catalog: Specific catalog which matching events should have as a (not the only) source.
+    @param contributor: Specific contributor which matching events should have as a (not the only) source.
+    @return: List of datetime (start,end) tuples which will result in searches less than 20,000 events.
+    """
+    stime = starttime
+    etime = endtime
+    
+    dt = etime - stime
+    dtseconds = dt.days*86400 + dt.seconds
+    #segment 1
+    newstime = stime
+    newetime = stime + timedelta(seconds=dtseconds/2)
+    nevents,maxevents = getEventCount(bounds=bounds,radius=radius,starttime=newstime,endtime=newetime,
+                                      magrange=magrange,catalog=catalog,contributor=contributor)
+    if nevents < maxevents:
+        segments.append((newstime,newetime))
+    else:
+        segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
+                                   magrange,catalog,contributor,getComponents,
+                                   getAngles,getType)
+    #segment 2
+    newstime = newetime
+    newetime = etime
+    nevents,maxevents = getEventCount(bounds=bounds,radius=radius,
+                                      starttime=newstime,endtime=newetime,
+                                      magrange=magrange,catalog=catalog,
+                                      contributor=contributor)
+    if nevents < maxevents:
+        segments.append((newstime,newetime))
+    else:
+        segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
+                                   magrange,catalog,contributor,getComponents,
+                                   getAngles,getType)
+
+    return segments
+
 def __getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
     dd = distance.sdist(lat1,lon1,lat2,lon2)/1000.0
     normd = dd/dwindow
@@ -205,8 +250,7 @@ def checkContributors():
     return contributors    
 
 def getEventParams(bounds,radius,starttime,endtime,magrange,
-                   catalog,contributor,getComponents,
-                   getAngles,getType):
+                   catalog,contributor):
     urlparams = {}
     if starttime is not None:
         urlparams['starttime'] = starttime.strftime(TIMEFMT)
@@ -253,8 +297,7 @@ def getEventParams(bounds,radius,starttime,endtime,magrange,
     return urlparams
 
 def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
-                 catalog = None,contributor = None,getComponents=False,
-                 getAngles=False,getType=False):
+                 catalog = None,contributor = None):
     if catalog is not None and catalog not in checkCatalogs():
         raise Exception,'Unknown catalog %s' % catalog
     if contributor is not None and contributor not in checkContributors():
@@ -265,8 +308,7 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
         raise Exception,'Cannot choose bounds search AND radius search.'
 
     urlparams = getEventParams(bounds,radius,starttime,endtime,magrange,
-                               catalog,contributor,getComponents,
-                               getAngles,getType)
+                               catalog,contributor)
     urlparams['format'] = 'geojson'
     params = urllib.urlencode(urlparams)
     url = COUNTBASE % params
@@ -331,8 +373,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     
     #start creating the url parameters
     urlparams = getEventParams(bounds,radius,starttime,endtime,magrange,
-                               catalog,contributor,getComponents,
-                               getAngles,getType)
+                               catalog,contributor)
 
     #search parameters we're not making available to the user (yet)
     urlparams['orderby'] = 'time-asc'

@@ -8,7 +8,7 @@ import os
 import sys
 
 #third party
-from libcomcat.comcat import getEventData,getEventCount
+from libcomcat.comcat import getEventData,getEventCount,getTimeSegments
 
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 DATEFMT = '%Y-%m-%d'
@@ -30,42 +30,6 @@ FMTDICT['mrt'] = '%g'
 FMTDICT['mrp'] = '%g'
 FMTDICT['mtp'] = '%g'
 FMTDICT['type'] = '%s'
-
-def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor,getComponents,getAngles,getType):
-    sys.stderr.write('Calling getTimeSegments with %s,%s\n' % (starttime,endtime))
-    stime = starttime
-    etime = endtime
-    
-    dt = etime - stime
-    dtseconds = dt.days*86400 + dt.seconds
-    #segment 1
-    newstime = stime
-    newetime = stime + timedelta(seconds=dtseconds/2)
-    nevents,maxevents = getEventCount(bounds=bounds,radius=radius,starttime=newstime,endtime=newetime,
-                                      magrange=magrange,catalog=catalog,contributor=contributor,
-                                      getComponents=getComponents,getAngles=getAngles,
-                                      getType=getType)
-    if nevents < maxevents:
-        segments.append((newstime,newetime))
-        sys.stderr.write('Added segment (%s,%s)\n' % (newstime,newetime))
-    else:
-        segments = getTimeSegments(segments,bounds,radius,newstime,newetime,magrange,catalog,contributor,getComponents,getAngles,getType)
-    #segment 2
-    newstime = newetime
-    newetime = etime
-    nevents,maxevents = getEventCount(bounds=bounds,radius=radius,starttime=newstime,endtime=newetime,
-                                          magrange=magrange,catalog=catalog,contributor=contributor,
-                                          getComponents=getComponents,getAngles=getAngles,
-                                          getType=getType)
-    if nevents < maxevents:
-        segments.append((newstime,newetime))
-        sys.stderr.write('Added segment (%s,%s)\n' % (newstime,newetime))
-    else:
-        segments = getTimeSegments(segments,bounds,radius,newstime,newetime,magrange,catalog,contributor,getComponents,getAngles,getType)
-
-    return segments
-        
-        
         
 def getFormatTuple(event):
     tlist = []
@@ -119,38 +83,30 @@ def makedict(dictstring):
 
 def main(args):
     if args.getCount:
-        nevents,maxevents = getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                             magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
-                             getComponents=args.getComponents,getAngles=args.getAngles,
-                             getType=args.getType)
+        nevents,maxevents = getEventCount(bounds=args.bounds,radius=args.radius,
+                                          starttime=args.startTime,endtime=args.endTime,
+                                          magrange=args.magRange,catalog=args.catalog,
+                                          contributor=args.contributor)
         fmt = '%i %i'
         print fmt % (nevents,maxevents)
         sys.exit(0)
 
     #actually get the data - do a count first to make sure our request isn't too large.
     nevents,maxevents = getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                             magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
-                             getComponents=args.getComponents,getAngles=args.getAngles,
-                             getType=args.getType)
+                                      magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
     
     if nevents > maxevents: #oops, too many events for one query
         segments = []
         segments = getTimeSegments(segments,args.bounds,args.radius,args.startTime,args.endTime,
-                                   args.magRange,args.catalog,args.contributor,
-                                   args.getComponents,args.getAngles,
-                                   args.getType)
+                                   args.magRange,args.catalog,args.contributor)
         eventlist = []
         for stime,etime in segments:
             sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
             eventlist += getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
-                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
-                                 getComponents=args.getComponents,getAngles=args.getAngles,
-                                 getType=args.getType,verbose=args.verbose)
+                                 magrange=args.magRange,ecatalog=args.catalog,contributor=args.contributor)
     else:
         eventlist = getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
-                                 getComponents=args.getComponents,getAngles=args.getAngles,
-                                 getType=args.getType,verbose=args.verbose)
+                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
@@ -181,6 +137,11 @@ if __name__ == '__main__':
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
+
+    Also note:  Large queries, particularly those that return more than the maximum number of events (20,000 at the time of 
+    this writing), can take a very long time to download.  It IS possible to return more events than the "maximum" allowed, 
+    but this is accomplished by breaking the query up into smaller time segments.  The author has tested queries just over 
+    20,000 events, and it can take ~90 minutes to complete.
     '''
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #optional arguments
