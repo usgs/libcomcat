@@ -2,12 +2,13 @@
 
 #stdlib
 import argparse
-from datetime import datetime
+from datetime import datetime,timedelta
 from collections import OrderedDict
 import os
+import sys
 
 #third party
-from libcomcat.comcat import getEventData
+from libcomcat.comcat import getEventData,getEventCount,getTimeSegments
 
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 DATEFMT = '%Y-%m-%d'
@@ -29,7 +30,7 @@ FMTDICT['mrt'] = '%g'
 FMTDICT['mrp'] = '%g'
 FMTDICT['mtp'] = '%g'
 FMTDICT['type'] = '%s'
-
+        
 def getFormatTuple(event):
     tlist = []
     for key in FMTDICT.keys():
@@ -80,6 +81,44 @@ def makedict(dictstring):
     except:
         raise Exception,'Could not create a single key dictionary out of %s' % dictstring
 
+def main(args):
+    if args.getCount:
+        nevents,maxevents = getEventCount(bounds=args.bounds,radius=args.radius,
+                                          starttime=args.startTime,endtime=args.endTime,
+                                          magrange=args.magRange,catalog=args.catalog,
+                                          contributor=args.contributor)
+        fmt = '%i %i'
+        print fmt % (nevents,maxevents)
+        sys.exit(0)
+
+    #actually get the data - do a count first to make sure our request isn't too large.
+    nevents,maxevents = getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
+                                      magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
+    
+    if nevents > maxevents: #oops, too many events for one query
+        segments = []
+        segments = getTimeSegments(segments,args.bounds,args.radius,args.startTime,args.endTime,
+                                   args.magRange,args.catalog,args.contributor)
+        eventlist = []
+        for stime,etime in segments:
+            sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
+            eventlist += getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
+                                 magrange=args.magRange,ecatalog=args.catalog,contributor=args.contributor)
+    else:
+        eventlist = getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
+                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
+
+    if not len(eventlist):
+        sys.stderr.write('No events found.  Exiting.\n')
+        sys.exit(0)
+    fmt = getFormatString(args.format,eventlist[0].keys())
+    print getHeader(args.format,eventlist[0].keys())
+    for event in eventlist:
+        tpl = getFormatTuple(event)
+        try:
+            print fmt % tpl
+        except:
+            pass
 
 if __name__ == '__main__':
     desc = '''Download basic earthquake information in line format (csv, tab, etc.).
@@ -89,10 +128,20 @@ if __name__ == '__main__':
 
     getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 > nz.csv
 
+    To print the number of events that would be returned from the above query, and the maximum number of events that
+    can be returned from ANY query:
+
+    getcsv.py -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+
     Events which do not have a value for a given field (moment tensor components, for example), will have the string "nan" instead.
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
+
+    Also note:  Large queries, particularly those that return more than the maximum number of events (20,000 at the time of 
+    this writing), can take a very long time to download.  It IS possible to return more events than the "maximum" allowed, 
+    but this is accomplished by breaking the query up into smaller time segments.  The author has tested queries just over 
+    20,000 events, and it can take ~90 minutes to complete.
     '''
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #optional arguments
@@ -119,25 +168,14 @@ if __name__ == '__main__':
                         help='Also extract moment type (Mww,Mwc, etc.) where available')
     parser.add_argument('-f','--format', dest='format', choices=['csv','tab'], default='csv',
                         help='Output format')
+    parser.add_argument('-x','--count', dest='getCount', action='store_true',
+                        help='Just return the number of events in search and maximum allowed.')
     parser.add_argument('-v','--verbose', dest='verbose', action='store_true',
                         help='Print progress')
     
-    args = parser.parse_args()
+    pargs = parser.parse_args()
 
-    eventlist = getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                             magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
-                             getComponents=args.getComponents,getAngles=args.getAngles,
-                             getType=args.getType,verbose=args.verbose)
-
-    if not len(eventlist):
-        sys.stderr.write('No events found.  Exiting.\n')
-        sys.exit(0)
-    fmt = getFormatString(args.format,eventlist[0].keys())
-    print getHeader(args.format,eventlist[0].keys())
-    for event in eventlist:
-        tpl = getFormatTuple(event)
-        try:
-            print fmt % tpl
-        except:
-            pass
+    main(pargs)
+    
+    
         

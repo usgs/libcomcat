@@ -16,11 +16,57 @@ from neicmap import distance
 import fixed
 
 URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
+COUNTBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/count?%s'
 CHECKBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/%s'
 EVENTURL = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
+
+def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor,getComponents,getAngles,getType):
+    """
+    Return a list of datetime (start,end) tuples which will result in searches less than 20,000 events.
+    @param segments: (Initially) empty list of (start,end) datetime tuples.
+    @param bounds: Tuple of (lonmin,lonmax,latmin,latmax) spatial bounds or None.
+    @param radius: Tuple of (lat,lon,minradiuskm,maxradiuskm) radius search parameters or None.
+    @param starttime: Datetime of desired start time for search.
+    @param endtime: Datetime of desired end time for search.
+    @param magrange: Tuple of magnitude range (min,max).
+    @param catalog: Specific catalog which matching events should have as a (not the only) source.
+    @param contributor: Specific contributor which matching events should have as a (not the only) source.
+    @return: List of datetime (start,end) tuples which will result in searches less than 20,000 events.
+    """
+    stime = starttime
+    etime = endtime
+    
+    dt = etime - stime
+    dtseconds = dt.days*86400 + dt.seconds
+    #segment 1
+    newstime = stime
+    newetime = stime + timedelta(seconds=dtseconds/2)
+    nevents,maxevents = getEventCount(bounds=bounds,radius=radius,starttime=newstime,endtime=newetime,
+                                      magrange=magrange,catalog=catalog,contributor=contributor)
+    if nevents < maxevents:
+        segments.append((newstime,newetime))
+    else:
+        segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
+                                   magrange,catalog,contributor,getComponents,
+                                   getAngles,getType)
+    #segment 2
+    newstime = newetime
+    newetime = etime
+    nevents,maxevents = getEventCount(bounds=bounds,radius=radius,
+                                      starttime=newstime,endtime=newetime,
+                                      magrange=magrange,catalog=catalog,
+                                      contributor=contributor)
+    if nevents < maxevents:
+        segments.append((newstime,newetime))
+    else:
+        segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
+                                   magrange,catalog,contributor,getComponents,
+                                   getAngles,getType)
+
+    return segments
 
 def __getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
     dd = distance.sdist(lat1,lon1,lat2,lon2)/1000.0
@@ -105,12 +151,20 @@ def __associate(event,distancewindow=100,timewindow=16,catalog=""):
 
 
 def __getMomentComponents(edict):
-    mrr = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrr'])
-    mtt = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtt'])
-    mpp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mpp'])
-    mrt = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrt'])
-    mrp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrp'])
-    mtp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtp'])
+    if edict['products']['moment-tensor'][0]['properties'].has_key('tensor-mrr'):
+        mrr = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrr'])
+        mtt = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtt'])
+        mpp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mpp'])
+        mrt = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrt'])
+        mrp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrp'])
+        mtp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtp'])
+    else:
+        mrr = float('nan')
+        mtt = float('nan')
+        mpp = float('nan')
+        mrt = float('nan')
+        mrp = float('nan')
+        mtp = float('nan')
     return (mrr,mtt,mpp,mrt,mrp,mtp)
 
 def __getFocalAngles(edict):
@@ -195,6 +249,78 @@ def checkContributors():
         raise Exception,"Could not open %s to search for list of contributors" % url
     return contributors    
 
+def getEventParams(bounds,radius,starttime,endtime,magrange,
+                   catalog,contributor):
+    urlparams = {}
+    if starttime is not None:
+        urlparams['starttime'] = starttime.strftime(TIMEFMT)
+        if endtime is None:
+            urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
+    else:
+        t30 = datetime.utcnow()-timedelta(days=30)
+        urlparams['starttime'] = t30.strftime(TIMEFMT)
+    if endtime is not None:
+        urlparams['endtime'] = endtime.strftime(TIMEFMT)
+        if starttime is None:
+            urlparams['starttime'] = datetime(1900,1,1,0,0,0).strftime(TIMEFMT)
+    else:
+        urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
+
+    #we're using a rectangle search here
+    if bounds is not None:
+        urlparams['minlongitude'] = bounds[0]
+        urlparams['maxlongitude'] = bounds[1]
+        urlparams['minlatitude'] = bounds[2]
+        urlparams['maxlatitude'] = bounds[3]
+
+        #fix possible issues with 180 meridian crossings
+        minwest = urlparams['minlongitude'] > 0 and urlparams['minlongitude'] < 180
+        maxeast = urlparams['maxlongitude'] < 0 and urlparams['maxlongitude'] > -180
+        if minwest and maxeast:
+            urlparams['maxlongitude'] += 360
+
+    if radius is not None:
+        urlparams['latitude'] = radius[0]
+        urlparams['longitude'] = radius[1]
+        urlparams['minradiuskm'] = radius[2]
+        urlparams['maxradiuskm'] = radius[3]
+            
+    if magrange is not None:
+        urlparams['minmagnitude'] = magrange[0]
+        urlparams['maxmagnitude'] = magrange[1]
+    
+    if catalog is not None:
+        urlparams['catalog'] = catalog
+    if contributor is not None:
+        urlparams['contributor'] = contributor
+
+    return urlparams
+
+def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
+                 catalog = None,contributor = None):
+    if catalog is not None and catalog not in checkCatalogs():
+        raise Exception,'Unknown catalog %s' % catalog
+    if contributor is not None and contributor not in checkContributors():
+        raise Exception,'Unknown contributor %s' % contributor
+
+    #Make sure user is not specifying bounds search AND radius search
+    if bounds is not None and radius is not None:
+        raise Exception,'Cannot choose bounds search AND radius search.'
+
+    urlparams = getEventParams(bounds,radius,starttime,endtime,magrange,
+                               catalog,contributor)
+    urlparams['format'] = 'geojson'
+    params = urllib.urlencode(urlparams)
+    url = COUNTBASE % params
+    fh = urllib2.urlopen(url)
+    data = fh.read()
+    fh.close()
+    cdict = json.loads(data)
+    nevents = cdict['count']
+    maxevents = cdict['maxAllowed']
+    return (nevents,maxevents)
+    
+    
 def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
                  getAngles=False,getType=False,
@@ -246,55 +372,19 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         raise Exception,'Cannot choose bounds search AND radius search.'
     
     #start creating the url parameters
-    urlparams = {}
-    if starttime is not None:
-        urlparams['starttime'] = starttime.strftime(TIMEFMT)
-        if endtime is None:
-            urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
-    if endtime is not None:
-        urlparams['endtime'] = endtime.strftime(TIMEFMT)
-        if starttime is None:
-            urlparams['starttime'] = datetime(1900,1,1,0,0,0).strftime(TIMEFMT)
-
-    #we're using a rectangle search here
-    if bounds is not None:
-        urlparams['minlongitude'] = bounds[0]
-        urlparams['maxlongitude'] = bounds[1]
-        urlparams['minlatitude'] = bounds[2]
-        urlparams['maxlatitude'] = bounds[3]
-
-        #fix possible issues with 180 meridian crossings
-        minwest = urlparams['minlongitude'] > 0 and urlparams['minlongitude'] < 180
-        maxeast = urlparams['maxlongitude'] < 0 and urlparams['maxlongitude'] > -180
-        if minwest and maxeast:
-            urlparams['maxlongitude'] += 360
-
-    if radius is not None:
-        urlparams['latitude'] = radius[0]
-        urlparams['longitude'] = radius[1]
-        urlparams['minradiuskm'] = radius[2]
-        urlparams['maxradiuskm'] = radius[3]
-            
-    if magrange is not None:
-        urlparams['minmagnitude'] = magrange[0]
-        urlparams['maxmagnitude'] = magrange[1]
-    
-    if catalog is not None:
-        urlparams['catalog'] = catalog
-    if contributor is not None:
-        urlparams['contributor'] = contributor
+    urlparams = getEventParams(bounds,radius,starttime,endtime,magrange,
+                               catalog,contributor)
 
     #search parameters we're not making available to the user (yet)
     urlparams['orderby'] = 'time-asc'
     urlparams['format'] = 'geojson'
     params = urllib.urlencode(urlparams)
+    eventlist = []
     url = URLBASE % params
     fh = urllib2.urlopen(url)
     feed_data = fh.read()
     fh.close()
     fdict = json.loads(feed_data)
-
-    eventlist = []
     for feature in fdict['features']:
         eventdict = {}
         eventdict['id'] = feature['id']
@@ -309,9 +399,11 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         hasMoment = 'moment-tensor' in types
         hasFocal = 'focal-mechanism' in types
         eurl = feature['properties']['url']+'.json'
+        #sys.stderr.write('%s - Before reading %s\n' % (datetime.now(),url))
         fh = urllib2.urlopen(eurl)
         data = fh.read()
         fh.close()
+        #sys.stderr.write('%s - After reading %s\n' % (datetime.now(),url))
         edict = json.loads(data)
         if getComponents:
             if hasMoment:
