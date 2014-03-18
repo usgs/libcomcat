@@ -103,10 +103,12 @@ def main(args):
         for stime,etime in segments:
             sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
             eventlist += getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
-                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
+                                      magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
+                                      getAngles=args.getAngles,getType=args.getType)
     else:
         eventlist = getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
+                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
+                                 getAngles=args.getAngles,getType=args.getType)
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
