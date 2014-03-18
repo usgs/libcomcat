@@ -14,6 +14,7 @@ import shutil
 #third-party imports
 from neicmap import distance
 import fixed
+import numpy
 
 URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
 COUNTBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/count?%s'
@@ -23,7 +24,7 @@ TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
 
-def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor,getComponents,getAngles,getType):
+def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor):
     """
     Return a list of datetime (start,end) tuples which will result in searches less than 20,000 events.
     @param segments: (Initially) empty list of (start,end) datetime tuples.
@@ -80,13 +81,13 @@ def __getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
     euclid = numpy.sqrt(normd**2 + normt**2)
     return (euclid,dd,nsecs)
 
-def __associate(event,distancewindow=100,timewindow=16,catalog=""):
+def associate(event,distancewindow=100,timewindow=16,catalog=None):
     """
     Find possible matching events from ComCat for an input event.
     @param event: Dictionary containing fields ['lat','lon','time']
     @keyword distancewindow: Search distance in km.
     @keyword timewindow: Time search delta in seconds.
-    @keyword catalog: Time search delta in seconds.
+    @keyword catalog: Earthquake catalog to search.
     @return: List of origin dictionaries, with following keys:
              - time datetime of the origin
              - lat  Latitude of the origin
@@ -104,51 +105,18 @@ def __associate(event,distancewindow=100,timewindow=16,catalog=""):
     APITIMEFMT = '%Y-%m-%dT%H:%M:%S.%f'
     mintime = etime - timedelta(seconds=timewindow)
     maxtime = etime + timedelta(seconds=timewindow)
-    minlat = lat - distancewindow * KM2DEG
-    maxlat = lat + distancewindow * KM2DEG
-    minlon = lon - distancewindow * KM2DEG * (1/distance.cosd(lat))
-    maxlon = lon + distancewindow * KM2DEG * (1/distance.cosd(lat))
 
-    etimestr = etime.strftime(TIMEFMT)+'Z'
-    searchurl = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
-    #searchurl = 'http://comcat.cr.usgs.gov/earthquakes/feed/search.php?%s'
-    pdict = {'minlatitude':minlat,'minlongitude':minlon,
-             'maxlatitude':maxlat,'maxlongitude':maxlon,
-             'starttime':mintime.strftime(APITIMEFMT),'endtime':maxtime.strftime(APITIMEFMT),
-             'catalog':catalog,'format':'geojson','eventtype':'earthquake'}
-    if catalog == "":
-        pdict.pop('catalog')
-    params = urllib.urlencode(pdict)
-    searchurl = searchurl % params
-    if etime.year >= 2006:
-        pass
+    eventlist = getEventData(radius=(lat,lon,0,distancewindow),starttime=mintime,endtime=maxtime,catalog=catalog)
     origins = []
-    try:
-        fh = urllib2.urlopen(searchurl)
-        data = fh.read()
-        #data2 = data[len(pdict['callback'])+1:-2]
-        datadict = json.loads(data)['features']
-        for feature in datadict:
-            eventdict = {}
-            eventdict['lon'] = feature['geometry']['coordinates'][0]
-            eventdict['lat'] = feature['geometry']['coordinates'][1]
-            eventdict['depth'] = feature['geometry']['coordinates'][2]
-            eventdict['mag'] = feature['properties']['mag']
-            otime = int(feature['properties']['time'])
-            eventdict['time'] = parseTime(otime)
-            idlist = feature['properties']['ids'].strip(',').split(',')
-            eventdict['id'] = idlist[0]
-            euclid,ddist,tdist = __getEuclidean(lat,lon,etime,eventdict['lat'],eventdict['lon'],eventdict['time'])
-            eventdict['euclidean'] = euclid
-            eventdict['timedelta'] = tdist
-            eventdict['distance'] = ddist
-            origins.append(eventdict.copy())
-        fh.close()
-        origins = sorted(origins,key=lambda origin: origin['euclidean'])
-        return origins
-    except Exception,exception_object:
-        raise exception_object,'Could not reach "%s"' % searchurl
+    for e in eventlist:
+        euclid,ddist,tdist = __getEuclidean(lat,lon,etime,e['lat'],e['lon'],e['time'])
+        e['euclidean'] = euclid
+        e['timedelta'] = tdist
+        e['distance'] = ddist
+        origins.append(e.copy())
 
+    origins = sorted(origins,key=lambda origin: origin['euclidean'])
+    return origins
 
 def __getMomentComponents(edict):
     if edict['products']['moment-tensor'][0]['properties'].has_key('tensor-mrr'):
@@ -398,8 +366,10 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         types = feature['properties']['types'].strip(',').split(',')
         hasMoment = 'moment-tensor' in types
         hasFocal = 'focal-mechanism' in types
+        if not getComponents and not getAngles and not getType:
+            eventlist.append(eventdict.copy())
+            continue
         eurl = feature['properties']['url']+'.json'
-        #sys.stderr.write('%s - Before reading %s\n' % (datetime.now(),url))
         fh = urllib2.urlopen(eurl)
         data = fh.read()
         fh.close()
@@ -844,6 +814,13 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
     return outfiles
 
 if __name__ == '__main__':
+    #test associate functionality
+    event = {'lat':35.784,'lon':-97.457,'time':datetime(2014,3,17,18,45,55)}
+    origins = associate(event)
+    for origin in origins:
+        print origin
+
+    sys.exit(0)
     #test catalog/contributor checkers
     catalogs = checkCatalogs()
     print 'Catalogs are:'

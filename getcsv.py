@@ -103,10 +103,12 @@ def main(args):
         for stime,etime in segments:
             sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
             eventlist += getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
-                                 magrange=args.magRange,ecatalog=args.catalog,contributor=args.contributor)
+                                      magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
+                                      getAngles=args.getAngles,getType=args.getType)
     else:
         eventlist = getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
+                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
+                                 getAngles=args.getAngles,getType=args.getType)
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
@@ -138,10 +140,17 @@ if __name__ == '__main__':
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
 
-    Also note:  Large queries, particularly those that return more than the maximum number of events (20,000 at the time of 
+    A note for the impatient:  
+
+    Large queries, when also asking to retrieve moment tensor parameters, nodal plane angles, or moment tensor type,
+    particularly those that return more than the maximum number of events (20,000 at the time of 
     this writing), can take a very long time to download.  It IS possible to return more events than the "maximum" allowed, 
     but this is accomplished by breaking the query up into smaller time segments.  The author has tested queries just over 
     20,000 events, and it can take ~90 minutes to complete.
+
+    This delay is caused by the fact that when this program has to retrieve moment tensor parameters, nodal plane angles, 
+    or moment tensor type, it must open a URL for EACH event and parse the data it finds within.  If these parameters are 
+    not requested, then the same request will return in much less time (~10 minutes or less for a 20,000 event query).
     '''
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #optional arguments

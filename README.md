@@ -32,9 +32,9 @@ are in your path.
 
 To install neicmap and neicio:
 
-pip install git+git://github.com/mhearne-usgs/neicmap.git
+pip install git+git://github.com/usgs/neicmap.git
 
-pip install git+git://github.com/mhearne-usgs/neicio.git
+pip install git+git://github.com/usgs/neicio.git
 
 To install this package:
 
