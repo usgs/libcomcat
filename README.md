@@ -53,7 +53,7 @@ To update:
 
 pip install -U git+git://github.com/usgs/libcomcat.git
 
-Application Programming Interface (API) Documentation
+Application Programming Interface (API) Usage
 ----------------------------------------------------- 
 
 The library code will be installed in
