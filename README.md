@@ -60,7 +60,8 @@ pip install -U git+git://github.com/usgs/libcomcat.git
 Application Programming Interface (API) Documentation
 -----------------------------------------------------
 If you are a developer looking to incorporate functionality into your own Python code,
-you can browse the API documentation found <a href="http://usgs.github.io/libcomcat/">here</a>.
+you can browse the API documentation found at
+<a href="http://usgs.github.io/libcomcat/">http://usgs.github.io/libcomcat/</a>.
 
 Usage for getcomcat.py
 --------
