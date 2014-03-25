@@ -364,6 +364,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     for feature in fdict['features']:
         eventdict = {}
         eventdict['id'] = feature['id']
+        eventdict['idlist'] = feature['properties']['ids'].strip(',').split(',')
         if verbose:
             sys.stderr.write('Fetching data for event %s...\n' % eventdict['id'])
         eventdict['time'] = datetime.utcfromtimestamp(feature['properties']['time']/1000)
