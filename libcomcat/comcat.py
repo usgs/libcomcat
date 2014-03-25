@@ -24,6 +24,9 @@ TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
 
+TIMEWINDOW = 16
+DISTWINDOW = 100
+
 def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor):
     """
     Return a list of datetime (start,end) tuples which will result in searches less than 20,000 events.
@@ -69,7 +72,7 @@ def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,co
 
     return segments
 
-def __getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
+def __getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=DISTWINDOW,twindow=TIMEWINDOW):
     dd = distance.sdist(lat1,lon1,lat2,lon2)/1000.0
     normd = dd/dwindow
     if time2 > time1:
@@ -81,7 +84,7 @@ def __getEuclidean(lat1,lon1,time1,lat2,lon2,time2,dwindow=100.0,twindow=16.0):
     euclid = numpy.sqrt(normd**2 + normt**2)
     return (euclid,dd,nsecs)
 
-def associate(event,distancewindow=100,timewindow=16,catalog=None):
+def associate(event,distancewindow=DISTWINDOW,timewindow=TIMEWINDOW,catalog=None):
     """
     Find possible matching events from ComCat for an input event.
     @param event: Dictionary containing fields ['lat','lon','time']
@@ -109,7 +112,8 @@ def associate(event,distancewindow=100,timewindow=16,catalog=None):
     eventlist = getEventData(radius=(lat,lon,0,distancewindow),starttime=mintime,endtime=maxtime,catalog=catalog)
     origins = []
     for e in eventlist:
-        euclid,ddist,tdist = __getEuclidean(lat,lon,etime,e['lat'],e['lon'],e['time'])
+        euclid,ddist,tdist = __getEuclidean(lat,lon,etime,e['lat'],e['lon'],e['time'],
+                                                   dwindow=distancewindow,twindow=timewindow)
         e['euclidean'] = euclid
         e['timedelta'] = tdist
         e['distance'] = ddist
@@ -819,7 +823,7 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
 
 if __name__ == '__main__':
     #test associate functionality
-    event = {'lat':35.784,'lon':-97.457,'time':datetime(2014,3,17,18,45,55)}
+    event = {'lat':40.828,'lon':-125.135,'time':datetime(2014,3,10,5,18,15)}
     origins = associate(event)
     for origin in origins:
         print origin
