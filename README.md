@@ -40,11 +40,7 @@ To install this package:
 
 pip install git+git://github.com/usgs/libcomcat.git
 
-The last command will install getcomcat.py, getcsv.py, and getfixed.py in your path.  The library code will be installed in 
-<PATH_TO_PYTHON>/lib/pythonX.Y/site-packages/libcomcat/.  Developers should be able to use the functions in comcat.py and fixed.py by importing them:
-
->>from libcomcat import comcat
->>from libcomcat import fixed
+The last command will install getcomcat.py, getcsv.py, and getfixed.py in your path.  
 
 Uninstalling and Updating
 -------------------------
@@ -57,6 +53,21 @@ To update:
 
 pip install -U git+git://github.com/usgs/libcomcat.git
 
+Application Programming Interface (API) Usage
+----------------------------------------------------- 
+
+The library code will be installed in
+<PATH_TO_PYTHON>/lib/pythonX.Y/site-packages/libcomcat/.  Developers
+should be able to use the functions in comcat.py and fixed.py by
+importing them:
+
+>>from libcomcat import comcat
+
+>>from libcomcat import fixed
+
+You can browse the API documentation for these two modules here:
+
+<a href="http://usgs.github.io/libcomcat/">http://usgs.github.io/libcomcat/</a>.
 
 Usage for getcomcat.py
 --------

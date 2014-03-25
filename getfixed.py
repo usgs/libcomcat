@@ -7,7 +7,7 @@ from collections import OrderedDict
 import os
 
 #third party
-from libcomcat.comcat import getPhaseData
+from libcomcat.comcat import getPhaseData,checkContributors
 from libcomcat import fixed
 
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
@@ -133,10 +133,21 @@ if __name__ == '__main__':
                         help='Source contributor (who loaded product) (us, nc, etc.)')
     parser.add_argument('format',choices=['isf','ehdf'],
                         help='Output data in ISF format')
+    parser.add_argument('-l','--limit-contributor', dest='limitContributor', 
+                        help='Limit phase output to specified contributor')
     parser.add_argument('-i','--id', dest='eventid',
                         help='Output data in EHDF format')
     
     args = parser.parse_args()
+
+    if args.limitContributor is not None:
+        contriblist = checkContributors()
+        if args.limitContributor not in contriblist:
+            print 'Cannot restrict to contributor %s, as it is not in the list of valid contributors.'
+            for c in contriblist:
+                print '\t%s' % c
+            sys.exit(1)
+        
     
     eventlist = getPhaseData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,
                              endtime=args.endTime,magrange=args.magRange,catalog=args.catalog,
@@ -146,6 +157,9 @@ if __name__ == '__main__':
         sys.exit(0)
         
     for event in eventlist:
+        if args.limitContributor is not None:
+            if not event.eventcode.startswith(args.limitContributor):
+                continue
         if args.format == 'isf':
             text = event.renderISF()
         elif args.format == 'ehdf':

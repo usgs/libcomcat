@@ -578,7 +578,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     for feature in fdict['features']:
         eid = feature['id']
         #REMOVE
-        sys.stderr.write('Fetching event %s (%i of %i)\n' % (eid,ic+1,len(fdict['features'])))
+        #sys.stderr.write('Fetching event %s (%i of %i)\n' % (eid,ic+1,len(fdict['features'])))
         location = feature['properties']['place']
         ptypes = feature['properties']['types'].strip(',').split(',')
         if 'phase-data' not in ptypes:
