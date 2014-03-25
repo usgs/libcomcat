@@ -379,6 +379,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
             eventlist.append(eventdict.copy())
             continue
         eurl = feature['properties']['url']+'.json'
+        eventdict['url'] = feature['properties']['url']
         fh = urllib2.urlopen(eurl)
         data = fh.read()
         fh.close()
