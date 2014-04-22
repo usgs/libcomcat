@@ -23,6 +23,8 @@ EVENTURL = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
+MTYPES = ['usmww','usmwb','usmwc','usmwr','gcmtmwc','cimwr','ncmwr']
+
 
 TIMEWINDOW = 16
 DISTWINDOW = 100
@@ -122,24 +124,29 @@ def associate(event,distancewindow=DISTWINDOW,timewindow=TIMEWINDOW,catalog=None
     origins = sorted(origins,key=lambda origin: origin['euclidean'])
     return origins
 
-def __getMomentComponents(edict):
-    if edict['products']['moment-tensor'][0]['properties'].has_key('tensor-mrr'):
-        mrr = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrr'])
-        mtt = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtt'])
-        mpp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mpp'])
-        mrt = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrt'])
-        mrp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mrp'])
-        mtp = float(edict['products']['moment-tensor'][0]['properties']['tensor-mtp'])
-    else:
-        mrr = float('nan')
-        mtt = float('nan')
-        mpp = float('nan')
-        mrt = float('nan')
-        mrp = float('nan')
-        mtp = float('nan')
-    return (mrr,mtt,mpp,mrt,mrp,mtp)
+def __getMomentComponents(edict,momentType):
+    mrr = float('nan')
+    mtt = float('nan')
+    mpp = float('nan')
+    mrt = float('nan')
+    mrp = float('nan')
+    mtp = float('nan')
+    mtype = 'NA'
+    for tensor in edict['products']['moment-tensor']:
+        mtype = __getMomentType(tensor)
+        if mtype.lower() != momentType.lower():
+            continue
+        if tensor['properties'].has_key('tensor-mrr'):
+            mrr = float(tensor['properties']['tensor-mrr'])
+            mtt = float(tensor['properties']['tensor-mtt'])
+            mpp = float(tensor['properties']['tensor-mpp'])
+            mrt = float(tensor['properties']['tensor-mrt'])
+            mrp = float(tensor['properties']['tensor-mrp'])
+            mtp = float(tensor['properties']['tensor-mtp'])
+            break
+    return (mrr,mtt,mpp,mrt,mrp,mtp,mtype)
 
-def __getFocalAngles(edict):
+def __getFocalAngles(edict,momentType):
     product = 'focal-mechanism'
     backup_product = None
     if 'moment-tensor' in edict['products'].keys():
@@ -166,12 +173,26 @@ def __getAngles(product):
         rake = float(product['properties']['nodal-plane-1-slip'])
     return (strike,dip,rake)
 
-def __getMomentType(edict):
+def __getMomentType(tensor):
     mtype = 'NA'
-    if edict['products']['moment-tensor'][0]['properties'].has_key('beachball-type'):
-        mtype = edict['products']['moment-tensor'][0]['properties']['beachball-type']
-    if edict['products']['moment-tensor'][0]['properties'].has_key('derived-magnitude-type'):
-        mtype = edict['products']['moment-tensor'][0]['properties']['derived-magnitude-type']
+    mtype1 = 'NA'
+    mtype2 = 'NA'
+    msource = 'NA'
+    if tensor['properties'].has_key('beachball-source'):
+        msource = tensor['properties']['beachball-source'].lower()
+    if msource == 'pde' or msource == 'neic':
+        msource = 'us'
+    if msource == 'ld':
+        msource = 'gcmt'
+    if tensor['properties'].has_key('beachball-type'):
+        mtype1 = msource+tensor['properties']['beachball-type']
+    if tensor['properties'].has_key('derived-magnitude-type'):
+        mtype2 = msource+tensor['properties']['derived-magnitude-type']
+    if mtype1.lower() in MTYPES:
+        mtype = mtype1
+    else:
+        if mtype2.lower() in MTYPES:
+            mtype = mtype2
     return mtype
         
 
@@ -299,8 +320,7 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
     
 def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
-                 getAngles=False,getType=False,
-                 verbose=False):
+                 getAngles=False,getType=False,verbose=False,limitType=None):
     """Download a list of event dictionaries that could be represented in csv or tab separated format.
 
     The data will include, but not be limited to:
@@ -387,7 +407,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         edict = json.loads(data)
         if getComponents:
             if hasMoment:
-                mrr,mtt,mpp,mrt,mrp,mtp = __getMomentComponents(edict)
+                mrr,mtt,mpp,mrt,mrp,mtp,mtype = __getMomentComponents(edict,limitType)
                 eventdict['mrr'] = mrr
                 eventdict['mtt'] = mtt
                 eventdict['mpp'] = mpp
@@ -412,8 +432,8 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['dip'] = NAN
                 eventdict['rake'] = NAN
         if getType:
-            if hasFocal or hasMoment:
-                eventdict['type'] = __getMomentType(edict)
+            if hasMoment:
+                eventdict['type'] = mtype
             else:
                 eventdict['type'] = 'NA'
         eventlist.append(eventdict.copy())

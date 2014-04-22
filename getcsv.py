@@ -8,7 +8,7 @@ import os
 import sys
 
 #third party
-from libcomcat.comcat import getEventData,getEventCount,getTimeSegments
+from libcomcat import comcat
 
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 DATEFMT = '%Y-%m-%d'
@@ -83,7 +83,7 @@ def makedict(dictstring):
 
 def main(args):
     if args.getCount:
-        nevents,maxevents = getEventCount(bounds=args.bounds,radius=args.radius,
+        nevents,maxevents = comcat.getEventCount(bounds=args.bounds,radius=args.radius,
                                           starttime=args.startTime,endtime=args.endTime,
                                           magrange=args.magRange,catalog=args.catalog,
                                           contributor=args.contributor)
@@ -92,23 +92,27 @@ def main(args):
         sys.exit(0)
 
     #actually get the data - do a count first to make sure our request isn't too large.
-    nevents,maxevents = getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
+    nevents,maxevents = comcat.getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
                                       magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
+
+    #if user asked to restrict by type, then let's retrieve type whether they asked for it or not
+    if args.limitType is not None:
+        args.getType = True
     
     if nevents > maxevents: #oops, too many events for one query
         segments = []
-        segments = getTimeSegments(segments,args.bounds,args.radius,args.startTime,args.endTime,
+        segments = comcat.getTimeSegments(segments,args.bounds,args.radius,args.startTime,args.endTime,
                                    args.magRange,args.catalog,args.contributor)
         eventlist = []
         for stime,etime in segments:
             sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
-            eventlist += getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
+            eventlist += comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
                                       magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
-                                      getAngles=args.getAngles,getType=args.getType)
+                                      getAngles=args.getAngles,getType=args.getType,limitType=args.limitType)
     else:
-        eventlist = getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
+        eventlist = comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
                                  magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
-                                 getAngles=args.getAngles,getType=args.getType)
+                                 getAngles=args.getAngles,getType=args.getType,limitType=args.limitType)
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
@@ -116,6 +120,8 @@ def main(args):
     fmt = getFormatString(args.format,eventlist[0].keys())
     print getHeader(args.format,eventlist[0].keys())
     for event in eventlist:
+        if args.limitType is not None and event['type'].lower() != args.limitType:
+            continue
         tpl = getFormatTuple(event)
         try:
             print fmt % tpl
@@ -171,6 +177,9 @@ if __name__ == '__main__':
                         help='Source contributor (who loaded product) (us, nc, etc.)')
     parser.add_argument('-o','--get-moment-components', dest='getComponents', action='store_true',
                         help='Also extract moment-tensor components where available.')
+    parser.add_argument('-l','--limit-type', dest='limitType', default=None,
+                        choices=comcat.MTYPES, type=str,
+                        help='Only extract moment-tensor components from given type (Turns -t option ON).')
     parser.add_argument('-a','--get-focal-angles', dest='getAngles', action='store_true',
                         help='Also extract focal-mechanism angles (strike,dip,rake) where available.')
     parser.add_argument('-t','--get-moment-type', dest='getType', action='store_true',
