@@ -132,18 +132,23 @@ def __getMomentComponents(edict,momentType):
     mrp = float('nan')
     mtp = float('nan')
     mtype = 'NA'
-    for tensor in edict['products']['moment-tensor']:
+    if momentType is None: #only check for matching moment tensor type if someone asked for it
+        tensor = edict['products']['moment-tensor'][0]
         mtype = __getMomentType(tensor)
-        if mtype.lower() != momentType.lower():
-            continue
-        if tensor['properties'].has_key('tensor-mrr'):
-            mrr = float(tensor['properties']['tensor-mrr'])
-            mtt = float(tensor['properties']['tensor-mtt'])
-            mpp = float(tensor['properties']['tensor-mpp'])
-            mrt = float(tensor['properties']['tensor-mrt'])
-            mrp = float(tensor['properties']['tensor-mrp'])
-            mtp = float(tensor['properties']['tensor-mtp'])
-            break
+    else:
+        for tensor in edict['products']['moment-tensor']:
+            mtype = __getMomentType(tensor)
+            if mtype.lower() != momentType.lower():
+                break
+            
+    if tensor['properties'].has_key('tensor-mrr'):
+        mrr = float(tensor['properties']['tensor-mrr'])
+        mtt = float(tensor['properties']['tensor-mtt'])
+        mpp = float(tensor['properties']['tensor-mpp'])
+        mrt = float(tensor['properties']['tensor-mrt'])
+        mrp = float(tensor['properties']['tensor-mrp'])
+        mtp = float(tensor['properties']['tensor-mtp'])
+        
     return (mrr,mtt,mpp,mrt,mrp,mtp,mtype)
 
 def __getFocalAngles(edict,momentType):
