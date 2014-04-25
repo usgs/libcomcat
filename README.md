@@ -122,9 +122,11 @@ optional arguments:
 Usage for getcsv.py
 --------
 <pre>
-usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-s STARTTIME]
-                 [-e ENDTIME] [-m minmag maxmag] [-c CATALOG] [-n CONTRIBUTOR]
-                 [-o] [-a] [-t] [-f {csv,tab}] [-v]
+usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-r lat lon rmin rmax]
+                 [-s STARTTIME] [-e ENDTIME] [-m minmag maxmag] [-c CATALOG]
+                 [-n CONTRIBUTOR] [-o]
+                 [-l {usmww,usmwb,usmwc,usmwr,gcmtmwc,cimwr,ncmwr}] [-a]
+                 [-f {csv,tab}] [-x] [-v]
 
 Download basic earthquake information in line format (csv, tab, etc.).
 
@@ -133,10 +135,27 @@ Download basic earthquake information in line format (csv, tab, etc.).
 
     getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 > nz.csv
 
+    To print the number of events that would be returned from the above query, and the maximum number of events that
+    can be returned from ANY query:
+
+    getcsv.py -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+
     Events which do not have a value for a given field (moment tensor components, for example), will have the string "nan" instead.
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
+
+    A note for the impatient:  
+
+    Large queries, when also asking to retrieve moment tensor parameters, nodal plane angles, or moment tensor type,
+    particularly those that return more than the maximum number of events (20,000 at the time of 
+    this writing), can take a very long time to download.  It IS possible to return more events than the "maximum" allowed, 
+    but this is accomplished by breaking the query up into smaller time segments.  The author has tested queries just over 
+    20,000 events, and it can take ~90 minutes to complete.
+
+    This delay is caused by the fact that when this program has to retrieve moment tensor parameters, nodal plane angles, 
+    or moment tensor type, it must open a URL for EACH event and parse the data it finds within.  If these parameters are 
+    not requested, then the same request will return in much less time (~10 minutes or less for a 20,000 event query).
     
 
 optional arguments:
@@ -144,6 +163,9 @@ optional arguments:
   -b lonmin lonmax latmin latmax, --bounds lonmin lonmax latmin latmax
                         Bounds to constrain event search [lonmin lonmax latmin
                         latmax]
+  -r lat lon rmin rmax, --radius lat lon rmin rmax
+                        Min/max search radius in KM (use instead of bounding
+                        box)
   -s STARTTIME, --start-time STARTTIME
                         Start time for search (defaults to ~30 days ago).
                         YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
@@ -158,15 +180,17 @@ optional arguments:
   -n CONTRIBUTOR, --contributor CONTRIBUTOR
                         Source contributor (who loaded product) (us, nc, etc.)
   -o, --get-moment-components
-                        Also extract moment-tensor components where available.
+                        Also extract moment-tensor components (including type
+                        and derived hypocenter) where available.
+  -l {usmww,usmwb,usmwc,usmwr,gcmtmwc,cimwr,ncmwr}, --limit-type {usmww,usmwb,usmwc,usmwr,gcmtmwc,cimwr,ncmwr}
+                        Only extract moment-tensor components from given type.
   -a, --get-focal-angles
                         Also extract focal-mechanism angles (strike,dip,rake)
                         where available.
-  -t, --get-moment-type
-                        Also extract moment type (Mww,Mwc, etc.) where
-                        available
   -f {csv,tab}, --format {csv,tab}
                         Output format
+  -x, --count           Just return the number of events in search and maximum
+                        allowed.
   -v, --verbose         Print progress
 </pre>
 
