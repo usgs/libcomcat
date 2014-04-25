@@ -30,6 +30,9 @@ FMTDICT['mrt'] = '%g'
 FMTDICT['mrp'] = '%g'
 FMTDICT['mtp'] = '%g'
 FMTDICT['type'] = '%s'
+FMTDICT['moment-lat'] = '%.4f'
+FMTDICT['moment-lon'] = '%.4f'
+FMTDICT['moment-depth'] = '%.1f'
         
 def getFormatTuple(event):
     tlist = []
@@ -95,10 +98,6 @@ def main(args):
     nevents,maxevents = comcat.getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
                                       magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
 
-    #if user asked to restrict by type, then let's retrieve type whether they asked for it or not
-    if args.limitType is not None:
-        args.getType = True
-    
     if nevents > maxevents: #oops, too many events for one query
         segments = []
         segments = comcat.getTimeSegments(segments,args.bounds,args.radius,args.startTime,args.endTime,
@@ -108,11 +107,11 @@ def main(args):
             sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
             eventlist += comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
                                       magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
-                                      getAngles=args.getAngles,getType=args.getType,limitType=args.limitType)
+                                      getAngles=args.getAngles,limitType=args.limitType)
     else:
         eventlist = comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
                                  magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
-                                 getAngles=args.getAngles,getType=args.getType,limitType=args.limitType)
+                                 getAngles=args.getAngles,limitType=args.limitType)
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
@@ -179,11 +178,9 @@ if __name__ == '__main__':
                         help='Also extract moment-tensor components where available.')
     parser.add_argument('-l','--limit-type', dest='limitType', default=None,
                         choices=comcat.MTYPES, type=str,
-                        help='Only extract moment-tensor components from given type (Turns -t option ON).')
+                        help='Only extract moment-tensor components from given type.')
     parser.add_argument('-a','--get-focal-angles', dest='getAngles', action='store_true',
                         help='Also extract focal-mechanism angles (strike,dip,rake) where available.')
-    parser.add_argument('-t','--get-moment-type', dest='getType', action='store_true',
-                        help='Also extract moment type (Mww,Mwc, etc.) where available')
     parser.add_argument('-f','--format', dest='format', choices=['csv','tab'], default='csv',
                         help='Output format')
     parser.add_argument('-x','--count', dest='getCount', action='store_true',

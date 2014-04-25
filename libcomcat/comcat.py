@@ -131,6 +131,9 @@ def __getMomentComponents(edict,momentType):
     mrt = float('nan')
     mrp = float('nan')
     mtp = float('nan')
+    momentlat = float('nan')
+    momentlon = float('nan')
+    momentdepth = float('nan')
     mtype = 'NA'
     if momentType is None: #only check for matching moment tensor type if someone asked for it
         tensor = edict['products']['moment-tensor'][0]
@@ -148,8 +151,14 @@ def __getMomentComponents(edict,momentType):
         mrt = float(tensor['properties']['tensor-mrt'])
         mrp = float(tensor['properties']['tensor-mrp'])
         mtp = float(tensor['properties']['tensor-mtp'])
+        try:
+            momentlat = float(tensor['properties']['derived-latitude'])
+            momentlon = float(tensor['properties']['derived-longitude'])
+            momentdepth = float(tensor['properties']['derived-depth'])
+        except:
+            pass
         
-    return (mrr,mtt,mpp,mrt,mrp,mtp,mtype)
+    return (mrr,mtt,mpp,mrt,mrp,mtp,mtype,momentlat,momentlon,momentdepth)
 
 def __getFocalAngles(edict,momentType):
     product = 'focal-mechanism'
@@ -325,7 +334,7 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
     
 def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
-                 getAngles=False,getType=False,verbose=False,limitType=None):
+                 getAngles=False,verbose=False,limitType=None):
     """Download a list of event dictionaries that could be represented in csv or tab separated format.
 
     The data will include, but not be limited to:
@@ -358,9 +367,8 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     @keyword magrange: (magmin,magmax) Magnitude range.
     @keyword catalog: Name of contributing catalog (see checkCatalogs()).
     @keyword contributor: Name of contributing catalog (see checkContributors()).
-    @keyword getComponents: Boolean indicating whether to retrieve moment tensor components (if available).
+    @keyword getComponents: Boolean indicating whether to retrieve moment tensor components, type, and derived hypocenter (if available).
     @keyword getAngles: Boolean indicating whether to retrieve nodal plane angles (if available).
-    @keyword getType: Boolean indicating whether to retrieve moment tensor type (if available).
     @keyword verbose: Boolean indicating whether to print message to stderr for every event being retrieved. 
     """
     if catalog is not None and catalog not in checkCatalogs():
@@ -412,13 +420,17 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         edict = json.loads(data)
         if getComponents:
             if hasMoment:
-                mrr,mtt,mpp,mrt,mrp,mtp,mtype = __getMomentComponents(edict,limitType)
+                mrr,mtt,mpp,mrt,mrp,mtp,mtype,mlat,mlon,mdepth = __getMomentComponents(edict,limitType)
                 eventdict['mrr'] = mrr
                 eventdict['mtt'] = mtt
                 eventdict['mpp'] = mpp
                 eventdict['mrt'] = mrt
                 eventdict['mrp'] = mrp
                 eventdict['mtp'] = mtp
+                eventdict['type'] = mtype
+                eventdict['moment-lat'] = mlat
+                eventdict['moment-lon'] = mlon
+                eventdict['moment-depth'] = mdepth
             else:
                 eventdict['mrr'] = NAN
                 eventdict['mtt'] = NAN
@@ -426,6 +438,10 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['mrt'] = NAN
                 eventdict['mrp'] = NAN
                 eventdict['mtp'] = NAN
+                eventdict['type'] = 'NA'
+                eventdict['moment-lat'] = NAN
+                eventdict['moment-lon'] = NAN
+                eventdict['moment-depth'] = NAN
         if getAngles:
             if hasFocal or hasMoment:
                 strike,dip,rake = __getFocalAngles(edict)
@@ -436,11 +452,6 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['strike'] = NAN
                 eventdict['dip'] = NAN
                 eventdict['rake'] = NAN
-        if getType:
-            if hasMoment:
-                eventdict['type'] = mtype
-            else:
-                eventdict['type'] = 'NA'
         eventlist.append(eventdict.copy())
     return eventlist
 
