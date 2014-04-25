@@ -175,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('-n','--contributor', dest='contributor', 
                         help='Source contributor (who loaded product) (us, nc, etc.)')
     parser.add_argument('-o','--get-moment-components', dest='getComponents', action='store_true',
-                        help='Also extract moment-tensor components where available.')
+                        help='Also extract moment-tensor components (including type and derived hypocenter) where available.')
     parser.add_argument('-l','--limit-type', dest='limitType', default=None,
                         choices=comcat.MTYPES, type=str,
                         help='Only extract moment-tensor components from given type.')

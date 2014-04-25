@@ -370,6 +370,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     @keyword getComponents: Boolean indicating whether to retrieve moment tensor components, type, and derived hypocenter (if available).
     @keyword getAngles: Boolean indicating whether to retrieve nodal plane angles (if available).
     @keyword verbose: Boolean indicating whether to print message to stderr for every event being retrieved. 
+    @keyword limitType: Limit moment tensor retrieved to those of a particular source/type (comcat.MTYPES)
     """
     if catalog is not None and catalog not in checkCatalogs():
         raise Exception,'Unknown catalog %s' % catalog
