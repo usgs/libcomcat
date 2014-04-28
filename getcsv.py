@@ -20,9 +20,12 @@ FMTDICT['lat'] = '%.4f'
 FMTDICT['lon'] = '%.4f'
 FMTDICT['depth'] = '%.1f'
 FMTDICT['mag'] = '%.1f'
-FMTDICT['strike'] = '%.0f'
-FMTDICT['dip'] = '%.0f'
-FMTDICT['rake'] = '%.0f'
+FMTDICT['strike1'] = '%.0f'
+FMTDICT['dip1'] = '%.0f'
+FMTDICT['rake1'] = '%.0f'
+FMTDICT['strike2'] = '%.0f'
+FMTDICT['dip2'] = '%.0f'
+FMTDICT['rake2'] = '%.0f'
 FMTDICT['mrr'] = '%g'
 FMTDICT['mtt'] = '%g'
 FMTDICT['mpp'] = '%g'
@@ -135,6 +138,10 @@ if __name__ == '__main__':
 
     getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 > nz.csv
 
+    To limit that search to only those events with a US Mww moment tensor solution:
+
+    getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww > nz.csv
+
     To print the number of events that would be returned from the above query, and the maximum number of events that
     can be returned from ANY query:
 
@@ -143,7 +150,8 @@ if __name__ == '__main__':
     Events which do not have a value for a given field (moment tensor components, for example), will have the string "nan" instead.
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
-    as you would if you were not crossing that meridian.
+    as you would if you were not crossing that meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
+    discrepancy.
 
     A note for the impatient:  
 

@@ -57,7 +57,7 @@ def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,co
     else:
         segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
                                    magrange,catalog,contributor,getComponents,
-                                   getAngles,getType)
+                                   getAngles)
     #segment 2
     newstime = newetime
     newetime = etime
@@ -70,7 +70,7 @@ def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,co
     else:
         segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
                                    magrange,catalog,contributor,getComponents,
-                                   getAngles,getType)
+                                   getAngles)
 
     return segments
 
@@ -141,7 +141,7 @@ def __getMomentComponents(edict,momentType):
     else:
         for tensor in edict['products']['moment-tensor']:
             mtype = __getMomentType(tensor)
-            if mtype.lower() != momentType.lower():
+            if mtype.lower() == momentType.lower():
                 break
             
     if tensor['properties'].has_key('tensor-mrr'):
@@ -160,32 +160,41 @@ def __getMomentComponents(edict,momentType):
         
     return (mrr,mtt,mpp,mrt,mrp,mtp,mtype,momentlat,momentlon,momentdepth)
 
-def __getFocalAngles(edict,momentType):
+def __getFocalAngles(edict):
     product = 'focal-mechanism'
     backup_product = None
     if 'moment-tensor' in edict['products'].keys():
         product = 'moment-tensor'
         if 'focal-mechanism' in edict['products'].keys():
             backup_product = 'focal-mechanism'
-    strike = float('nan')
-    dip = float('nan')
-    rake = float('nan')
+    strike1 = float('nan')
+    dip1 = float('nan')
+    rake1 = float('nan')
+    strike2 = float('nan')
+    dip2 = float('nan')
+    rake2 = float('nan')
     if not edict['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
         if backup_product is not None and edict['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
-            strike,dip,rake = __getAngles(edict['products'][0][backup_product])
+            strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['products'][0][backup_product])
         else:
-            return (strike,dip,rake)
-    strike,dip,rake = __getAngles(edict['products'][product][0])
-    return (strike,dip,rake)
+            return (strike1,dip1,rake1,strike2,dip2,rake2)
+    strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['products'][product][0])
+    return (strike1,dip1,rake1,strike2,dip2,rake2)
 
 def __getAngles(product):
-    strike = float(product['properties']['nodal-plane-1-strike'])
-    dip = float(product['properties']['nodal-plane-1-dip'])
+    strike1 = float(product['properties']['nodal-plane-1-strike'])
+    dip1 = float(product['properties']['nodal-plane-1-dip'])
     if product['properties'].has_key('nodal-plane-1-rake'):
-        rake = float(product['properties']['nodal-plane-1-rake'])
+        rake1 = float(product['properties']['nodal-plane-1-rake'])
     else:
-        rake = float(product['properties']['nodal-plane-1-slip'])
-    return (strike,dip,rake)
+        rake1 = float(product['properties']['nodal-plane-1-slip'])
+    strike2 = float(product['properties']['nodal-plane-2-strike'])
+    dip2 = float(product['properties']['nodal-plane-2-dip'])
+    if product['properties'].has_key('nodal-plane-2-rake'):
+        rake2 = float(product['properties']['nodal-plane-2-rake'])
+    else:
+        rake2 = float(product['properties']['nodal-plane-2-slip'])
+    return (strike1,dip1,rake1,strike2,dip2,rake2)
 
 def __getMomentType(tensor):
     mtype = 'NA'
@@ -409,7 +418,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         types = feature['properties']['types'].strip(',').split(',')
         hasMoment = 'moment-tensor' in types
         hasFocal = 'focal-mechanism' in types
-        if not getComponents and not getAngles and not getType:
+        if not getComponents and not getAngles:
             eventlist.append(eventdict.copy())
             continue
         eurl = feature['properties']['url']+'.json'
@@ -445,14 +454,20 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['moment-depth'] = NAN
         if getAngles:
             if hasFocal or hasMoment:
-                strike,dip,rake = __getFocalAngles(edict)
-                eventdict['strike'] = strike
-                eventdict['dip'] = dip
-                eventdict['rake'] = rake
+                strike1,dip1,rake1,strike2,dip2,rake2 = __getFocalAngles(edict)
+                eventdict['strike1'] = strike1
+                eventdict['dip1'] = dip1
+                eventdict['rake1'] = rake1
+                eventdict['strike2'] = strike2
+                eventdict['dip2'] = dip2
+                eventdict['rake2'] = rake2
             else:
-                eventdict['strike'] = NAN
-                eventdict['dip'] = NAN
-                eventdict['rake'] = NAN
+                eventdict['strike1'] = NAN
+                eventdict['dip1'] = NAN
+                eventdict['rake1'] = NAN
+                eventdict['strike2'] = NAN
+                eventdict['dip2'] = NAN
+                eventdict['rake2'] = NAN
         eventlist.append(eventdict.copy())
     return eventlist
 
