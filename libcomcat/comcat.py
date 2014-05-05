@@ -135,16 +135,22 @@ def __getMomentComponents(edict,momentType):
     momentlon = float('nan')
     momentdepth = float('nan')
     mtype = 'NA'
+    tensor = None
     if momentType is None: #only check for matching moment tensor type if someone asked for it
-        tensor = edict['products']['moment-tensor'][0]
-        mtype = __getMomentType(tensor)
+        for i in range(0,len(edict['products']['moment-tensor'])):
+            tensor = edict['products']['moment-tensor'][i]
+            break
+        if tensor is not None:
+            try:
+                mtype = __getMomentType(tensor)
+            except:
+                pass
     else:
         for tensor in edict['products']['moment-tensor']:
             mtype = __getMomentType(tensor)
             if mtype.lower() == momentType.lower():
                 break
-            
-    if tensor['properties'].has_key('tensor-mrr'):
+    if tensor is not None and tensor['properties'].has_key('tensor-mrr'):
         mrr = float(tensor['properties']['tensor-mrr'])
         mtt = float(tensor['properties']['tensor-mtt'])
         mpp = float(tensor['properties']['tensor-mpp'])
@@ -173,11 +179,13 @@ def __getFocalAngles(edict):
     strike2 = float('nan')
     dip2 = float('nan')
     rake2 = float('nan')
-    if not edict['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
-        if backup_product is not None and edict['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
-            strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['products'][0][backup_product])
-        else:
-            return (strike1,dip1,rake1,strike2,dip2,rake2)
+    if not edict['products'][product][0].has_key('properties'):
+        if not edict['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
+            if backup_product is not None and edict['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
+                strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['products'][0][backup_product])
+            else:
+                return (strike1,dip1,rake1,strike2,dip2,rake2)
+
     strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['products'][product][0])
     return (strike1,dip1,rake1,strike2,dip2,rake2)
 
@@ -428,6 +436,13 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         fh.close()
         #sys.stderr.write('%s - After reading %s\n' % (datetime.now(),url))
         edict = json.loads(data)
+        #sometimes you find when you actually open the json for the event that it doesn't
+        #REALLY have a moment tensor or focal mechanism, just delete messages for some that USED to be
+        #there.  Double-checking below.
+        if hasMoment:
+            hasMoment = edict['products']['moment-tensor'][0]['status'] != 'DELETE'
+        if hasFocal:
+            hasFocal = edict['products']['focal-mechanism'][0]['status'] != 'DELETE'
         if getComponents:
             if hasMoment:
                 mrr,mtt,mpp,mrt,mrp,mtp,mtype,mlat,mlon,mdepth = __getMomentComponents(edict,limitType)
@@ -453,6 +468,8 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['moment-lon'] = NAN
                 eventdict['moment-depth'] = NAN
         if getAngles:
+            #sometimes there are delete products instead of real ones, fooling you into
+            #thinking that there is really a moment tensor.  Trapping for that here.
             if hasFocal or hasMoment:
                 strike1,dip1,rake1,strike2,dip2,rake2 = __getFocalAngles(edict)
                 eventdict['strike1'] = strike1
