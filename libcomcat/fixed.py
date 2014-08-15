@@ -821,7 +821,7 @@ class PhaseML(object):
                 sta = waveform.getAttribute('stationCode')
                 comp = waveform.getAttribute('channelCode')
                 loc = waveform.getAttribute('locationCode')
-                nscl = '%s.%s.%s.%s' % (nc,sta,comp,loc)
+                nscl = '%s.%s.%s.%s' % (nc,sta,loc,comp)
                 maghint = amplitude.getElementsByTagName('magnitudeHint')[0].firstChild.data
                 mode = amplitude.getElementsByTagName('evaluationMode')[0].firstChild.data
             except:
