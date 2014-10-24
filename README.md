@@ -28,6 +28,7 @@ Most of those distributions should include <em>pip</em>, a command line tool for
 managing Python packages.  You will use pip to install the other dependencies and libcomcat itself.  
  
 You will also need to install *git*, a source code management tool, for your platform.
+
 http://git-scm.com/downloads
 
 You may need to open a new terminal window to ensure that the newly installed versions of python, pip and git
