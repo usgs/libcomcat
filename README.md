@@ -27,7 +27,11 @@ Anaconda and Enthought distributions have been successfully tested with libcomca
 Most of those distributions should include <em>pip</em>, a command line tool for installing and 
 managing Python packages.  You will use pip to install the other dependencies and libcomcat itself.  
  
-You may need to open a new terminal window to ensure that the newly installed versions of python and pip
+You will also need to install *git*, a source code management tool, for your platform.
+
+http://git-scm.com/downloads
+
+You may need to open a new terminal window to ensure that the newly installed versions of python, pip and git
 are in your path.
 
 To install neicmap and neicio:

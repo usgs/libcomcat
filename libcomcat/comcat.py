@@ -19,7 +19,7 @@ import numpy
 URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
 COUNTBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/count?%s'
 CHECKBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/%s'
-EVENTURL = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
+EVENTURL = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].geojson'
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
@@ -29,6 +29,18 @@ MTYPES = ['usmww','usmwb','usmwc','usmwr','gcmtmwc','cimwr','ncmwr']
 TIMEWINDOW = 16
 DISTWINDOW = 100
 
+def getURLHandle(url):
+    try:
+        fh = urllib2.urlopen(url)
+    except:
+        try:
+            req = urllib2.Request(url)
+            req.add_unredirected_header('User-Agent', 'Custom User-Agent')
+            fh = urllib2.urlopen(req)
+        except:
+            raise Exception('Could not open url "%s"' % url)
+    return fh
+        
 def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor):
     """
     Return a list of datetime (start,end) tuples which will result in searches less than 20,000 events.
@@ -137,8 +149,8 @@ def __getMomentComponents(edict,momentType):
     mtype = 'NA'
     tensor = None
     if momentType is None: #only check for matching moment tensor type if someone asked for it
-        for i in range(0,len(edict['products']['moment-tensor'])):
-            tensor = edict['products']['moment-tensor'][i]
+        for i in range(0,len(edict['properties']['products']['moment-tensor'])):
+            tensor = edict['properties']['products']['moment-tensor'][i]
             break
         if tensor is not None:
             try:
@@ -146,7 +158,7 @@ def __getMomentComponents(edict,momentType):
             except:
                 pass
     else:
-        for tensor in edict['products']['moment-tensor']:
+        for tensor in edict['properties']['products']['moment-tensor']:
             mtype = __getMomentType(tensor)
             if mtype.lower() == momentType.lower():
                 break
@@ -169,9 +181,9 @@ def __getMomentComponents(edict,momentType):
 def __getFocalAngles(edict):
     product = 'focal-mechanism'
     backup_product = None
-    if 'moment-tensor' in edict['products'].keys():
+    if 'moment-tensor' in edict['properties']['products'].keys():
         product = 'moment-tensor'
-        if 'focal-mechanism' in edict['products'].keys():
+        if 'focal-mechanism' in edict['properties']['products'].keys():
             backup_product = 'focal-mechanism'
     strike1 = float('nan')
     dip1 = float('nan')
@@ -179,14 +191,14 @@ def __getFocalAngles(edict):
     strike2 = float('nan')
     dip2 = float('nan')
     rake2 = float('nan')
-    if not edict['products'][product][0].has_key('properties'):
-        if not edict['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
-            if backup_product is not None and edict['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
-                strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['products'][0][backup_product])
+    if not edict['properties']['products'][product][0].has_key('properties'):
+        if not edict['properties']['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
+            if backup_product is not None and edict['properties']['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
+                strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['properties']['products'][0][backup_product])
             else:
                 return (strike1,dip1,rake1,strike2,dip2,rake2)
 
-    strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['products'][product][0])
+    strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['properties']['products'][product][0])
     return (strike1,dip1,rake1,strike2,dip2,rake2)
 
 def __getAngles(product):
@@ -235,7 +247,8 @@ def checkCatalogs():
     url = CHECKBASE % 'catalogs'
     catalogs = []
     try:
-        fh = urllib2.urlopen(url)
+        fh = getURLHandle(url)
+        #fh = urllib2.urlopen(url)
         data = fh.read()
         dom = minidom.parseString(data)
         fh.close()
@@ -258,7 +271,8 @@ def checkContributors():
     url = CHECKBASE % 'contributors'
     contributors = []
     try:
-        fh = urllib2.urlopen(url)
+        fh = getURLHandle(url)
+        #fh = urllib2.urlopen(url)
         data = fh.read()
         dom = minidom.parseString(data)
         fh.close()
@@ -340,7 +354,8 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
     urlparams['format'] = 'geojson'
     params = urllib.urlencode(urlparams)
     url = COUNTBASE % params
-    fh = urllib2.urlopen(url)
+    fh = getURLHandle(url)
+    #fh = urllib2.urlopen(url)
     data = fh.read()
     fh.close()
     cdict = json.loads(data)
@@ -408,7 +423,8 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     params = urllib.urlencode(urlparams)
     eventlist = []
     url = URLBASE % params
-    fh = urllib2.urlopen(url)
+    fh = getURLHandle(url)
+    #fh = urllib2.urlopen(url)
     feed_data = fh.read()
     fh.close()
     fdict = json.loads(feed_data)
@@ -429,9 +445,10 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         if not getComponents and not getAngles:
             eventlist.append(eventdict.copy())
             continue
-        eurl = feature['properties']['url']+'.json'
+        eurl = feature['properties']['url']+'.geojson'
         eventdict['url'] = feature['properties']['url']
-        fh = urllib2.urlopen(eurl)
+        fh = getURLHandle(eurl)
+        #fh = urllib2.urlopen(eurl)
         data = fh.read()
         fh.close()
         #sys.stderr.write('%s - After reading %s\n' % (datetime.now(),url))
@@ -440,9 +457,12 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         #REALLY have a moment tensor or focal mechanism, just delete messages for some that USED to be
         #there.  Double-checking below.
         if hasMoment:
-            hasMoment = edict['products']['moment-tensor'][0]['status'] != 'DELETE'
+            try:
+                hasMoment = edict['properties']['products']['moment-tensor'][0]['status'] != 'DELETE'
+            except:
+                pass
         if hasFocal:
-            hasFocal = edict['products']['focal-mechanism'][0]['status'] != 'DELETE'
+            hasFocal = edict['properties']['products']['focal-mechanism'][0]['status'] != 'DELETE'
         if getComponents:
             if hasMoment:
                 mrr,mtt,mpp,mrt,mrp,mtp,mtype,mlat,mlon,mdepth = __getMomentComponents(edict,limitType)
@@ -641,8 +661,8 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     urlparams['format'] = 'geojson'
     params = urllib.urlencode(urlparams)
     url = URLBASE % params
-
-    fh = urllib2.urlopen(url)
+    fh = getURLHandle(url)
+    #fh = urllib2.urlopen(url)
     feed_data = fh.read()
     fh.close()
 
@@ -653,7 +673,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     for feature in fdict['features']:
         eid = feature['id']
         #REMOVE
-        #sys.stderr.write('Fetching event %s (%i of %i)\n' % (eid,ic+1,len(fdict['features'])))
+        sys.stderr.write('Fetching event %s (%i of %i)\n' % (eid,ic+1,len(fdict['features'])))
         location = feature['properties']['place']
         ptypes = feature['properties']['types'].strip(',').split(',')
         if 'phase-data' not in ptypes:
@@ -668,28 +688,17 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     return eqlist
 
 def __getEventPhase(eventid):
-    urlbase = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].json'
+    urlbase = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].geojson'
     url = urlbase.replace('[EVENTID]',eventid)
     try:
-        try:
-            fh = urllib2.urlopen(url)
-        except:
-            try:
-                req = urllib2.Request(url)
-                req.add_unredirected_header('User-Agent', 'Custom User-Agent')
-                fh = urllib2.urlopen(req)
-            except:
-                raise Exception('Could not open url "%s"' % url)
-            
+        fh = getURLHandle(url)
         event_data = fh.read()
         fh.close()
         edict = json.loads(event_data)
-        if not edict['products']['phase-data'][0]['contents'].has_key('quakeml.xml'):
+        if not edict['properties']['products']['phase-data'][0]['contents'].has_key('quakeml.xml'):
             raise LookupError,'Event %s does not have a phase data quakeml file' % eventid
-        quakeurl = edict['products']['phase-data'][0]['contents']['quakeml.xml']['url']
-        req = urllib2.Request(quakeurl)
-        req.add_unredirected_header('User-Agent', 'Custom User-Agent')
-        fh = urllib2.urlopen(req)
+        quakeurl = edict['properties']['products']['phase-data'][0]['contents']['quakeml.xml']['url']
+        fh = getURLHandle(quakeurl)
         quakedata = fh.read()
         fh.close()
         try:
@@ -704,7 +713,8 @@ def __getEventPhase(eventid):
 def getContents(product,contentlist,outfolder=None,bounds = None,
                 starttime = None,endtime = None,magrange = None,
                 catalog = None,contributor = None,eventid = None,
-                eventProperties=None,productProperties=None,listURL=False,since=None):
+                eventProperties=None,productProperties=None,radius=None,
+                listURL=False,since=None):
     """
     Download product contents for event(s) from ComCat, given a product type and list of content files for that product.
 
@@ -734,6 +744,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     @keyword eventid: Event id to search for - restricts search to a single event (usb000ifva)
     @keyword eventProperties: Dictionary of event properties to match. {'reviewstatus':'approved'}
     @keyword productProperties: Dictionary of event properties to match. {'alert':'yellow'}
+    @keyword radius: Sequence of (lat,lon,minradius,maxradius)
     @keyword listURL: Boolean indicating whether URL for each product source should be printed to stdout.
     @keyword since: Limit to events after the specified time (datetime). 
     @return: List of output files.
@@ -779,7 +790,10 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     #if specified, only get events updated after a particular time
     if since is not None:
         urlparams['updatedafter'] = since.strftime(TIMEFMT)
-            
+
+    if bounds is not None and radius is not None:
+        raise Exception,"Choose one of bounds or radius, not both"
+        
     #we're using a rectangle search here
     if bounds is not None:
         urlparams['minlongitude'] = bounds[0]
@@ -792,6 +806,12 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
         maxeast = urlparams['maxlongitude'] < 0 and urlparams['maxlongitude'] > -180
         if minwest and maxeast:
             urlparams['maxlongitude'] += 360
+
+    if radius is not None:
+        urlparams['latitude'] = radius[0]
+        urlparams['longitude'] = radius[1]
+        urlparams['minradiuskm'] = radius[2]
+        urlparams['maxradiuskm'] = radius[3]
 
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
@@ -807,7 +827,8 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     urlparams['format'] = 'geojson'
     params = urllib.urlencode(urlparams)
     url = URLBASE % params
-    fh = urllib2.urlopen(url)
+    #fh = urllib2.urlopen(url)
+    fh = getURLHandle(url)
     feed_data = fh.read()
     fh.close()
     fdict = json.loads(feed_data)
@@ -853,11 +874,12 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
     outfiles = []
     furl = EVENTURL.replace('[EVENTID]',eid)
     try:
-        fh = urllib2.urlopen(furl)
+        fh = getURLHandle(furl)
+        #fh = urllib2.urlopen(furl)
         event_data = fh.read()
         fh.close()
         edict = json.loads(event_data)
-        pdict = edict['products'][product][0]
+        pdict = edict['properties']['products'][product][0]
 
         skip = False
         if productProperties is not None:
@@ -879,7 +901,8 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
                     if listURL:
                         print contenturl
                         continue
-                    fh = urllib2.urlopen(contenturl)
+                    fh = getURLHandle(contenturl)
+                    #fh = urllib2.urlopen(contenturl)
                     #print 'Downloading %s...' % contenturl
                     data = fh.read()
                     fh.close()
