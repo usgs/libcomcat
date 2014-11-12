@@ -430,10 +430,14 @@ class PhaseML(object):
             idx = magtypes.index('mb')
             magmb = int(self.magnitudes[idx]['magnitude']*10)
             magmbsta = self.magnitudes[idx]['nstations']
+            if magmbsta > 99:
+                magmbsta = 99
         if 'ms' in magtypes:
             idx = magtypes.index('ms')
             magms = int(self.magnitudes[idx]['magnitude']*10)
             magmssta = self.magnitudes[idx]['nstations']
+            if magmssta > 99:
+                magmssta = 99
 
         #Make sure that all magnitude types are two characters
         if mag1t in magtrans.keys():
