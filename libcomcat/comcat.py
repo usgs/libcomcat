@@ -439,9 +439,12 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         eventdict['lon'] = feature['geometry']['coordinates'][0]
         eventdict['depth'] = feature['geometry']['coordinates'][2]
         eventdict['mag'] = feature['properties']['mag']
-        types = feature['properties']['types'].strip(',').split(',')
-        hasMoment = 'moment-tensor' in types
-        hasFocal = 'focal-mechanism' in types
+        if feature['properties'].has_key('products'):
+            products = feature['properties']['products'].keys()
+        else:
+            products = []
+        hasMoment = 'moment-tensor' in products
+        hasFocal = 'focal-mechanism' in products
         if not getComponents and not getAngles:
             eventlist.append(eventdict.copy())
             continue
@@ -457,10 +460,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         #REALLY have a moment tensor or focal mechanism, just delete messages for some that USED to be
         #there.  Double-checking below.
         if hasMoment:
-            try:
-                hasMoment = edict['properties']['products']['moment-tensor'][0]['status'] != 'DELETE'
-            except:
-                pass
+            hasMoment = edict['properties']['products']['moment-tensor'][0]['status'] != 'DELETE'
         if hasFocal:
             hasFocal = edict['properties']['products']['focal-mechanism'][0]['status'] != 'DELETE'
         if getComponents:
