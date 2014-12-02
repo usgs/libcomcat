@@ -439,12 +439,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         eventdict['lon'] = feature['geometry']['coordinates'][0]
         eventdict['depth'] = feature['geometry']['coordinates'][2]
         eventdict['mag'] = feature['properties']['mag']
-        if feature['properties'].has_key('products'):
-            products = feature['properties']['products'].keys()
-        else:
-            products = []
-        hasMoment = 'moment-tensor' in products
-        hasFocal = 'focal-mechanism' in products
+                
         if not getComponents and not getAngles:
             eventlist.append(eventdict.copy())
             continue
@@ -459,10 +454,14 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         #sometimes you find when you actually open the json for the event that it doesn't
         #REALLY have a moment tensor or focal mechanism, just delete messages for some that USED to be
         #there.  Double-checking below.
-        if hasMoment:
+        if edict['properties']['products'].has_key('moment-tensor'):
             hasMoment = edict['properties']['products']['moment-tensor'][0]['status'] != 'DELETE'
-        if hasFocal:
+        else:
+            hasMoment = False
+        if edict['properties']['products'].has_key('focal-mechanism'):
             hasFocal = edict['properties']['products']['focal-mechanism'][0]['status'] != 'DELETE'
+        else:
+            hasFocal = False
         if getComponents:
             if hasMoment:
                 mrr,mtt,mpp,mrt,mrp,mtp,mtype,mlat,mlon,mdepth = __getMomentComponents(edict,limitType)
