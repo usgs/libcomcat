@@ -111,8 +111,8 @@ def main(args):
             etime = args.endTime
         
         
-        segments = comcat.getTimeSegments(segments,args.bounds,args.radius,args.startTime,args.endTime,
-                                   args.magRange,args.catalog,args.contributor)
+        segments = comcat.getTimeSegments(segments,args.bounds,args.radius,stime,etime,
+                                          args.magRange,args.catalog,args.contributor)
         eventlist = []
         for stime,etime in segments:
             sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))

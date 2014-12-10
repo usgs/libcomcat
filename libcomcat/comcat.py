@@ -68,8 +68,7 @@ def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,co
         segments.append((newstime,newetime))
     else:
         segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
-                                   magrange,catalog,contributor,getComponents,
-                                   getAngles)
+                                   magrange,catalog,contributor)
     #segment 2
     newstime = newetime
     newetime = etime
@@ -81,8 +80,7 @@ def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,co
         segments.append((newstime,newetime))
     else:
         segments = getTimeSegments(segments,bounds,radius,newstime,newetime,
-                                   magrange,catalog,contributor,getComponents,
-                                   getAngles)
+                                   magrange,catalog,contributor)
 
     return segments
 
