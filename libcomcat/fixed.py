@@ -789,7 +789,10 @@ class PhaseML(object):
             else:
                 originid = ''
             magel = smag.getElementsByTagName('mag')[0]
-            magnitude = float(magel.getElementsByTagName('value')[0].firstChild.data)
+            try:
+                magnitude = float(magel.getElementsByTagName('value')[0].firstChild.data)
+            except:
+                continue
             magtype = smag.getElementsByTagName('type')[0].firstChild.data
             self.stationMagnitudes[ampid] = ({'originid':originid,'magnitude':magnitude,
                                               'magtype':magtype})
