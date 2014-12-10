@@ -5,6 +5,7 @@ import argparse
 from datetime import datetime
 from collections import OrderedDict
 import os
+import sys
 
 #third party
 from libcomcat.comcat import getPhaseData,checkContributors
