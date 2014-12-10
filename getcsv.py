@@ -101,8 +101,16 @@ def main(args):
     nevents,maxevents = comcat.getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
                                       magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
 
+    stime = datetime(1900,1,1)
+    etime = datetime.utcnow()
     if nevents > maxevents: #oops, too many events for one query
         segments = []
+        if args.startTime:
+            stime = args.startTime
+        if args.endTime:
+            etime = args.endTime
+        
+        
         segments = comcat.getTimeSegments(segments,args.bounds,args.radius,args.startTime,args.endTime,
                                    args.magRange,args.catalog,args.contributor)
         eventlist = []
