@@ -170,6 +170,9 @@ def __getMomentComponents(edict,momentType):
         try:
             momentlat = float(tensor['properties']['derived-latitude'])
             momentlon = float(tensor['properties']['derived-longitude'])
+        except:
+            pass
+        try:
             momentdepth = float(tensor['properties']['derived-depth'])
         except:
             pass
