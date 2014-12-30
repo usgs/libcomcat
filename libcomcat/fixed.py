@@ -12,6 +12,9 @@ import copy
 import numpy as np
 from neicio import fixed
 
+#local imports
+import ellipse
+
 ORIGINHDR = [((4,7),'a4'),
              ((15,18),'a4'),
              ((27,29),'a3'),
@@ -295,14 +298,26 @@ class PhaseML(object):
         line = fixed.getFixedFormatString(ORIGINHDR,hdrvalues)
         isf += line+'\n'
         for o in self.origins:
-            #TODO - calculate these surface values from confidence ellipsoid at depth
-            semimajor = float('nan')
-            semiminor = float('nan')
-            majorazimuth = float('nan')
+            if not np.isnan(o['semimajor']):
+                isFixed = True
+                if o['depthtype'].lower().find('from location') > -1 or o['depthtype'].strip() == '':
+                    isFixed = False
+                semimajor,semiminor,majorazimuth = ellipse.tait2surface(o['semimajor'],
+                                                                        o['semiminor'],
+                                                                        o['intermediateaxis'],
+                                                                        o['majorazimuth'],
+                                                                        o['majorplunge'],
+                                                                        o['majorrotation'],
+                                                                        o['numphases'],
+                                                                        o['originrms'],
+                                                                        False)
+            else:
+                semimajor = semiminor = majorazimuth = np.nan
+                
             second = o['time'].second + o['time'].microsecond/1e6
             vlist = [o['time'].year,'/',o['time'].month,'/',o['time'].day,
             o['time'].hour,':',o['time'].minute,':',second,o['timefixed'],
-            o['time_error'],o['timerms'],o['lat'],o['lon'],o['epifixed'],semimajor,
+            o['time_error'],o['originrms'],o['lat'],o['lon'],o['epifixed'],semimajor,
             semiminor,majorazimuth,o['depth'],o['depthfixed'],o['deptherr'],
             o['numphases'],o['numstations'],o['azgap'],o['mindist'],o['maxdist'],
             o['analysistype'],o['locmethod'],o['event_type'],o['author'],' ']
@@ -944,7 +959,9 @@ class PhaseML(object):
             if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')):
                 ndef = int(origin.getElementsByTagName('quality')[0].getElementsByTagName('usedPhaseCount')[0].firstChild.data)
             else:
-                ndef = float('nan')
+                ndef = len(origin.getElementsByTagName('arrival'))
+                if not ndef:
+                    ndef = float('nan')
             if len(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')):
                 azgap = float(origin.getElementsByTagName('quality')[0].getElementsByTagName('azimuthalGap')[0].firstChild.data)
             else:
@@ -998,7 +1015,7 @@ class PhaseML(object):
             majorrotation = float(ellipse.getElementsByTagName('majorAxisRotation')[0].firstChild.data)
         
         
-        orig = {'time':time,'timefixed':timefixed,'time_error':errortime,'timerms':rms,'lat':lat,'lon':lon,
+        orig = {'time':time,'timefixed':timefixed,'time_error':errortime,'originrms':rms,'lat':lat,'lon':lon,
                 'epifixed':epifixed,
                 'semimajor':majoraxis,'semiminor':minoraxis,'intermediateaxis':intermediateaxis,
                 'majorplunge':majorplunge,'majorazimuth':majorazimuth,'majorrotation':majorrotation,
