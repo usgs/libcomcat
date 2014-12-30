@@ -1,232 +1,359 @@
 #!/usr/bin/env python
 
-#stdlib imports
-import math
-
-#third party imports
 import numpy as np
-from neicutil import text
+from scipy import interpolate
+from scipy import linalg
+import warnings
 
-#local imports
-import jacobi
+#radians to degrees conversion
+RAD2DEG = 180./3.1415927;
 
-DEG2RAD = np.pi/180.0
-RAD2DEG = 180.0/np.pi
+#CONSTANTS FOR TESTING
+ALEN = 16000.0
+BLEN = 6100.0
+CLEN = 10900.0
+APLUNGE = 6.0
+AAZIMUTH = 139.0
+AROT = 88.9075
 
-def rotatePointAroundAxis(p,theta,r):
-    #p and r are three element vectors of [n e z]
-    dNormFact = np.sqrt(r['n']*r['n'] + r['e']*r['e'] + r['z']*r['z'])
-    r['n'] /= dNormFact
-    r['e'] /= dNormFact
-    r['z'] /= dNormFact
+PRAX = np.zeros((3,3))
+PRAX[0,0] = 139.0
+PRAX[0,1] = 6.0
+PRAX[0,2] = 16000 / 1000.
+PRAX[1,0] = 310.0
+PRAX[1,1] = 83.0
+PRAX[1,2] = 6100 / 1000.
+PRAX[2,0] = 49.0
+PRAX[2,1] = 1.0
+PRAX[2,2] = 10900 / 1000.
 
-    costheta = np.cos(np.radians(theta))
-    sintheta = np.sin(np.radians(theta))
+NDEF=247  # number of defining phases
+STDERR=0.76
+ISFIX=0
 
-    q = {}
-    q['n'] = (costheta + (1 - costheta) * r['n'] * r['n']) * p['n'] + \
-    ((1 - costheta) * r['n'] * r['e'] - r['z'] * sintheta) * p['e'] + \
-    ((1 - costheta) * r['n'] * r['z'] + r['e'] * sintheta) * p['z']
+SFCMAJOR = 13.664099354621868
+SFCMINOR = 9.3490986970307421
+SFCAZIMUTH = 318.96374831744004
 
-    q['e'] = ((1 - costheta) * r['n'] * r['e'] + r['z'] * sintheta) * p['n'] + \
-    (costheta + (1 - costheta) * r['e'] * r['e']) * p['e']       + \
-    ((1 - costheta) * r['e'] * r['z'] - r['n'] * sintheta) * p['z']
+SFCMAJOR2 = 13.66054224573919
+SFCMINOR2 = 9.3488176089599762
+SFCAZIMUTH2 = 319.06909376893924
 
-    q['z'] = ((1 - costheta) * r['n'] * r['z'] - r['e'] * sintheta) * p['n'] + \
-    ((1 - costheta) * r['e'] * r['z'] + r['n'] * sintheta) * p['e'] + \
-    (costheta + (1 - costheta) * r['z'] * r['z']) * p['z']
+def vec2tait(ellipsoid):
+    """Convert earthquake origin error ellipsoid 3x3 matrix into Tait-Bryan representation.
 
-    return q
+    Input argument:
+    ellipsoid - 3x3 Numpy array containing the elements describing earthquake origin error ellipsoid.
+    [SemiMajorAxisAzimuth SemiMajorAxisPlunge SemiMajorAxisLength;
+     SemiMinorAxisAzimuth SemiMinorAxisPlunge SemiMinorAxisLength;
+     SemiIntermediateAxisAzimuth SemiIntermediateAxisPlunge SemiIntermediateAxisLength]
+    (distance values in kilometers, angles in degrees)
+    
+    Returns: 6 element tuple:
+    semiMajorAxisLength (km)
+    semiMinorAxisLength (km)
+    semiIntermediateAxisLength (km)
+    majorAxisAzimuth (degrees)
+    majorAxisPlunge (degrees)
+    majorAxisRotation (degrees)
+    """
+    ellipsearray = ellipsoid.flatten()
 
-def calcReliableAzm(dNorth,dEast):
-    dAzm1    = 90.0 - (np.arcsin(dNorth) / (DEG2RAD))
-    dAzm2    = 90.0 - (np.arccos(dEast) / (DEG2RAD))
+    #get indices of the minor, intermediate, major axes
+    smallest,intermediate,largest = ellipsearray[2:9:3].argsort()
 
-    if ((dAzm1 > dAzm2 and dAzm1 - dAzm2 < 1.0) or (dAzm2 >= dAzm1 and dAzm2 - dAzm1 < 1.0)):
-        return(dAzm1)
-    elif (dAzm1 >= 0.0 and dAzm1 <= 90.0):
-        dAzm = dAzm2
-    elif (dAzm2 >= 0.0 and dAzm2 <= 90.0):
-        dAzm = dAzm1
-    else:
-        dAzm = 360.0 - dAzm1
+    # we have two of the angles already
+    # convert from km to meters for the lengths
+    #
+    k=3*(largest)
+    semiMajorAxisLength = ellipsearray[2+k]
+    semiMinorAxisLength = ellipsearray[2 + 3*(smallest)]
+    semiIntermediateAxisLength = ellipsearray[2 + 3*(intermediate)]
+    majorAxisPlunge  = ellipsearray[1 + k]       # PHI
+    majorAxisAzimuth = ellipsearray[0 + k]       # PSI
+    PHI = majorAxisPlunge 
+    PSI = majorAxisAzimuth 
 
-    if (dAzm < 0):
-        dAzm += 360.0
+    #####
+    #    to get the THETA angle, we need to do some transformations
+    #####
+    RPHI=np.array([
+        [np.cos(np.radians(PHI)), 0,  np.sin(np.radians(PHI))],
+        [0, 1,  0],
+        [-np.sin(np.radians(PHI)), 0, np.cos(np.radians(PHI))]])
+    RPSI = np.array([
+        [np.cos(np.radians(PSI)), np.sin(np.radians(PSI)), 0],
+        [-np.sin(np.radians(PSI)),np.cos(np.radians(PSI)),0],
+        [0 , 0, 1]])
 
-    return dAzm
+    #####
+    #    reconstruct the T matrix
+    #####
+    # major axis
+    k=3*(largest)
+    PHImaj=ellipsearray[1 + k]
+    PSImaj=ellipsearray[0 + k]
+    T = np.zeros((3,3))
+    T[0,0] = np.cos(np.radians(PSImaj))*np.cos(np.radians(PHImaj))
+    T[0,1] = np.sin(np.radians(PSImaj))*np.cos(np.radians(PHImaj))
+    T[0,2] = np.sin(np.radians(PHImaj))
 
-def getEllipsoid(axisdict):
-    majorazimuth = axisdict['major']['azimuth']
-    majordip = axisdict['major']['dip']
-    majorrot = axisdict['major']['rotation']
+    # minor axis
+    k=3*(smallest)
+    PHImin=ellipsearray[1 + k]
+    PSImin=ellipsearray[0 + k]
+    T[1,0] = np.cos(np.radians(PSImin))*np.cos(np.radians(PHImin))
+    T[1,1] = np.sin(np.radians(PSImin))*np.cos(np.radians(PHImin))
+    T[1,2] = np.sin(np.radians(PHImin))
 
-    #Define Pt0.  This Is The Point That Represents The Minor Axis
-    #After The Initial Azimuthal Rotation (Given By Majoraxisazimuth
-    #Around The Z Or Intermediate Axis), But Prior To The Rotation
-    #Around The Major Axis.  East Is 90 Degrees Past N, So Add 90
-    #To The Angle.  Note That Because Trig Functions Go
-    #Counter-Clockwise And Start In The +X(East) Direction, But Azm Is
-    #Clockwise And Starts At +Y(North), We Have To Do Some
-    #Transformation Hanky Panky To Get Things To Work Out.  I.E
-    #Transform The Angle X Via F(X) = 90 - X
-    #and don't forget the always fun degrees/radians conversion.
-    pt0 = {}
-    pt0['n'] = np.sin(np.radians((90-(majorazimuth +90))))
-    pt0['e'] = np.cos(np.radians((90-(majorazimuth +90))))
-    pt0['z'] = 0.0
-        
-    # define ptmajor.  This is the point that represents Major Axis
-    # Vector (after the Azimuthal and Dip rotations)
-    ptmajor = {}
-    ptmajor['n'] = np.sin(np.radians((90-(majorazimuth))))
-    ptmajor['e'] = np.cos(np.radians((90-(majorazimuth))))
-    ptmajor['z'] = np.sin(np.radians(majordip))
+    # minor axis
+    k=3*(intermediate)
+    PHIint=ellipsearray[1 + k]
+    PSIint=ellipsearray[0 + k]
+    T[2,0] = np.cos(np.radians(PSIint))*np.cos(np.radians(PHIint))
+    T[2,1] = np.sin(np.radians(PSIint))*np.cos(np.radians(PHIint))
+    T[2,2] = np.sin(np.radians(PHIint))
 
-    #calculate the orientation of the Minor vector by applying the QuakeML rotation angle
-    ptminor = rotatePointAroundAxis(pt0,majorrot,ptmajor)
+    G=np.dot(T,np.dot(np.linalg.inv(RPSI),np.linalg.inv(RPHI)))
+    THETA = np.arctan2(G[1,2], G[1,1])*RAD2DEG % 360 
+    majorAxisRotation = THETA 
+    
+    return (semiMajorAxisLength,
+            semiMinorAxisLength,
+            semiIntermediateAxisLength,
+            majorAxisAzimuth,
+            majorAxisPlunge,
+            majorAxisRotation)
 
-    # /* Normalize the unit vector ptminor so that N2+E2 = 1, so we can apply trig functions */   
-    dNormFactor = 1.0/np.sqrt(ptminor['n']*ptminor['n'] + ptminor['e']*ptminor['e'])
-    # /* Calculate the Azimuth via arcsin() and arccos() */
-    dAzmMinor = calcReliableAzm(ptminor['n']*dNormFactor, ptminor['e']*dNormFactor);
-    # /* Calculate the Dip via arcsin() */
-    dDipMinor = np.arcsin(ptminor['z']) / DEG2RAD
+def tait2vec(alen,blen,clen,azimuth,plunge,rotation):
+    """Convert Tait-Bryan representation of earthquake origin error ellipsoid into 3x3 matrix representation.
 
+    Input arguments:
+    alen - semiMajorAxisLength (km)
+    blen - semiMinorAxisLength (km)
+    clen - semiIntermediateAxisLength (km)
+    azimuth - majorAxisPlunge (degrees)
+    plunge - majorAxisAzimuth (degrees)
+    majorAxisRotation (degrees)
+    
+    Returns: 6 element tuple:
+    ellipsoid - 3x3 Numpy array containing the elements describing earthquake origin error ellipsoid.
+    [SemiMajorAxisAzimuth SemiMajorAxisPlunge SemiMajorAxisLength;
+     SemiMinorAxisAzimuth SemiMinorAxisPlunge SemiMinorAxisLength;
+     SemiIntermediateAxisAzimuth SemiIntermediateAxisPlunge SemiIntermediateAxisLength]
+    (distance values in kilometers, angles in degrees)
+    
+    """
+    
+    # usage: T = tait2vec(PSI, PHI, THETA)
+    #
+    # return the 3x3 transformation matrix corresponding to the
+    #      Tait-Bryan angles use in Section 3.3.9 ConfidenceEllipsoid
+    #      QuakeML-BED-20130214a.pdf
+    #     
+    #      The image showing two views of the rotation in the QuakeML document is wrong
+    #      and disagrees with the text, which says
+    #      X is major axis, Y is the minor axis and thus Z is the intermediate axis
+    #      The rotations are as follow:
+    #      1. about z-axis by angle PSI (heading) to give (x', y', z)
+    #      2, about y' with angle with angle PHI (elevation) to give (x'', y', z'')
+    #      3. about x'' with angle THETA (bank) to give (x'', y''', z''')
+    #
+    #      This sequence is known as z-y'-x'' intrinsic rotation (http://en.wikipedia.org/wiki/Euler_angles)
+    #      The figure in the QuakeML document is the z-x'-y'' rotation. Note the order
+    #
+    #      azimuth is measured positive in direction from x to y
+    #      plunge is measured positive such that the x' moves in the positive z-direction
+    #      rotation is measured positive such that the y'' moves in the positive z-direction
+    #      
+    #
+    # azimuth is heading, measure in degrees from north
+    # plunge is elevation
+    # rotation is roll
 
-    #calculate the orientation of the Intermediate vector(originally Z), which is 90 deg past the minor vector
-    ptIntermed = rotatePointAroundAxis(ptminor, 90, ptmajor)
+    # Author: R.B.Herrmann (rbh@eas.slu.edu)
+    # Created: 23 November 2014
+    # Adapted-By: rbh
+    # Translated to Python by Mike Hearne (mhearne@usgs.gov)
+    alen *= 1000.0
+    blen *= 1000.0
+    clen *= 1000.0
+    
+    c1=np.cos(np.radians(azimuth))
+    s1=np.sin(np.radians(azimuth))
+    c2=np.cos(np.radians(plunge))
+    s2=np.sin(np.radians(plunge))
+    c3=np.cos(np.radians(rotation))
+    s3=np.sin(np.radians(rotation))
+    ##X1 Y2 Z3 rotation Table Tait-Bryan angles http://en.wikipedia.org/wiki/Euler_angles
+    r11=c2*c1;
+    r12=c2*s1;
+    r13=s2;
+    r21=-c3*s1-s3*s2*c1;
+    r22=c3*c1-s3*s2*s1;
+    r23=s3*c2;
+    r31=s3*s1 - c3*s2*c1;
+    r32=-s3*c1 - c3*s2*s1;
+    r33=c3*c2;
+    T= np.array([[ r11, r12, r13], [r21, r22, r23] , [r31, r32, r33 ]])
 
-    #Normalize the unit vector ptIntermed so that N2+E2 = 1, so we can apply trig functions
-    dNormFactor = 1/np.sqrt(ptIntermed['n']*ptIntermed['n'] + ptIntermed['e']*ptIntermed['e'])
-    #Calculate the Azimuth via arcsin() and arccos()
-    dAzmIntermed = calcReliableAzm(ptIntermed['n']*dNormFactor, ptIntermed['e']*dNormFactor)
-    #Calculate the Dip via arcsin()
-    dDipMinor = np.arcsin(ptminor['z']) / DEG2RAD
-    dDipIntermed = np.arcsin(ptIntermed['z']) / DEG2RAD
+    # major axis
+    prax = np.zeros((3,3))
+    prax[0,0] = np.arctan2( T[0,1], T[0,0]) * RAD2DEG % 360
+    prax[0,1] = np.degrees(np.arcsin(T[0,2]))
+    prax[0,2] = alen / 1000.0 ;
 
-    axisdict = axisdict.copy()
-    axisdict['minor']['azimuth'] = dAzmMinor
-    axisdict['minor']['dip'] = dDipMinor
-    axisdict['intermediate']['azimuth'] = dAzmIntermed
-    axisdict['intermediate']['dip'] = dDipIntermed
+    #minor axis
+    prax[1,0] = np.arctan2(T[1,1], T[1,0]) * RAD2DEG % 360;
+    prax[1,1] = np.degrees(np.arcsin(T[1,2]))
+    prax[1,2] = blen/ 1000.0 ;
 
-    return axisdict
+    #intermediate axis
+    prax[2,0] = np.arctan2( T[2,1], T[2,0]) * RAD2DEG % 360
+    prax[2,1] = np.degrees(np.arcsin(T[2,2]))
+    prax[2,2] = clen / 1000.0 ;
+    # arrange do that all dip angles are positive
+    # since dip is measured from horizontal, changing dip
+    # means chaninging the sign and then adding 180 degrees to the
+    # azimuth
+    for k in range(0,3):
+       if ( prax[k,2] < 0 ):
+            prax[k,1] = prax[k,0] +180 % 360
+            prax[k,2] = - prax[k,1] ;
+       
+    return prax
 
-def Fisher10(nu1,nu2):
-    fisher10 = float('nan')
-    xnu = [1.0/30.0, 1.0/40.0, 1.0/60.0, 1.0/120.0, 0.0]
-    # /* inverses of 30, 40, 60, 120, and infinity */
-    tab = np.resize(np.array([49.50,  9.00,  5.46,  4.32,  3.78,  3.46,  3.26,  3.11,
-                  3.01,  2.92,  2.86,  2.81,  2.76,  2.73,  2.70,  2.67,
-                  2.64,  2.62,  2.61,  2.59,  2.57,  2.56,  2.55,  2.54,
-                  2.53,  2.52,  2.51,  2.50,  2.50,  2.49,  2.44,  2.39,
-                  2.35,  2.30, 53.59,  9.16,  5.39,  4.19,  3.62,  3.29, 
-                  3.07,  2.92,  2.81,  2.73,  2.66,  2.61,  2.56,  2.52, 
-                  2.49,  2.46,  2.44,  2.42,  2.40,  2.38,  2.36,  2.35, 
-                  2.34,  2.33,  2.32,  2.31,  2.30,  2.29,  2.28,  2.28, 
-                  2.23,  2.18,  2.13,  2.08, 55.83,  9.24,  5.34,  4.11, 
-                  3.52,  3.18,  2.96,  2.81,  2.69,  2.61,  2.54,  2.48, 
-                  2.43,  2.39,  2.36,  2.33,  2.31,  2.29,  2.27,  2.25, 
-                  2.23,  2.22,  2.21,  2.19,  2.18,  2.17,  2.17,  2.16, 
-                  2.15,  2.14,  2.09,  2.04,  1.99,  1.94]),(3,34))
-    idx = nu1 - 2
-    if nu2 <= 30:
-        fisher10 = tab[idx][nu2-1]
-        return fisher10
-
-    znu = 1.0/nu2
-    for i in range(1,5):
-        if znu >= xnu[i]:
-            fisher10 = fisher10 = (znu - xnu[i-1]) * (tab[idx][29+i] - tab[idx][28+i])/  (xnu[i] - xnu[i-1]) + tab[idx][28+i]
-            return fisher10
-
-def errcon(n,ievt,se,prax):
-    #n - number of phases used to calculate error ellipse (??)
-    #ievt - boolean whether depth was fixed or free (do I know this?)
-    #se - std error from origin quality
-    #prax - Matrix with values:
-    #[minorazimuth minorplunge minorlength;
-    # interazimuth interplunge interlength;
-    # majorazimuth majorplunge majorlength]
-    #output - 2x2
-
-    #     /* initialize some values */
+def tait2surface(alen,blen,clen,aazimuth,aplunge,arot,ndef,stderr,isfix):
+    """Project Tait-Bryan representation of error ellipse onto surface.
+    Input parameters:
+    alen - semiMajorAxisLength (km)
+    blen - semiMinorAxisLength (km)
+    clen - semiIntermediateAxisLength (km)
+    azimuth - majorAxisPlunge (degrees)
+    plunge - majorAxisAzimuth (degrees)
+    arot - majorAxisRotation (degrees)
+    ndef - Number of defining phases
+    stderr - stderr of fit (??)
+    isfix - True if depth was fixed in inversion, False if not
+    
+    Returns tuple of three values:
+    Surface error ellipse major axis length
+    Surface error ellipse minor axis length
+    Surface error ellipse major axis azimuth
+    """
+    prax = tait2vec(alen,blen,clen,aazimuth,aplunge,arot)
+    major,minor,azimuth = vec2surface(prax,ndef,stderr,isfix)
+    return (major,minor,azimuth)
+    
+def vec2surface(prax,ndef,stderr,isfix):
+    """Project 3x3 matrix representation of error ellipse onto surface.
+    Input parameters:
+    ellipsoid - 3x3 Numpy array containing the elements describing earthquake origin error ellipsoid.
+    [SemiMajorAxisAzimuth SemiMajorAxisPlunge SemiMajorAxisLength;
+     SemiMinorAxisAzimuth SemiMinorAxisPlunge SemiMinorAxisLength;
+     SemiIntermediateAxisAzimuth SemiIntermediateAxisPlunge SemiIntermediateAxisLength]
+     (distance values in kilometers, angles in degrees)
+    ndef - Number of defining phases
+    stderr - stderr of fit (??)
+    isfix - True if depth was fixed in inversion, False if not
+    
+    Returns tuple of three values:
+    Surface error ellipse major axis length
+    Surface error ellipse minor axis length
+    Surface error ellipse major axis azimuth
+    """
     nFree = 8
-    tol   = 1.0e-15
-    tol2  = 2.0e-15
-    m     = 3
-    m1    = 2
-    m2    = 4
+    m = 3
+    m1 = 2
+    m2 = 4    
+    xval = np.array([1,2,3,4,5,10,15,20,25,30,120,1000])
+    f902 = np.array([49.50,9.00,5.46,4.32,3.78,2.92,2.70,2.59,2.53,2.49,2.35,2.30])
+    f903 = np.array([53.59,9.16,5.39,4.19,3.62,2.73,2.49,2.38,2.32,2.20,2.13,2.08])
+    func1 = interpolate.PchipInterpolator(xval,f903,extrapolate=True)
+    fac3d = func1(nFree + ndef-4)
+    func2 = interpolate.PchipInterpolator(xval,f902,extrapolate=True)
+    fac2d = func2(nFree + ndef-4)
+    s2 = ( nFree + ( ndef-m2)*stderr*stderr)/(nFree + ndef - m2)
+    corr=(m1 *s2*fac2d)/(m *s2*fac3d)
+    L = np.array([[np.power(prax[0,2],2), 0, 0 ],
+                  [0, np.power(prax[1,2],2), 0 ],
+                  [0, 0, np.power(prax[2,2],2) ]])
 
-    a = np.zeros((2,2))
-    s2  = (nFree + (n-m2)*se*se)/(nFree + n - m2)
-    f10 = Fisher10(m, nFree + n - m2)
-    fac = 1.0/(m * s2 * f10)
+    X = np.zeros((3,3))
+    for i in range(0,3):
+        X[i,:] = np.array([np.cos(np.radians(prax[i,0]))*np.cos(np.radians(prax[i,1])) , 
+                            np.sin(np.radians(prax[i,0]))*np.cos(np.radians(prax[i,1])), 
+                            np.sin(np.radians(prax[i,1]))])
+    C = np.dot(np.dot(X.T,L),X)
+    C2x2 = np.array([[C[0,0],C[0,1]],
+                     [C[1,0],C[1,1]]])
+    [tmpEVAL,EVECT] = linalg.eig(C2x2)
+    EVAL = np.zeros((2,2))
+    EVAL[0,0] = np.real(tmpEVAL[0])
+    EVAL[1,1] = np.real(tmpEVAL[1])
+ 
+    if EVAL[0,0] > EVAL[1,1]:
+        MajL = np.sqrt(np.abs(corr*EVAL[0,0]))
+        warnings.simplefilter("error", RuntimeWarning)
+        MinL = np.sqrt(np.abs(corr*EVAL[1,1]))
+        Ang = np.arctan2(EVECT[1,0], EVECT[0,0])*RAD2DEG % 360
+    else:
+        MajL = np.sqrt(np.abs(corr*EVAL[1,1]))
+        MinL = np.sqrt(np.abs(corr*EVAL[0,0]))
+        Ang = np.arctan2(EVECT[1,1], EVECT[0,1])*RAD2DEG % 360
 
-    x = np.zeros((2,1))
-    for k in range(0,m):
-        ce = np.cos(DEG2RAD * prax[k][1])
-        x[0] = -ce  * np.cos(DEG2RAD * prax[k][0])
-        x[1] =  ce  * np.sin(DEG2RAD * prax[k][0])
-        ce   =  fac * prax[k][2] * prax[k][2]  
-        for j in range(0,m1):
-            for i in range(0,m1):
-                a[j][i] = a[j][i] + ce * x[i] * x[j]
-                
-    ellipse2d = np.zeros((3,3))
-    #we're running into a problem with jacobi - namely, the diagonal values aren't exactly
-    #equal (differ at 15th decimal).  We'll round them both to nearest billionth.
-    a[0][1] = text.roundToNearest(a[0][1],1e-9)
-    a[1][0] = text.roundToNearest(a[0][1],1e-9)
-    eigenvalue,eigenvector,sweeps = jacobi.jacobi(a)
-    idx = eigenvalue.argsort()[::-1]
-    eigenvalue = eigenvalue[idx]
-    eigenvector = eigenvector[:,idx]
+    return (MajL,MinL,Ang)
 
-    for i in range(0,m1):
-        ce = 1.0
-        if np.fabs(eigenvector[0][i]) + np.fabs(eigenvector[1][i]) > tol2:
-            ellipse2d[i][0] = RAD2DEG * np.arctan2(ce * eigenvector[1][i], -ce * eigenvector[0][i])
-        if (ellipse2d[i][0] < 0.0):
-            ellipse2d[i][0] += 360.0
-        ellipse2d[i][2] = np.sqrt(fac * max(eigenvalue[i], 0.0))
+def test_vec2tait():
+    alen,blen,clen,aazimuth,aplunge,arot = vec2tait(PRAX)
 
-    return ellipse2d
+    np.testing.assert_almost_equal(alen,ALEN/1000.0,decimal=3)
+    np.testing.assert_almost_equal(blen,BLEN/1000.0,decimal=3)
+    np.testing.assert_almost_equal(clen,CLEN/1000.0,decimal=3)
+    np.testing.assert_almost_equal(aplunge,APLUNGE,decimal=3)
+    np.testing.assert_almost_equal(aazimuth,AAZIMUTH,decimal=3)
+    np.testing.assert_almost_equal(arot,AROT,decimal=3)
 
+def test_tait2vec():
+    praxout = tait2vec(ALEN/1000.0,BLEN/1000.0,CLEN/1000.0,AAZIMUTH,APLUNGE,AROT)
+    m,n = praxout.shape
+    for i in range(0,m):
+        for j in range(0,n):
+            np.testing.assert_approx_equal(praxout[i][j],PRAX[i][j],significant=2)
+
+def test_vec2surface():
+    major,minor,azimuth = vec2surface(PRAX,NDEF,STDERR,ISFIX)
+    np.testing.assert_almost_equal(major,SFCMAJOR,decimal=3)
+    np.testing.assert_almost_equal(minor,SFCMINOR,decimal=3)
+    np.testing.assert_almost_equal(azimuth,SFCAZIMUTH,decimal=3)
+            
+def test_tait2surface():
+    major,minor,azimuth = tait2surface(ALEN/1000.0,BLEN/1000.0,CLEN/1000.0,AAZIMUTH,APLUNGE,AROT,NDEF,STDERR,ISFIX)
+    np.testing.assert_almost_equal(major,SFCMAJOR2,decimal=3)
+    np.testing.assert_almost_equal(minor,SFCMINOR2,decimal=3)
+    np.testing.assert_almost_equal(azimuth,SFCAZIMUTH2,decimal=3)
+    
+    
 if __name__ == '__main__':
-    major = {'length':74.7,
-             'dip':0,
-             'azimuth':272,
-             'rotation':155}
-    minor = {'length':3.1,
-             'dip':float('nan'),
-             'azimuth':float('nan')}
-    intermediate = {'length':8.9,
-                    'dip':float('nan'),
-                    'azimuth':float('nan')}
-    axdict = {'major':major,'minor':minor,'intermediate':intermediate}
-    axdict2 = getEllipsoid(axdict)
+    test_vec2tait()   
+    test_tait2vec()
+    test_vec2surface()
+    test_tait2surface()
+    alen, blen, clen, aazimuth, aplunge,arot = vec2tait(PRAX)
 
-    print 'Minor Azimuth: %i' % int(axdict2['minor']['azimuth'])
-    print 'Minor Dip: %i' % int(axdict2['minor']['dip'])
+    print 'Major Axis Length: %f' % alen
+    print 'Minor Axis Length: %f' % blen
+    print 'Inter Axis Length: %f' % clen
+    print 'Major Axis Plunge: %f' % aplunge
+    print 'Major Axis Azimuth: %f' % aazimuth
+    print 'Major Axis Rotation: %f' % arot
+
+    np.set_printoptions(precision=1)
+    prax2 = tait2vec(ALEN/1000.0,BLEN/1000.0,CLEN/1000.0,AAZIMUTH, APLUNGE, AROT)
+    print 'INPUT ARRAY:'
+    print PRAX
     print
-    print 'Intermediate Azimuth: %i' % int(axdict2['intermediate']['azimuth'])
-    print 'Intermediate Dip: %i' % int(axdict2['intermediate']['dip'])
+    print 'OUTPUT ARRAY:'
+    print prax2
 
-    nphases = 50
-    depthFixed = False
-    std = 0.67
-    minor = [axdict2['minor']['azimuth'],axdict2['minor']['dip'],axdict2['minor']['length']]
-    inter = [axdict2['intermediate']['azimuth'],axdict2['intermediate']['dip'],axdict2['intermediate']['length']]
-    major = [axdict2['major']['azimuth'],axdict2['major']['dip'],axdict2['major']['length']]
-    ellipse3d = np.array([minor,inter,major])
-    ellipse2d = errcon(nphases,depthFixed,std,ellipse3d)
-
-    print ellipse3d
-    print
-    print ellipse2d
-    
-        
-    
     
