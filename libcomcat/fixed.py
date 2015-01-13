@@ -102,6 +102,8 @@ PHASEHDR = [((1,3),'a3'),
             ((105,113),'a9'),
             ((118,122),'a5')]
 
+#sprintf(m_szEntry, "\nSta     Dist  EvAz Phase        Time      Tres  Azim AzRes   Slow   SRes Def   SNR       Amp   Per Qual Magnitude    ArrID    Agy   Deploy   Ln Auth  Rep   PCh ACh L\n");
+
 PHASELBL = ['Sta','Dist','EvAz','Phase','Time','TRes','Azim','AzRes','Slow',
             'SRes','Def','SNR','Amp','Per','Qual','Magnitude','ArrID']
 
@@ -535,6 +537,7 @@ class PhaseML(object):
             pdict['magtype'] = ' '
             pdict['minmax'] = ' '
             pdict['mag'] = float('nan')
+            pdict['nscl'] = pick['nscl']
             pdict['arrid'] = ' '
             self.phases.append(pdict.copy())
             #now we need to find all of other kind of phase - the ones with amplitude and magnitude

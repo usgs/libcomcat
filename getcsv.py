@@ -117,12 +117,14 @@ def main(args):
         for stime,etime in segments:
             sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
             eventlist += comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
-                                      magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
+                                      magrange=args.magRange,catalog=args.catalog,
+                                      contributor=args.contributor,getComponents=args.getComponents,
                                       getAngles=args.getAngles,limitType=args.limitType)
     else:
         eventlist = comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                                 magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,getComponents=args.getComponents,
-                                 getAngles=args.getAngles,limitType=args.limitType)
+                                        magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
+                                        getComponents=args.getComponents,
+                                        getAngles=args.getAngles,limitType=args.limitType)
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
