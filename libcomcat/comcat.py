@@ -16,10 +16,12 @@ from neicmap import distance
 import fixed
 import numpy
 
-URLBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/query?%s'
-COUNTBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/count?%s'
-CHECKBASE = 'http://comcat.cr.usgs.gov/fdsnws/event/1/%s'
-EVENTURL = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].geojson'
+SERVER = 'dev-earthquake' #comcat server name
+SERVER = 'comcat' #comcat server name
+URLBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',SERVER)
+COUNTBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
+CHECKBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/%s'.replace('[SERVER]',SERVER)
+EVENTURL = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/query?eventid=[EVENTID]&format=geojson'.replace('[SERVER]',SERVER)
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
 KM2DEG = 1.0/111.191
@@ -444,8 +446,8 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         if not getComponents and not getAngles:
             eventlist.append(eventdict.copy())
             continue
-        eurl = feature['properties']['url']+'.geojson'
-        eventdict['url'] = feature['properties']['url']
+        eurl = feature['properties']['detail']
+        eventdict['url'] = eurl
         fh = getURLHandle(eurl)
         #fh = urllib2.urlopen(eurl)
         data = fh.read()
@@ -613,7 +615,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
             phaseml = __getEventPhase(eventid)
             return [phaseml]
         except Exception,msg:
-            sys.stderr.write('Could not retrieve phase data for eventid "%s" - error "%s"\n' % (eventid,msg.message))
+            sys.stderr.write('Could not retrieve phase data for eventid "%s" - error "%s"\n' % (eventid,str(msg)))
             return None
 
     #start creating the url parameters
@@ -683,13 +685,12 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
             eqlist.append(phaseml)
         except Exception,msg:
             if verbose:
-                sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eid,msg.message))
+                sys.stderr.write('Could not retrieve data for eventid "%s" - error "%s"\n' % (eid,str(msg)))
         ic += 1
     return eqlist
 
 def __getEventPhase(eventid):
-    urlbase = 'http://comcat.cr.usgs.gov/earthquakes/eventpage/[EVENTID].geojson'
-    url = urlbase.replace('[EVENTID]',eventid)
+    url = EVENTURL.replace('[EVENTID]',eventid)
     try:
         fh = getURLHandle(url)
         event_data = fh.read()
@@ -705,9 +706,9 @@ def __getEventPhase(eventid):
             phaseml = fixed.PhaseML()
             phaseml.readFromString(quakedata,url=quakeurl)
         except Exception,ex:
-            raise Exception('Could not parse phase data for event %s - error "%s"\n' % (eventid,ex.message))
+            raise Exception('Could not parse phase data for event %s - error "%s"\n' % (eventid,str(ex)))
     except Exception,msg:
-        raise Exception('Could not parse phase data for event %s - error "%s"\n' % (eventid,msg.message))
+        raise Exception('Could not parse phase data for event %s - error "%s"\n' % (eventid,str(msg)))
     return phaseml    
 
 def getContents(product,contentlist,outfolder=None,bounds = None,
@@ -912,7 +913,7 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
                     f.close()
                     outfiles.append(outfile)
     except Exception,msg:
-        raise Exception,'Could not parse event information from "%s". Error: "%s"' % (furl,msg.message)
+        raise Exception,'Could not parse event information from "%s". Error: "%s"' % (furl,str(msg))
     return outfiles
 
 if __name__ == '__main__':
