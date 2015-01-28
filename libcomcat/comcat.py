@@ -17,8 +17,8 @@ import fixed
 import numpy
 
 SERVER = 'dev-earthquake' #comcat server name
-SERVER = 'comcat' #comcat server name
-URLBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',SERVER)
+SERVER = 'earthquake' #comcat server name
+URLBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',SERVER)
 COUNTBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
 CHECKBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/%s'.replace('[SERVER]',SERVER)
 EVENTURL = 'http://prod-earthquake.cr.usgs.gov/fdsnws/event/1/query?eventid=[EVENTID]&format=geojson'
