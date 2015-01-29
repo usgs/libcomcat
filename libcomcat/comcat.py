@@ -19,9 +19,9 @@ import numpy
 SERVER = 'dev-earthquake' #comcat server name
 SERVER = 'earthquake' #comcat server name
 URLBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',SERVER)
-COUNTBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
-CHECKBASE = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/%s'.replace('[SERVER]',SERVER)
-EVENTURL = 'http://prod-earthquake.cr.usgs.gov/fdsnws/event/1/query?eventid=[EVENTID]&format=geojson'
+COUNTBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
+CHECKBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/%s'.replace('[SERVER]',SERVER)
+EVENTURL = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?eventid=[EVENTID]&format=geojson'.replace('[SERVER]',SERVER)
 #EVENTURL = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/query?eventid=[EVENTID]&format=geojson'.replace('[SERVER]',SERVER)
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
