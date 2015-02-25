@@ -22,6 +22,7 @@ URLBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',
 COUNTBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
 CHECKBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/%s'.replace('[SERVER]',SERVER)
 EVENTURL = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?eventid=[EVENTID]&format=geojson'.replace('[SERVER]',SERVER)
+ALLPRODURL = 'http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&includesuperseded=true&eventid=[EVENTID]'
 #EVENTURL = 'http://[SERVER].cr.usgs.gov/fdsnws/event/1/query?eventid=[EVENTID]&format=geojson'.replace('[SERVER]',SERVER)
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 NAN = float('nan')
@@ -43,7 +44,40 @@ def getURLHandle(url):
         except:
             raise Exception('Could not open url "%s"' % url)
     return fh
-        
+
+def getAllVersions(eventid,productname,content,folder=os.getcwd()):
+    url = ALLPRODURL.replace('[EVENTID]',eventid)
+    fh = getURLHandle(url)
+    data = fh.read()
+    fh.close()
+    jdict = json.loads(data)
+    if not jdict['properties']['products'].has_key(productname):
+        raise Exception,"No %s product found for event %s" % (productname,eventid)
+    products = jdict['properties']['products'][productname]
+    outfiles = []
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
+    for product in products:
+        if product['code'] != eventid:
+            continue
+        pkeys = product['contents'].keys()
+        ptime = product['updateTime']
+        for pkey in pkeys:
+            path,contentfile = os.path.split(pkey)
+            contentbase,contentext = os.path.splitext(contentfile)
+            if contentfile.lower() == content.lower():
+                contenturl = product['contents'][pkey]['url']
+                fh = getURLHandle(contenturl)
+                data = fh.read()
+                outfile = os.path.join(folder,'%s_%s_%i%s' % (eventid,contentbase,ptime,contentext))
+                outfiles.append(outfile)
+                f = open(outfile,'wb')
+                f.write(data)
+                f.close()
+                fh.close()
+                
+    return outfiles
+
 def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor):
     """
     Return a list of datetime (start,end) tuples which will result in searches less than 20,000 events.
