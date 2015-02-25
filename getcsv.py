@@ -152,8 +152,8 @@ if __name__ == '__main__':
 
     getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww > nz.csv
 
-    To print the number of events that would be returned from the above query, and the maximum number of events that
-    can be returned from ANY query:
+    To print the number of events that would be returned from the above query, and the maximum number of events supported
+    by ONE ComCat query*:
 
     getcsv.py -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
 
@@ -163,17 +163,14 @@ if __name__ == '__main__':
     as you would if you were not crossing that meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
     discrepancy.
 
-    A note for the impatient:  
-
-    Large queries, when also asking to retrieve moment tensor parameters, nodal plane angles, or moment tensor type,
-    particularly those that return more than the maximum number of events (20,000 at the time of 
-    this writing), can take a very long time to download.  It IS possible to return more events than the "maximum" allowed, 
-    but this is accomplished by breaking the query up into smaller time segments.  The author has tested queries just over 
-    20,000 events, and it can take ~90 minutes to complete.
-
-    This delay is caused by the fact that when this program has to retrieve moment tensor parameters, nodal plane angles, 
-    or moment tensor type, it must open a URL for EACH event and parse the data it finds within.  If these parameters are 
-    not requested, then the same request will return in much less time (~10 minutes or less for a 20,000 event query).
+    
+    *Queries that exceed this ComCat limit ARE supported by this software, by breaking up one large request into a number of 
+    smaller ones.  However, large queries, when also configured to retrieve moment tensor parameters, nodal plane angles, or
+    moment tensor type can take a very long time to download.  The author has tested queries just over 20,000 events, and it
+    can take ~90 minutes to complete.  This delay is caused by the fact that when this program has to retrieve moment tensor 
+    parameters, nodal plane angles, or moment tensor type, it must open a URL for EACH event and parse the data it finds.  
+    If these parameters are not requested, then the same request will return in much less time (~10 minutes or less for a 
+    20,000 event query).
     '''
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #optional arguments
