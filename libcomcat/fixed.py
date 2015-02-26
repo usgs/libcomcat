@@ -485,7 +485,7 @@ class PhaseML(object):
         voflag = ''
         ntflag = ''
         if self.EventType in EHDF_EVENT_TYPES.keys():
-            ntflag = EHDF_EVENT_TYPES[eqdict['type']]
+            ntflag = EHDF_EVENT_TYPES[self.EventType]
         gwflag = ''
         gpflag = ''
         author = '%-5s' % (preforigin['author'])
