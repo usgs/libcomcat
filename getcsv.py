@@ -134,6 +134,10 @@ def main(args):
     for event in eventlist:
         if args.limitType is not None and event['type'].lower() != args.limitType:
             continue
+        if event['mag'] is None:
+            event['mag'] = float('nan')
+        if event['depth'] is None:
+            event['depth'] = float('nan')
         tpl = getFormatTuple(event)
         try:
             print fmt % tpl
