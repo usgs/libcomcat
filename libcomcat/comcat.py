@@ -33,6 +33,13 @@ MTYPES = ['usmww','usmwb','usmwc','usmwr','gcmtmwc','cimwr','ncmwr']
 TIMEWINDOW = 16
 DISTWINDOW = 100
 
+def getUTCTimeStamp(timestamp):
+    """Input is seconds, can be negative.
+    Designed as a workaround for an apparent lack of Windows C time functions to handle negative values.
+    """
+    d = datetime(1970, 1, 1) + timedelta(seconds=(timestamp))
+    return d
+
 def getURLHandle(url):
     try:
         fh = urllib2.urlopen(url)
@@ -472,7 +479,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         eventdict['idlist'] = feature['properties']['ids'].strip(',').split(',')
         if verbose:
             sys.stderr.write('Fetching data for event %s...\n' % eventdict['id'])
-        eventdict['time'] = datetime.utcfromtimestamp(feature['properties']['time']/1000)
+        eventdict['time'] = getUTCTimeStamp(feature['properties']['time']/1000)
         eventdict['lat'] = feature['geometry']['coordinates'][1]
         eventdict['lon'] = feature['geometry']['coordinates'][0]
         eventdict['depth'] = feature['geometry']['coordinates'][2]
