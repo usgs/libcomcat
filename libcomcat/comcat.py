@@ -421,6 +421,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
      - lon
      - depth
      - magnitude
+     - event-type
 
     optionally, you can select to download (when available):
      - moment tensor components:
@@ -484,6 +485,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         eventdict['lon'] = feature['geometry']['coordinates'][0]
         eventdict['depth'] = feature['geometry']['coordinates'][2]
         eventdict['mag'] = feature['properties']['mag']
+        eventdict['event-type'] = feature['properties']['type']
                 
         if not getComponents and not getAngles:
             eventlist.append(eventdict.copy())
