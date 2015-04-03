@@ -16,7 +16,7 @@ from neicmap import distance
 import fixed
 import numpy
 
-SERVER = 'dev-earthquake' #comcat server name
+#SERVER = 'dev-earthquake.cr' #comcat server name
 SERVER = 'earthquake' #comcat server name
 URLBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',SERVER)
 COUNTBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
