@@ -269,6 +269,129 @@ optional arguments:
                         Output data in EHDF format
 </pre>
 
+Usage for findid.py:
+<pre>
+usage: findid.py [-h] [-p time lat lon] [-r RADIUS] [-w WINDOW] [-f FILE] [-a]
+                 [-u] [-v]
+
+Find the id(s) of the closest earthquake to input parameters. 
+
+    To print the authoritative id of the event closest in time and space inside a 100 km, 16 second window to "2015-03-29T23:48:31,-4.763,152.561":
+
+    findid.py -p 2015-03-29T23:48:31 -4.763 152.561
+
+    To repeat that query but with a custom distance/time window of 50km and 5 seconds:
+
+    findid.py -r 50 -w 5 -p 2015-03-29T23:48:31 -4.763 152.561
+
+    To print the authoritative id of the event closest in time and space to "2015-03-29T23:48:31,-4.763,152.561" AND
+    the url of said event:
+
+    findid.py -u -p 2015-03-29T23:48:31 -4.763 152.561
+
+    To print all of the ids associated with the event closest to above:
+
+    findid.py -a -p 2015-03-29T23:48:31 -4.763 152.561
+
+    To print the id(s), time/distance deltas, and azimuth from input to nearest event:
+
+    findid.py -v -p 2015-03-29T23:48:31 -4.763 152.561
+
+    To find the ids for events found in a CSV file (time,lat,lon,...):
+    (Create a file by doing the following: getcsv.py -s 2015-04-07 -e 2015-04-08T15:00:00 -m 4.0 5.5 | cut -f2,3,4,5,6,7 -d',' > eventlist.csv)
+    ./findid.py -f eventlist.csv
+    Output will be the input CSV data, with id added as the first column.
+
+    If -u option is supplied, the url will be the second column.
+
+    Notes:
+     - The time format at the command line must be of the form "YYYY-MM-DDTHH:MM:SS".  The time format in an input csv file
+     can be either :YYYY-MM-DDTHH:MM:SS" OR "YYYY-MM-DD HH:MM:SS".  This is because on the command line the argument parser 
+     would be confused by the space between the date and the time, whereas in the csv file the input files are being split
+     by commas.
+     - Supplying the -a option with the -f option has no effect.
+    
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p time lat lon, --params time lat lon
+                        Input time, lat and lon to use for search.
+  -r RADIUS, --radius RADIUS
+                        Change search radius from default of 100 km.
+  -w WINDOW, --window WINDOW
+                        Change time window of 16 seconds.
+  -f FILE, --file FILE  Parse time,lat,lon from input csv file, which can have
+                        a header row but must have time,lat,lon as first three
+                        columns. Time format can be either YYYY-MM-DDTHH:MM:SS
+                        OR YYYY-MM-DD HH:MM:SS. Output will have an "id"
+                        column prepended, and a "url" column second (if -u
+                        option selected), followed by the input columns of
+                        data.
+  -a, --all             Print all ids associated with event.
+  -u, --url             Print URL associated with event.
+  -v, --verbose         Print time/distance deltas, and azimuth from input
+                        parameters to event.
+</pre>
+
+Usage for getellipse.py:
+<pre>
+usage: getellipse.py [-h] [-t alen blen clen azimuth plunge rotation]
+                     [-r AAzim APlunge ALen BAzim BPlunge BLen CAzim CPlunge CLen]
+                     [-q alen blen clen azimuth plunge rotation ndef stderr isfixed]
+                     [-m AAzim APlunge ALen BAzim BPlunge BLen CAzim CPlunge CLen ndef stderr isfixed]
+
+Convert between various representation of earthquake error ellipse.
+
+    Tait-Bryan (QuakeML) representation to 3x3 matrix representation:
+
+    getellipse.py -t 16.0 6.1 10.9 139.0 6.0 88.9075
+
+    --------------------------------------------------------------
+    SemiMajorAxis       : Azimuth 139.0 Plunge   6.0 Length  16.0
+    SemiMinorAxis       : Azimuth 308.7 Plunge  83.9 Length   6.1
+    SemiIntermediateAxis: Azimuth  48.9 Plunge   1.1 Length  10.9 
+    -------------------------------------------------------------- 
+
+    Tait-Bryan (QuakeML) representation to surface projection:
+
+    getellipse.py -q 16.0 6.1 10.9 139.0 6.0 88.9075 95 0.76 0
+
+    -------------------------------------------------------
+    Surface Ellipse: Major:  13.7 Minor   9.4 Azimuth 319.1  
+    -------------------------------------------------------
+
+    3x3 Matrix representation to surface projection:
+
+    getellipse.py -m 139.0 6.0 16.0 308.7 83.9 6.1 48.9 1.1 10.9 95 0.76 0
+
+    -------------------------------------------------------
+    Surface Ellipse: Major:  13.7 Minor   9.4 Azimuth 319.1
+    -------------------------------------------------------
+    
+    3x3 matrix representation to Tait-Bryan (QuakeML) representation:
+
+    getellipse.py -r 139.0 6.0 16.0 308.7 83.9 6.1 48.9 1.1 10.9
+
+    -----------------------------------------------------------------------------
+    SemiMajor Axis       : Azimuth 139.0 Plunge   6.0 Rotation  88.9 Length  16.0
+    SemiMinor Axis       : Azimuth   nan Plunge   nan Rotation   nan Length   6.1
+    SemiIntermediate Axis: Azimuth   nan Plunge   nan Rotation   nan Length  10.9
+    -----------------------------------------------------------------------------
+    
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t alen blen clen azimuth plunge rotation, --tait2matrix alen blen clen azimuth plunge rotation
+                        Convert Tait-Bryan error ellipse to 3x3 matrix
+  -r AAzim APlunge ALen BAzim BPlunge BLen CAzim CPlunge CLen, --matrix2tait AAzim APlunge ALen BAzim BPlunge BLen CAzim CPlunge CLen
+                        Convert 3x3 matrix error ellipse to Tait-Bryan
+                        representation
+  -q alen blen clen azimuth plunge rotation ndef stderr isfixed, --tait2surface alen blen clen azimuth plunge rotation ndef stderr isfixed
+                        Project Tait-Bryan error ellipse to surface
+  -m AAzim APlunge ALen BAzim BPlunge BLen CAzim CPlunge CLen ndef stderr isfixed, --matrix2surface AAzim APlunge ALen BAzim BPlunge BLen CAzim CPlunge CLen ndef stderr isfixed
+                        Project 3x3 matrix error ellipse to surface
+</pre>
+
 libcomcat API for Developers
 ----------------------------
 The functions that are most likely of interest to developers are in 
