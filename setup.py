@@ -7,5 +7,5 @@ setup(name='libcomcat',
       author_email='mhearne@usgs.gov',
       url='',
       packages=['libcomcat'],
-      scripts = ['getcomcat.py','getcsv.py','getfixed.py','getellipse.py'],
+      scripts = ['getcomcat.py','getcsv.py','getfixed.py','getellipse.py','findid.py'],
 )
