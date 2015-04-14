@@ -43,7 +43,11 @@ def getFormatTuple(event):
     for key in FMTDICT.keys():
         if key not in event.keys():
             continue
-        tlist.append(event[key])
+        if key == 'time':
+            value = event[key].strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        else:
+            value = event[key]
+        tlist.append(value)
     return tuple(tlist)
 
 def getHeader(format,eventkeys):
