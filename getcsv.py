@@ -93,6 +93,9 @@ def makedict(dictstring):
         raise Exception,'Could not create a single key dictionary out of %s' % dictstring
 
 def main(args):
+    if args.limitType and not args.getComponents:
+        print 'To limit your search to specific moment tensor types, specify both -o and -l options.'
+        sys.exit(1)
     if args.getCount:
         nevents,maxevents = comcat.getEventCount(bounds=args.bounds,radius=args.radius,
                                           starttime=args.startTime,endtime=args.endTime,
