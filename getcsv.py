@@ -105,34 +105,31 @@ def main(args):
         print fmt % (nevents,maxevents)
         sys.exit(0)
 
-    #actually get the data - do a count first to make sure our request isn't too large.
-    nevents,maxevents = comcat.getEventCount(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                                      magrange=args.magRange,catalog=args.catalog,contributor=args.contributor)
-
     stime = datetime(1900,1,1)
     etime = datetime.utcnow()
-    if nevents > maxevents: #oops, too many events for one query
-        segments = []
-        if args.startTime:
-            stime = args.startTime
-        if args.endTime:
-            etime = args.endTime
-        
-        
-        segments = comcat.getTimeSegments(segments,args.bounds,args.radius,stime,etime,
-                                          args.magRange,args.catalog,args.contributor)
-        eventlist = []
-        for stime,etime in segments:
-            sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
-            eventlist += comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
-                                      magrange=args.magRange,catalog=args.catalog,
-                                      contributor=args.contributor,getComponents=args.getComponents,
-                                      getAngles=args.getAngles,limitType=args.limitType)
-    else:
-        eventlist = comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=args.startTime,endtime=args.endTime,
-                                        magrange=args.magRange,catalog=args.catalog,contributor=args.contributor,
-                                        getComponents=args.getComponents,
-                                        getAngles=args.getAngles,limitType=args.limitType)
+    if args.startTime:
+        stime = args.startTime
+    if args.endTime:
+        etime = args.endTime
+
+    if stime >= etime:
+        print 'End time must be greater than start time.  Your inputs: Start %s End %s' % (stime,etime)
+        sys.exit(1)
+
+    #we used to do a count of how many events would be returned, 
+    #but it turns out that doing the count takes almost as much time 
+    #as a query that actually returns the data.  So, here we're just 
+    #going to split the time segment up into one-week chunks and assume
+    #that no individual segment will return more than the 20,000 event limit.
+    segments = comcat.getTimeSegments2(stime,etime)
+    eventlist = []
+    sys.stderr.write('Breaking request into %i segments.\n' % len(segments))
+    for stime,etime in segments:
+        #sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
+        eventlist += comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
+                                         magrange=args.magRange,catalog=args.catalog,
+                                         contributor=args.contributor,getComponents=args.getComponents,
+                                         getAngles=args.getAngles,limitType=args.limitType)
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
