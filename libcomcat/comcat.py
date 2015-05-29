@@ -29,6 +29,7 @@ NAN = float('nan')
 KM2DEG = 1.0/111.191
 MTYPES = ['usmww','usmwb','usmwc','usmwr','gcmtmwc','cimwr','ncmwr']
 
+WEEKSECS = 86400*7
 
 TIMEWINDOW = 16
 DISTWINDOW = 100
@@ -84,6 +85,21 @@ def getAllVersions(eventid,productname,content,folder=os.getcwd()):
                 fh.close()
                 
     return outfiles
+
+def getTimeSegments2(starttime,endtime):
+    startsecs = int(starttime.strftime('%s'))
+    endsecs = int(endtime.strftime('%s'))
+    starts = range(startsecs,endsecs,WEEKSECS)
+    ends = range(startsecs+WEEKSECS,endsecs+WEEKSECS,WEEKSECS)
+    if ends[-1] > endsecs:
+        ends[-1] = endsecs
+    segments = []
+    if len(starts) != len(ends):
+        raise IndexError('Number of time segment starts/ends does not match for times: "%s" and "%s"' % (starttime,endtime))
+    for start,end in zip(starts,ends):
+        segments.append((datetime.utcfromtimestamp(start),datetime.utcfromtimestamp(end)))
+
+    return segments
 
 def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor):
     """

@@ -226,10 +226,10 @@ EHDRFMT = [((1,2),'a2'), #GS
            ((56,56),'a1'), #component
            ((57,59),'i3'), #magnitude
            ((60,61),'a2'),#magtype
-           ((62,66),'a5'),#contributor
+           ((62,66),'a5',0,1),#contributor
            ((67,69),'i3'), #mag 2
            ((70,71),'a2'),#magtype 2
-           ((72,76),'a5'),#contributor 2
+           ((72,76),'a5',0,1),#contributor 2
            ((77,79),'i3'), #FE number
            ((80,80),'a1'), #max MMI
            ((81,81),'a1'), #macroseismic (H=heard, F=felt, D=damage, C=casualties)
@@ -378,8 +378,62 @@ class PhaseML(object):
         
         return isf
 
+    def getEHDFMagAndSource(self,qtype,qsrc):
+        etype = ''
+        esrc = ''
+        smax = min(len(qsrc),5)
+        if qtype.lower() == 'mw':
+            etype = 'MW'
+            esrc = qsrc.upper()
+        if qtype.lower() == 'mww':
+            etype = 'MW'
+            esrc = 'WCMT'
+        if qtype.lower() == 'mwc':
+            etype = 'MW'
+            if qsrc.lower() == 'gcmt':
+                esrc = 'GCMT'
+            elif qsrc.lower() == 'us':
+                esrc = 'UCMT'
+            else:
+                esrc = qsrc.upper()
+        if qtype.lower() == 'mwb':
+            etype = 'MW'
+            esrc = 'UBMT'
+        if qtype.lower() == 'mb':
+            etype = 'MB'
+            esrc = qsrc[0:smax].upper()
+        if qtype.lower() == 'ms_20':
+            etype = 'MS'
+            esrc = 'US'
+        if qtype.lower() == 'mwr':
+            etype = 'MW'
+            if qsrc.lower() == 'us':
+                esrc = 'URMT'
+            else:
+                esrc = qsrc.upper()
+        if qtype.lower() == 'ml':
+            etype = 'ML'
+            esrc = qsrc.upper()
+        if qtype.lower() == 'md':
+            etype = 'MD'
+            esrc = qsrc.upper()
+        if qtype.lower() == 'mb_lg':
+            etype = 'LG'
+            esrc = qsrc.upper()
+
+        if len(esrc) > 5:
+            if esrc.find('US_') > -1:
+                esrc = esrc.replace('US_','')
+            esrc = esrc[0:min(5,len(esrc))]
+        return (etype,esrc)
+        
+    
     def renderEHDF(self):
-        magtrans = {'Mww':'Mw'} #magnitude translation table to get to 2 character magnitude types
+        magtrans = {'Mww':'MW',
+                    'Mwb':'MW',
+                    'Mwc':'MW',
+                    'Ms_20':'MS',
+                    'Mb':'MB'} #magnitude translation table to get to 2 character magnitude types
         preforigin = self.preferredOrigin
         yr,mo,da,hr,mi,se,th = self.getTimePieces(preforigin['time'])
         lat = preforigin['lat']
@@ -411,10 +465,8 @@ class PhaseML(object):
                     depflag = ' '
             else:
                 depflag = ' '
-        numdep = preforigin['numphases'] #these are the number of phases for the hypocenter... ok
-        if numdep > 99:
-            numdep = 99
-        nump = numdep #??
+        nump = preforigin['numphases'] #these are the number of phases for the hypocenter... ok
+        numdep = float('nan')
         std = float('nan')
         #assign hypocenter quality
         axesmean = math.sqrt(preforigin['semimajor'] * preforigin['semiminor'])
@@ -436,6 +488,12 @@ class PhaseML(object):
         mag1s = '' #contrib mag 1 source
         mag2s = '' #contrib mag 2 source
         magtypes = [mag['magtype'].lower() for mag in self.magnitudes]
+        #Ms magnitudes may be represented as Ms_20 or something similar
+        #just assume that anything starting with "ms" is an Ms.
+        for i in range(0,len(magtypes)):
+            mag = magtypes[i]
+            if mag.startswith('ms'):
+                magtypes[i] = 'ms'
         copymags = copy.copy(self.magnitudes)
         mag1,mag1t,mag1s,idx = self.getEHDFMagnitude(copymags)
         if idx >= 0:
@@ -456,20 +514,15 @@ class PhaseML(object):
             if magmssta > 99:
                 magmssta = 99
 
-        #Make sure that all magnitude types are two characters
-        if mag1t in magtrans.keys():
-            mag1t = magtrans[mag1t]
-        if mag2t in magtrans.keys():
-            mag2t = magtrans[mag2t]
-
-        #make sure that magnitude contributors are 5 characters or less
-        if len(mag1s) > 5:
-            mag1s = mag1s[0:5]
-        if len(mag2s) > 5:
-            mag2s = mag2s[0:5]
-
+        #print 'Before translation: Mag1 type = %s, source = %s' % (mag1t,mag1s)
+        mag1t,mag1s = self.getEHDFMagAndSource(mag1t,mag1s)
+        #print 'After translation: Mag1 type = %s, source = %s' % (mag1t,mag1s)
+        #print 'Before translation: Mag2 type = %s, source = %s' % (mag2t,mag2s)
+        mag2t,mag2s = self.getEHDFMagAndSource(mag2t,mag2s)
+        #print 'After translation: Mag2 type = %s, source = %s' % (mag2t,mag2s)
+        
         fenum = self.FENumber
-        maxmi = 'T' #?? what is unknown value
+        maxmi = '' #blank is unknown value
         #putting blanks for all flags for now - get Paul to fill in
         msflag = ''
         mtflag = ''
@@ -491,6 +544,8 @@ class PhaseML(object):
         author = '%-5s' % (preforigin['author'])
         if len(author) > 5:
             author = author[0:5]
+        if author.lower().startswith('us'): #neic solutions author should be left blank
+            author = ' '*5
         vlist = ['GS','',yr,mo,da,hr,mi,se,th,lat,NS,lon,EW,dep,depflag,numdep,nump,std,hypq,
                  magmb,magmbsta,magms,magmssta,magmscomp,mag1,mag1t,mag1s,mag2,mag2t,mag2s,
                  fenum,maxmi,msflag,mtflag,iiflag,fpflag,ieflag,dpflag,tsflag,seflag,voflag,
@@ -606,7 +661,11 @@ class PhaseML(object):
 
     def getEHDFMagnitude(self,maglist):
         magtypes = [mag['magtype'].lower() for mag in maglist]
-        hierarchy = ['mww','mw','ml','lg','rg','md','cl','mg']
+        for i in range(0,len(magtypes)):
+            mag = magtypes[i]
+            if mag.startswith('ms'):
+                magtypes[i] = 'ms'
+        hierarchy = ['mww','mwr','mwb','mwc','mw','ml','lg','rg','md','cl','mg']
         mag = float('nan')
         magtype = ''
         magsrc = ''
@@ -618,6 +677,15 @@ class PhaseML(object):
                 magtype = maglist[midx]['magtype']
                 magsrc = maglist[midx]['author']
                 break
+        if magtype == '':
+            for mtype in magtypes:
+                if mtype not in ['mb','ms']:
+                    midx = magtypes.index(mtype)
+                    mag = int(maglist[midx]['magnitude']*100)
+                    magtype = maglist[midx]['magtype']
+                    magsrc = maglist[midx]['author']
+                    break
+                    
         return (mag,magtype,magsrc,midx)
 
     def getFERegion(self,lat,lon):
@@ -790,7 +858,7 @@ class PhaseML(object):
             if len(creationinfo.getElementsByTagName('agencyID')):
                 author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
             else:
-                author = ''
+                author = '' #guess the source based on information in magnitude ID
             self.magnitudes.append({'magnitude':magnitude,'magtype':magtype,'mode':mode,
                                     'status':status,'author':author,'magerr':magerr,
                                     'nstations':nstations,'magid':'','dataid':dataid})
@@ -900,7 +968,6 @@ class PhaseML(object):
             comp = waveform.getAttribute('channelCode')
             loc = waveform.getAttribute('locationCode')
             nscl = '%s.%s.%s.%s' % (nc,sta,comp,loc)
-            pickid = pick.getAttribute('publicID')
             if len(pick.getElementsByTagName('creationInfo')):
                 creationinfo = pick.getElementsByTagName('creationInfo')[0]
                 author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
