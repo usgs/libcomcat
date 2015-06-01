@@ -36,6 +36,7 @@ FMTDICT['type'] = '%s'
 FMTDICT['moment-lat'] = '%.4f'
 FMTDICT['moment-lon'] = '%.4f'
 FMTDICT['moment-depth'] = '%.1f'
+FMTDICT['moment-duration'] = '%.1f'
 FMTDICT['event-type'] = '%s'
         
 def getFormatTuple(event):

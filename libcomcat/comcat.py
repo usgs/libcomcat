@@ -204,6 +204,7 @@ def __getMomentComponents(edict,momentType):
     momentlat = float('nan')
     momentlon = float('nan')
     momentdepth = float('nan')
+    duration = float('nan')
     mtype = 'NA'
     tensor = None
     if momentType is None: #only check for matching moment tensor type if someone asked for it
@@ -236,8 +237,12 @@ def __getMomentComponents(edict,momentType):
             momentdepth = float(tensor['properties']['derived-depth'])
         except:
             pass
-        
-    return (mrr,mtt,mpp,mrt,mrp,mtp,mtype,momentlat,momentlon,momentdepth)
+        try:
+            duration = float(float(tensor['properties']['sourcetime-duration']))
+        except:
+            pass
+                            
+    return (mrr,mtt,mpp,mrt,mrp,mtp,mtype,momentlat,momentlon,momentdepth,duration)
 
 def __getFocalAngles(edict):
     product = 'focal-mechanism'
@@ -527,7 +532,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
             hasFocal = False
         if getComponents:
             if hasMoment:
-                mrr,mtt,mpp,mrt,mrp,mtp,mtype,mlat,mlon,mdepth = __getMomentComponents(edict,limitType)
+                mrr,mtt,mpp,mrt,mrp,mtp,mtype,mlat,mlon,mdepth,mduration = __getMomentComponents(edict,limitType)
                 eventdict['mrr'] = mrr
                 eventdict['mtt'] = mtt
                 eventdict['mpp'] = mpp
@@ -538,6 +543,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['moment-lat'] = mlat
                 eventdict['moment-lon'] = mlon
                 eventdict['moment-depth'] = mdepth
+                eventdict['moment-duration'] = mduration
             else:
                 eventdict['mrr'] = NAN
                 eventdict['mtt'] = NAN
@@ -549,6 +555,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
                 eventdict['moment-lat'] = NAN
                 eventdict['moment-lon'] = NAN
                 eventdict['moment-depth'] = NAN
+                eventdict['moment-duration'] = NAN
         if getAngles:
             #sometimes there are delete products instead of real ones, fooling you into
             #thinking that there is really a moment tensor.  Trapping for that here.
