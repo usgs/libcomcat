@@ -10,6 +10,7 @@ import re
 from xml.dom import minidom 
 import sys
 import shutil
+from collections import OrderedDict
 
 #third-party imports
 from neicmap import distance
@@ -193,6 +194,66 @@ def associate(event,distancewindow=DISTWINDOW,timewindow=TIMEWINDOW,catalog=None
 
     origins = sorted(origins,key=lambda origin: origin['euclidean'])
     return origins
+
+def parseEQXML(equrl):
+    fh = getURLHandle(equrl)
+    data = fh.read()
+    fh.close()
+    root = minidom.parseString(data)
+    magel = root.getElementsByTagName('Event')[0].getElementsByTagName('Origin')[0].getElementsByTagName('Magnitude')[0]
+    magval = float(magel.getElementsByTagName('Value')[0].firstChild.data)
+    magtype = magel.getElementsByTagName('TypeKey')[0].firstChild.data
+    magsrc = root.getElementsByTagName('Event')[0].getElementsByTagName('DataSource')[0].firstChild.data
+    root.unlink()
+    return ([magval],[magtype],[magsrc])
+
+def parseQuakeML(quakeurl):
+    mags = []
+    magtypes = []
+    magsources = []
+    fh = getURLHandle(quakeurl)
+    data = fh.read()
+    fh.close()
+    root = minidom.parseString(data)
+    event = root.getElementsByTagName('event')[0]
+    magels = event.getElementsByTagName('magnitude')
+    for mag in magels:
+        magval = float(mag.getElementsByTagName('mag')[0].getElementsByTagName('value')[0].firstChild.data)
+        magtype = mag.getElementsByTagName('type')[0].firstChild.data
+        try:
+            magsrc = mag.getElementsByTagName('creationInfo')[0].getElementsByTagName('agencyID')[0].firstChild.data
+        except:
+            magsrc = 'NA'
+        mags.append(magval)
+        magtypes.append(magtype)
+        magsources.append(magsrc)
+    root.unlink()
+    return (mags,magtypes,magsources) 
+
+def __getAllMagnitudes(origins):
+    mags = []
+    magtypes = []
+    magsources = []
+    for origin in origins:
+        isquakeml = origin['contents'].has_key('quakeml.xml')
+        iseqxml = origin['contents'].has_key('eqxml.xml')
+        if isquakeml:
+            try:
+                quakeurl = origin['contents']['quakeml.xml']['url']
+                tmags,tmagtypes,tmagsources = parseQuakeML(quakeurl)
+            except Exception,mobj:
+                pass
+        else:
+            try:
+                quakeurl = origin['contents']['eqxml.xml']['url']
+                tmags,tmagtypes,tmagsources = parseEQXML(quakeurl)
+            except Exception,mobj:
+                pass
+        mags += tmags
+        magtypes += tmagtypes
+        magsources += tmagsources
+        
+    return (mags,magtypes,magsources)
 
 def __getMomentComponents(edict,momentType):
     mrr = float('nan')
@@ -432,7 +493,7 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
     
 def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
-                 getAngles=False,verbose=False,limitType=None):
+                 getAngles=False,verbose=False,limitType=None,getAllMags=False):
     """Download a list of event dictionaries that could be represented in csv or tab separated format.
 
     The data will include, but not be limited to:
@@ -495,24 +556,31 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     feed_data = fh.read()
     fh.close()
     fdict = json.loads(feed_data)
+    maxmags = 0
     for feature in fdict['features']:
-        eventdict = {}
-        eventdict['id'] = feature['id']
-        eventdict['idlist'] = feature['properties']['ids'].strip(',').split(',')
+        eventdict = OrderedDict()
+        eventdict['id'] = [feature['id'],'%s']
+        #eventdict['idlist'] = (feature['properties']['ids'].strip(',').split(','),'%s')
         if verbose:
             sys.stderr.write('Fetching data for event %s...\n' % eventdict['id'])
-        eventdict['time'] = getUTCTimeStamp(feature['properties']['time'])
-        eventdict['lat'] = feature['geometry']['coordinates'][1]
-        eventdict['lon'] = feature['geometry']['coordinates'][0]
-        eventdict['depth'] = feature['geometry']['coordinates'][2]
-        eventdict['mag'] = feature['properties']['mag']
-        eventdict['event-type'] = feature['properties']['type']
+        eventdict['time'] = [getUTCTimeStamp(feature['properties']['time']),'%s']
+        eventdict['lat'] = [feature['geometry']['coordinates'][1],'%.4f']
+        eventdict['lon'] = [feature['geometry']['coordinates'][0],'%.4f']
+        depth = feature['geometry']['coordinates'][2]
+        mag = feature['properties']['mag']
+        if mag is None:
+            mag = float('nan')
+        if depth is None:
+            depth = float('nan')
+        eventdict['depth'] = [depth,'%.1f']
+        eventdict['mag'] = [mag,'%.1f']
+        eventdict['event-type'] = [feature['properties']['type'],'%s']
                 
-        if not getComponents and not getAngles:
+        if not getComponents and not getAngles and not getAllMags:
             eventlist.append(eventdict.copy())
             continue
         eurl = feature['properties']['detail']
-        eventdict['url'] = eurl
+        #eventdict['url'] = [eurl,'%s']
         fh = getURLHandle(eurl)
         #fh = urllib2.urlopen(eurl)
         data = fh.read()
@@ -530,52 +598,64 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
             hasFocal = edict['properties']['products']['focal-mechanism'][0]['status'] != 'DELETE'
         else:
             hasFocal = False
+        if getAllMags:
+            
+            mags,magtypes,magsources = __getAllMagnitudes(edict['properties']['products']['origin'])
+            i = 1
+            if len(mags) > maxmags:
+                maxmags = len(mags)
+            for mag,magtype,magsource in zip(mags,magtypes,magsources):
+                eventdict['mag%i' % i] = [mag,'%.1f']
+                eventdict['mag%i-source' % i] = [magsource,'%s']
+                eventdict['mag%i-type' % i] = [magtype,'%s']
+                #sys.stderr.write('Getting mag %i from event %s\n' % (i,feature['id']))
+                i += 1
         if getComponents:
             if hasMoment:
                 mrr,mtt,mpp,mrt,mrp,mtp,mtype,mlat,mlon,mdepth,mduration = __getMomentComponents(edict,limitType)
-                eventdict['mrr'] = mrr
-                eventdict['mtt'] = mtt
-                eventdict['mpp'] = mpp
-                eventdict['mrt'] = mrt
-                eventdict['mrp'] = mrp
-                eventdict['mtp'] = mtp
-                eventdict['type'] = mtype
-                eventdict['moment-lat'] = mlat
-                eventdict['moment-lon'] = mlon
-                eventdict['moment-depth'] = mdepth
-                eventdict['moment-duration'] = mduration
+                eventdict['mrr'] = [mrr,'%g']
+                eventdict['mtt'] = [mtt,'%g']
+                eventdict['mpp'] = [mpp,'%g']
+                eventdict['mrt'] = [mrt,'%g']
+                eventdict['mrp'] = [mrp,'%g']
+                eventdict['mtp'] = [mtp,'%g']
+                eventdict['type'] = [mtype,'%s']
+                eventdict['moment-lat'] = [mlat,'%.4f']
+                eventdict['moment-lon'] = [mlon,'%.4f']
+                eventdict['moment-depth'] = [mdepth,'%.1f']
+                eventdict['moment-duration'] = [mduration,'%.1f']
             else:
-                eventdict['mrr'] = NAN
-                eventdict['mtt'] = NAN
-                eventdict['mpp'] = NAN
-                eventdict['mrt'] = NAN
-                eventdict['mrp'] = NAN
-                eventdict['mtp'] = NAN
-                eventdict['type'] = 'NA'
-                eventdict['moment-lat'] = NAN
-                eventdict['moment-lon'] = NAN
-                eventdict['moment-depth'] = NAN
-                eventdict['moment-duration'] = NAN
+                eventdict['mrr'] = [NAN,'%g']
+                eventdict['mtt'] = [NAN,'%g']
+                eventdict['mpp'] = [NAN,'%g']
+                eventdict['mrt'] = [NAN,'%g']
+                eventdict['mrp'] = [NAN,'%g']
+                eventdict['mtp'] = [NAN,'%g']
+                eventdict['type'] = ['NA','%s']
+                eventdict['moment-lat'] = [NAN,'%.4f']
+                eventdict['moment-lon'] = [NAN,'%.4f']
+                eventdict['moment-depth'] = [NAN,'%.1f']
+                eventdict['moment-duration'] = [NAN,'%.1f']
         if getAngles:
             #sometimes there are delete products instead of real ones, fooling you into
             #thinking that there is really a moment tensor.  Trapping for that here.
             if hasFocal or hasMoment:
                 strike1,dip1,rake1,strike2,dip2,rake2 = __getFocalAngles(edict)
-                eventdict['strike1'] = strike1
-                eventdict['dip1'] = dip1
-                eventdict['rake1'] = rake1
-                eventdict['strike2'] = strike2
-                eventdict['dip2'] = dip2
-                eventdict['rake2'] = rake2
+                eventdict['strike1'] = [strike1,'%.0f']
+                eventdict['dip1'] = [dip1,'%.0f']
+                eventdict['rake1'] = [rake1,'%.0f']
+                eventdict['strike2'] = [strike2,'%.0f']
+                eventdict['dip2'] = [dip2,'%.0f']
+                eventdict['rake2'] = [rake2,'%.0f']
             else:
-                eventdict['strike1'] = NAN
-                eventdict['dip1'] = NAN
-                eventdict['rake1'] = NAN
-                eventdict['strike2'] = NAN
-                eventdict['dip2'] = NAN
-                eventdict['rake2'] = NAN
+                eventdict['strike1'] = [NAN,'%.0f']
+                eventdict['dip1'] = [NAN,'%.0f']
+                eventdict['rake1'] = [NAN,'%.0f']
+                eventdict['strike2'] = [NAN,'%.0f']
+                eventdict['dip2'] = [NAN,'%.0f']
+                eventdict['rake2'] = [NAN,'%.0f']
         eventlist.append(eventdict.copy())
-    return eventlist
+    return (eventlist,maxmags)
 
 def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
                  magrange = None,catalog = None,contributor = None,
