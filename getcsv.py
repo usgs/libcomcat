@@ -6,6 +6,7 @@ from datetime import datetime,timedelta
 from collections import OrderedDict
 import os
 import sys
+import re
 
 #third party
 from libcomcat import comcat
@@ -13,65 +14,31 @@ from libcomcat import comcat
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 DATEFMT = '%Y-%m-%d'
 
-FMTDICT = OrderedDict()
-FMTDICT['id'] = '%s'
-FMTDICT['time'] = '%s'
-FMTDICT['lat'] = '%.4f'
-FMTDICT['lon'] = '%.4f'
-FMTDICT['depth'] = '%.1f'
-FMTDICT['mag'] = '%.1f'
-FMTDICT['strike1'] = '%.0f'
-FMTDICT['dip1'] = '%.0f'
-FMTDICT['rake1'] = '%.0f'
-FMTDICT['strike2'] = '%.0f'
-FMTDICT['dip2'] = '%.0f'
-FMTDICT['rake2'] = '%.0f'
-FMTDICT['mrr'] = '%g'
-FMTDICT['mtt'] = '%g'
-FMTDICT['mpp'] = '%g'
-FMTDICT['mrt'] = '%g'
-FMTDICT['mrp'] = '%g'
-FMTDICT['mtp'] = '%g'
-FMTDICT['type'] = '%s'
-FMTDICT['moment-lat'] = '%.4f'
-FMTDICT['moment-lon'] = '%.4f'
-FMTDICT['moment-depth'] = '%.1f'
-FMTDICT['moment-duration'] = '%.1f'
-FMTDICT['event-type'] = '%s'
-        
-def getFormatTuple(event):
-    tlist = []
-    for key in FMTDICT.keys():
-        if key not in event.keys():
-            continue
-        if key == 'time':
-            value = event[key].strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-        else:
-            value = event[key]
-        tlist.append(value)
-    return tuple(tlist)
-
-def getHeader(format,eventkeys):
-    nuggets = []
-    for key in FMTDICT.keys():
-        if key not in eventkeys:
-            continue
-        nuggets.append(key)
-    sep = ','
-    if format == 'tab':
-        sep = '\t'
-    return sep.join(nuggets)
-
-def getFormatString(format,keys):
-    sep = ','
-    if format == 'tab':
-        sep = '\t'
-    nuggets = []
-    for key,value in FMTDICT.iteritems():
-        if key in keys:
-            nuggets.append(value)
-    fmtstring = sep.join(nuggets)
-    return fmtstring
+def getNewEvent(event,maxmags):
+    ibigmag = -1
+    bigmag = 0
+    for key in event.keys():
+        if re.search('mag[0-9]*-type',key):
+            ibigmag = event.keys().index(key)
+            bigmag = int(re.findall('\d+',key)[0])
+    #we can only get away with this because this is an ordereddict
+    keys = event.keys()
+    values = event.values()
+    idx = ibigmag + 1
+    for i in range(bigmag+1,maxmags+1):
+        magkey = 'mag%i' % i
+        srckey = 'mag%i-source' % i
+        typekey = 'mag%i-type' % i
+        keys.insert(idx,magkey)
+        keys.insert(idx+1,srckey)
+        keys.insert(idx+2,typekey)
+        values.insert(idx,(float('nan'),'%.1f'))
+        values.insert(idx+1,('NA','%s'))
+        values.insert(idx+2,('NA','%s'))
+        idx += 3
+    
+    newevent = OrderedDict(zip(keys,values))
+    return newevent
 
 def maketime(timestring):
     outtime = None
@@ -124,31 +91,46 @@ def main(args):
     #that no individual segment will return more than the 20,000 event limit.
     segments = comcat.getTimeSegments2(stime,etime)
     eventlist = []
+    maxmags = 0
     sys.stderr.write('Breaking request into %i segments.\n' % len(segments))
     for stime,etime in segments:
         #sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
-        eventlist += comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
-                                         magrange=args.magRange,catalog=args.catalog,
-                                         contributor=args.contributor,getComponents=args.getComponents,
-                                         getAngles=args.getAngles,limitType=args.limitType)
+        teventlist,tmaxmags = comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
+                                                  magrange=args.magRange,catalog=args.catalog,
+                                                  contributor=args.contributor,getComponents=args.getComponents,
+                                                  getAngles=args.getAngles,limitType=args.limitType,getAllMags=args.getAllMags)
+        eventlist += teventlist
+        if tmaxmags > maxmags:
+            maxmags = tmaxmags
 
     if not len(eventlist):
         sys.stderr.write('No events found.  Exiting.\n')
         sys.exit(0)
-    fmt = getFormatString(args.format,eventlist[0].keys())
-    print getHeader(args.format,eventlist[0].keys())
+
+    #eventlist is a list of ordereddict objects
+    #the dict keys collectively provide the header
+    #the dict values contain (value,fmt) where value is magnitude, latitude, etc. and fmt is the formatting string
+    #print the header
+    tmpevent = getNewEvent(eventlist[0],maxmags)
+    hdrlist = tmpevent.keys()
+    print ','.join(hdrlist)
+    #get the formatting string for each line
+    fnuggets = [v[1] for v in tmpevent.values()]
+    fmt = ','.join(fnuggets)
     for event in eventlist:
-        if args.limitType is not None and event['type'].lower() != args.limitType:
+        if args.limitType is not None and event['type'][0].lower() != args.limitType:
             continue
-        if event['mag'] is None:
-            event['mag'] = float('nan')
-        if event['depth'] is None:
-            event['depth'] = float('nan')
-        tpl = getFormatTuple(event)
+        event['time'][0] = event['time'][0].strftime(TIMEFMT)
+        newevent = getNewEvent(event,maxmags)
+        tpl = tuple([v[0] for v in newevent.values()])
         try:
             print fmt % tpl
         except:
-            pass
+            sys.stderr.write('Could not write event %s\n' % event['id'])
+            for i in range(0,len(fnuggets)):
+                print fnuggets[i],tpl[i]
+            break
+            
 
 if __name__ == '__main__':
     desc = '''Download basic earthquake information in line format (csv, tab, etc.).
@@ -161,6 +143,10 @@ if __name__ == '__main__':
     To limit that search to only those events with a US Mww moment tensor solution:
 
     getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww > nz.csv
+
+    To include all magnitudes (including source and type) for that same search, add the -g flag:
+
+    getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww -g > nz.csv
 
     To print the number of events that would be returned from the above query, and the maximum number of events supported
     by ONE ComCat query*:
@@ -194,7 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
                         help='End time for search (defaults to current date/time).  YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
-                        help='Min/max magnitude to restrict search.')
+                        help='Min/max (authoritative) magnitude to restrict search.')
     parser.add_argument('-c','--catalog', dest='catalog', 
                         help='Source catalog from which products derive (atlas, centennial, etc.)')
     parser.add_argument('-n','--contributor', dest='contributor', 
@@ -206,6 +192,8 @@ if __name__ == '__main__':
                         help='Only extract moment-tensor components from given type.')
     parser.add_argument('-a','--get-focal-angles', dest='getAngles', action='store_true',
                         help='Also extract focal-mechanism angles (strike,dip,rake) where available.')
+    parser.add_argument('-g','--get-all-magnitudes', dest='getAllMags', action='store_true',
+                        help='Extract all magnitudes (with sources),authoritative listed first.')
     parser.add_argument('-f','--format', dest='format', choices=['csv','tab'], default='csv',
                         help='Output format')
     parser.add_argument('-x','--count', dest='getCount', action='store_true',
