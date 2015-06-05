@@ -129,7 +129,7 @@ Usage for getcsv.py
 usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-r lat lon rmin rmax]
                  [-s STARTTIME] [-e ENDTIME] [-m minmag maxmag] [-c CATALOG]
                  [-n CONTRIBUTOR] [-o]
-                 [-l {usmww,usmwb,usmwc,usmwr,gcmtmwc,cimwr,ncmwr}] [-a]
+                 [-l {usmww,usmwb,usmwc,usmwr,gcmtmwc,cimwr,ncmwr}] [-a] [-g]
                  [-f {csv,tab}] [-x] [-v]
 
 Download basic earthquake information in line format (csv, tab, etc.).
@@ -142,6 +142,10 @@ Download basic earthquake information in line format (csv, tab, etc.).
     To limit that search to only those events with a US Mww moment tensor solution:
 
     getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww > nz.csv
+
+    To include all magnitudes (including source and type) for that same search, add the -g flag:
+
+    getcsv.py -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww -g > nz.csv
 
     To print the number of events that would be returned from the above query, and the maximum number of events supported
     by ONE ComCat query*:
@@ -179,7 +183,7 @@ optional arguments:
                         End time for search (defaults to current date/time).
                         YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
   -m minmag maxmag, --mag-range minmag maxmag
-                        Min/max magnitude to restrict search.
+                        Min/max (authoritative) magnitude to restrict search.
   -c CATALOG, --catalog CATALOG
                         Source catalog from which products derive (atlas,
                         centennial, etc.)
@@ -193,6 +197,9 @@ optional arguments:
   -a, --get-focal-angles
                         Also extract focal-mechanism angles (strike,dip,rake)
                         where available.
+  -g, --get-all-magnitudes
+                        Extract all magnitudes (with sources),authoritative
+                        listed first.
   -f {csv,tab}, --format {csv,tab}
                         Output format
   -x, --count           Just return the number of events in search and maximum
