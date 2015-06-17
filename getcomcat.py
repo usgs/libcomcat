@@ -30,7 +30,16 @@ def makedict(dictstring):
     except:
         raise Exception,'Could not create a single key dictionary out of %s' % dictstring
 
-
+def main(self,args):
+    files = getContents(args.product,args.contents,outfolder=args.outputFolder,bounds=args.bounds,
+                        starttime=args.startTime,endtime=args.endTime,magrange=args.magRange,
+                        catalog=args.catalog,contributor=args.contributor,eventid=args.eventid,
+                        listURL=args.listURL,eventProperties=args.eventProperties,
+                        productProperties=args.productProperties,since=args.after,
+                        getAll=args.getAll)
+    print
+    print '%i files were downloaded to %s' % (len(files),args.outputFolder)
+    
 if __name__ == '__main__':
     desc = '''Download product files from USGS ComCat.
 
@@ -73,13 +82,9 @@ if __name__ == '__main__':
                         help='Event property (alert:yellow, status:REVIEWED, etc.).',type=makedict)
     parser.add_argument('-l','--list-url', dest='listURL', action='store_true',
                         help='Only list urls for contents in events that match criteria.')
+    parser.add_argument('-g','--get-all-versions', dest='getAll', action='store_true',
+                        help='Get products for every version of every event.')
     
-    args = parser.parse_args()
+    pargs = parser.parse_args()
 
-    files = getContents(args.product,args.contents,outfolder=args.outputFolder,bounds=args.bounds,
-                        starttime=args.startTime,endtime=args.endTime,magrange=args.magRange,
-                        catalog=args.catalog,contributor=args.contributor,eventid=args.eventid,
-                        listURL=args.listURL,eventProperties=args.eventProperties,
-                        productProperties=args.productProperties,since=args.after)
-    print
-    print '%i files were downloaded to %s' % (len(files),args.outputFolder)
+    

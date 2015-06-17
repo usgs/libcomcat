@@ -862,7 +862,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
                 starttime = None,endtime = None,magrange = None,
                 catalog = None,contributor = None,eventid = None,
                 eventProperties=None,productProperties=None,radius=None,
-                listURL=False,since=None):
+                listURL=False,since=None,getAll=False):
     """
     Download product contents for event(s) from ComCat, given a product type and list of content files for that product.
 
