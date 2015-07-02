@@ -46,28 +46,28 @@ ORIGINFMT = [((1,4),'i4',True), #year
           ((15,16),'i2',True), #minute
           ((17,17),'a1'),
           ((18,22),'f5.2',True), #second
-          ((23,23),'a1'),
-          ((25,29),'f5.2'),
-          ((31,35),'f5.2'),
-          ((37,44),'f8.4'),
-          ((46,54),'f9.4'),
-          ((55,55),'a1'),
-          ((56,60),'f5.1'),
-          ((62,66),'f5.1'),
-          ((68,70),'i3'),
-          ((72,76),'f5.1'),
-          ((77,77),'a1'),
-          ((79,82),'f4.1'),
-          ((84,87),'i4'),
-          ((89,92),'i4'),
-          ((94,96),'i3'),
-          ((98,103),'f6.2'),
-          ((105,110),'f6.2'),
-          ((112,112),'a1'),
-          ((114,114),'a1'),
-          ((116,117),'a2'),
-          ((119,127),'a9',False,True),
-          ((129,136),'a8')]
+          ((23,23),'a1'), #time fixed flag
+          ((25,29),'f5.2'), #time error
+          ((31,35),'f5.2'), #rms time residuals
+          ((37,44),'f8.4'), #latitude
+          ((46,54),'f9.4'), #longitude
+          ((55,55),'a1'), #epicenter fixed flag
+          ((56,60),'f5.1'), #semi major of error ellipse
+          ((62,66),'f5.1'), #semi minor of error ellipse
+          ((68,70),'i3'), #azimuth of error ellipse
+          ((72,76),'f5.1'), #depth
+          ((77,77),'a1'), #depth fixed flag
+          ((79,82),'f4.1'), #depth error 90%
+          ((84,87),'i4'), #number of phases
+          ((89,92),'i4'), #number of stations
+          ((94,96),'i3'), #gap in azimuth coverage
+          ((98,103),'f6.2'), #distance to closest station (degrees)
+          ((105,110),'f6.2'), #distance to furthest station
+          ((112,112),'a1'), #analysis type: (a = automatic, m = manual, g = guess)
+          ((114,114),'a1'), #location method: (i = inversion, p = pattern recognition, g = ground truth, o = other)
+          ((116,117),'a2'), #event type: 
+          ((119,127),'a9',False,True), #author
+          ((129,136),'a8')] #origin id
 
 MAGHDR = [((1,9),'a9'),
           ((12,14),'a3'),
@@ -75,13 +75,13 @@ MAGHDR = [((1,9),'a9'),
           ((21,26),'a6'),
           ((33,38),'a6')]
 
-MAGFMT = [((1,5),'a5',False,True),
-          ((6,6),'a1'),
-          ((7,10),'f4.1'),
-          ((12,14),'f3.1'),
-          ((16,19),'i4'),
-          ((21,29),'a9',False,True),
-          ((31,38),'a8')]
+MAGFMT = [((1,5),'a5',False,True), #mag type
+          ((6,6),'a1'), #min max indicator
+          ((7,10),'f4.1'), #magnitude value
+          ((12,14),'f3.1'), #magnitude error
+          ((16,19),'i4'), #number of stations used
+          ((21,29),'a9',False,True), #author
+          ((31,38),'a8')] #origin id
            
 
 PHASEHDR = [((1,3),'a3'),

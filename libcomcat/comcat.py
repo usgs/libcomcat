@@ -55,7 +55,7 @@ def getURLHandle(url):
             raise Exception('Could not open url "%s"' % url)
     return fh
 
-def getAllVersions(eventid,productname,content,folder=os.getcwd()):
+def getAllVersions(eventid,productname,contentlist,folder=os.getcwd()):
     url = ALLPRODURL.replace('[EVENTID]',eventid)
     fh = getURLHandle(url)
     data = fh.read()
@@ -68,23 +68,27 @@ def getAllVersions(eventid,productname,content,folder=os.getcwd()):
     if not os.path.isdir(folder):
         os.makedirs(folder)
     for product in products:
+        print 'Looking at %s product with update time %i' % (productname,product['updateTime'])
         if product['code'] != eventid:
             continue
         pkeys = product['contents'].keys()
+        if contentlist[0] not in pkeys:
+            pass
         ptime = product['updateTime']
         for pkey in pkeys:
             path,contentfile = os.path.split(pkey)
             contentbase,contentext = os.path.splitext(contentfile)
-            if contentfile.lower() == content.lower():
-                contenturl = product['contents'][pkey]['url']
-                fh = getURLHandle(contenturl)
-                data = fh.read()
-                outfile = os.path.join(folder,'%s_%s_%i%s' % (eventid,contentbase,ptime,contentext))
-                outfiles.append(outfile)
-                f = open(outfile,'wb')
-                f.write(data)
-                f.close()
-                fh.close()
+            for content in contentlist:
+                if contentfile.lower() == content.lower():
+                    contenturl = product['contents'][pkey]['url']
+                    fh = getURLHandle(contenturl)
+                    data = fh.read()
+                    outfile = os.path.join(folder,'%s_%s_%i%s' % (eventid,contentbase,ptime,contentext))
+                    outfiles.append(outfile)
+                    f = open(outfile,'wb')
+                    f.write(data)
+                    f.close()
+                    fh.close()
                 
     return outfiles
 
@@ -865,7 +869,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
                 starttime = None,endtime = None,magrange = None,
                 catalog = None,contributor = None,eventid = None,
                 eventProperties=None,productProperties=None,radius=None,
-                listURL=False,since=None):
+                listURL=False,since=None,getAll=False):
     """
     Download product contents for event(s) from ComCat, given a product type and list of content files for that product.
 
@@ -898,6 +902,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     @keyword radius: Sequence of (lat,lon,minradius,maxradius)
     @keyword listURL: Boolean indicating whether URL for each product source should be printed to stdout.
     @keyword since: Limit to events after the specified time (datetime). 
+    @keyword getAll: Get all versions of a product (only works when eventid keyword is set).
     @return: List of output files.
     @raise Exception: When:
       - Input catalog is invalid.
@@ -921,10 +926,10 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     #below, and just parse the event json
     if eventid is not None:
         try:
-            outfiles = readEventURL(product,contentlist,outfolder,eventid,listURL=listURL)
+            outfiles = readEventURL(product,contentlist,outfolder,eventid,listURL=listURL,getAll=getAll)
             return outfiles
-        except:
-            raise Exception,'Could not retrieve data for eventid "%s"' % eventid
+        except Exception,errobj:
+            raise Exception,'Could not retrieve data for eventid "%s" due to "%s"' % (eventid,str(errobj))
     
     #start creating the url parameters
     urlparams = {}
@@ -1009,7 +1014,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
 
     return outfiles
 
-def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperties=None):
+def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperties=None,getAll=False):
     """
     Download contents for a given event.
 
@@ -1022,6 +1027,8 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
     @returns: List of downloaded files.
     @raise Exception: When eventid URL could not be parsed.
     """
+    if getAll:
+        return getAllVersions(eid,product,contentlist,folder=outfolder)
     outfiles = []
     furl = EVENTURL.replace('[EVENTID]',eid)
     try:
