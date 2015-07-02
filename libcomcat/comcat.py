@@ -11,6 +11,7 @@ from xml.dom import minidom
 import sys
 import shutil
 from collections import OrderedDict
+import calendar
 
 #third-party imports
 from neicmap import distance
@@ -88,8 +89,10 @@ def getAllVersions(eventid,productname,content,folder=os.getcwd()):
     return outfiles
 
 def getTimeSegments2(starttime,endtime):
-    startsecs = int(starttime.strftime('%s'))
-    endsecs = int(endtime.strftime('%s'))
+    #startsecs = int(starttime.strftime('%s'))
+    startsecs = calendar.timegm(starttime.timetuple())
+    #endsecs = int(endtime.strftime('%s'))
+    endsecs = calendar.timegm(endtime.timetuple())
     starts = range(startsecs,endsecs,WEEKSECS)
     ends = range(startsecs+WEEKSECS,endsecs+WEEKSECS,WEEKSECS)
     if ends[-1] > endsecs:
