@@ -30,7 +30,7 @@ def makedict(dictstring):
     except:
         raise Exception,'Could not create a single key dictionary out of %s' % dictstring
 
-def main(self,args):
+def main(args):
     files = getContents(args.product,args.contents,outfolder=args.outputFolder,bounds=args.bounds,
                         starttime=args.startTime,endtime=args.endTime,magrange=args.magRange,
                         catalog=args.catalog,contributor=args.contributor,eventid=args.eventid,
@@ -86,5 +86,7 @@ if __name__ == '__main__':
                         help='Get products for every version of every event.')
     
     pargs = parser.parse_args()
+
+    main(pargs)
 
     
