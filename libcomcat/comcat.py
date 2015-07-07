@@ -606,8 +606,10 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         else:
             hasFocal = False
         if getAllMags:
-            
-            mags,magtypes,magsources = __getAllMagnitudes(edict['properties']['products']['origin'])
+            if edict['properties']['products'].has_key('phase-data'):
+                mags,magtypes,magsources = __getAllMagnitudes(edict['properties']['products']['phase-data'])
+            else:
+                mags,magtypes,magsources = __getAllMagnitudes(edict['properties']['products']['origin'])
             i = 1
             if len(mags) > maxmags:
                 maxmags = len(mags)
