@@ -36,11 +36,55 @@ WEEKSECS = 86400*7
 TIMEWINDOW = 16
 DISTWINDOW = 100
 
+class Specifier(str):
+    """Model %Y and such in `strftime`'s format string."""
+    def __new__(cls, *args):
+        self = super(Specifier, cls).__new__(cls, *args)
+        assert self.startswith('%')
+        assert len(self) == 2
+        self._regex = re.compile(r'(%*{0})'.format(str(self)))
+        return self
+
+    def ispresent_in(self, format):
+        m = self._regex.search(format)
+        return m and m.group(1).count('%') & 1 # odd number of '%'
+
+    def replace_in(self, format, by):
+        def repl(m):
+            n = m.group(1).count('%')
+            if n & 1: # odd number of '%'
+                prefix = '%'*(n-1) if n > 0 else ''
+                return prefix + str(by) # replace format
+            else:
+                return m.group(0) # leave unchanged
+        return self._regex.sub(repl, format)
+
+class ShakeDateTime(datetime):
+    def strftime(self,format):
+        year = self.year
+        if year >= 1900:
+            return super(ShakeDateTime,self).strftime(format)
+        assert year < 1900
+        factor = (1900 - year - 1) // 400 + 1
+        future_year = year + factor * 400
+        assert future_year > 1900
+
+        format = Specifier('%Y').replace_in(format, year)
+        result = self.replace(year=future_year).strftime(format)
+        if any(f.ispresent_in(format) for f in map(Specifier, ['%c', '%x'])):
+            msg = "'%c', '%x' produce unreliable results for year < 1900"
+            if not force:
+                raise ValueError(msg + " use force=True to override")
+            warnings.warn(msg)
+            result = result.replace(str(future_year), str(year))
+        assert (future_year % 100) == (year % 100) # last two digits are the same
+        return result
+
 def getUTCTimeStamp(timestamp):
     """Input is milliseconds, can be negative.
     Designed as a workaround for an apparent lack of Windows C time functions to handle negative values.
     """
-    d = datetime(1970, 1, 1) + timedelta(microseconds=(timestamp*1000))
+    d = ShakeDateTime(1970, 1, 1) + timedelta(microseconds=(timestamp*1000))
     return d
 
 def getURLHandle(url):
@@ -105,22 +149,22 @@ def getTimeSegments2(starttime,endtime):
     if len(starts) != len(ends):
         raise IndexError('Number of time segment starts/ends does not match for times: "%s" and "%s"' % (starttime,endtime))
     for start,end in zip(starts,ends):
-        segments.append((datetime.utcfromtimestamp(start),datetime.utcfromtimestamp(end)))
+        segments.append((ShakeDateTime.utcfromtimestamp(start),ShakeDateTime.utcfromtimestamp(end)))
 
     return segments
 
 def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,contributor):
     """
-    Return a list of datetime (start,end) tuples which will result in searches less than 20,000 events.
-    @param segments: (Initially) empty list of (start,end) datetime tuples.
+    Return a list of ShakeDateTime (start,end) tuples which will result in searches less than 20,000 events.
+    @param segments: (Initially) empty list of (start,end) ShakeDateTime tuples.
     @param bounds: Tuple of (lonmin,lonmax,latmin,latmax) spatial bounds or None.
     @param radius: Tuple of (lat,lon,minradiuskm,maxradiuskm) radius search parameters or None.
-    @param starttime: Datetime of desired start time for search.
-    @param endtime: Datetime of desired end time for search.
+    @param starttime: ShakeDateTime of desired start time for search.
+    @param endtime: ShakeDateTime of desired end time for search.
     @param magrange: Tuple of magnitude range (min,max).
     @param catalog: Specific catalog which matching events should have as a (not the only) source.
     @param contributor: Specific contributor which matching events should have as a (not the only) source.
-    @return: List of datetime (start,end) tuples which will result in searches less than 20,000 events.
+    @return: List of ShakeDateTime (start,end) tuples which will result in searches less than 20,000 events.
     """
     stime = starttime
     etime = endtime
@@ -172,7 +216,7 @@ def associate(event,distancewindow=DISTWINDOW,timewindow=TIMEWINDOW,catalog=None
     @keyword timewindow: Time search delta in seconds.
     @keyword catalog: Earthquake catalog to search.
     @return: List of origin dictionaries, with following keys:
-             - time datetime of the origin
+             - time ShakeDateTime of the origin
              - lat  Latitude of the origin
              - lon  Longitude of the origin
              - depth Depth of the origin
@@ -427,20 +471,20 @@ def getEventParams(bounds,radius,starttime,endtime,magrange,
     if starttime is not None:
         urlparams['starttime'] = starttime.strftime(TIMEFMT)
         if endtime is None:
-            urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
+            urlparams['endtime'] = ShakeDateTime.utcnow().strftime(TIMEFMT)
     else:
-        t30 = datetime.utcnow()-timedelta(days=30)
+        t30 = ShakeDateTime.utcnow()-timedelta(days=30)
         urlparams['starttime'] = t30.strftime(TIMEFMT)
     if endtime is not None:
         #trap for when someone was lazy and entered the end-time in YYYY-MM-DD format
         #most likely they really want the END of the day, not the beginning.
         if endtime.hour == 0 and endtime.minute == 0 and endtime.second == 0:
-            endtime = datetime(endtime.year,endtime.month,endtime.day,23,59,59)
+            endtime = ShakeDateTime(endtime.year,endtime.month,endtime.day,23,59,59)
         urlparams['endtime'] = endtime.strftime(TIMEFMT)
         if starttime is None:
-            urlparams['starttime'] = datetime(1900,1,1,0,0,0).strftime(TIMEFMT)
+            urlparams['starttime'] = ShakeDateTime(1900,1,1,0,0,0).strftime(TIMEFMT)
     else:
-        urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
+        urlparams['endtime'] = ShakeDateTime.utcnow().strftime(TIMEFMT)
 
     #we're using a rectangle search here
     if bounds is not None:
@@ -529,8 +573,8 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
      - Duration
     @keyword bounds: (lonmin,lonmax,latmin,latmax) Bounding box of search. (dd)
     @keyword radius: (centerlat,centerlon,minradius,maxradius) Radius search parameters (dd,dd,km,km)
-    @keyword starttime: Start time of search (datetime)
-    @keyword endtime: End  time of search (datetime)
+    @keyword starttime: Start time of search (ShakeDateTime)
+    @keyword endtime: End  time of search (ShakeDateTime)
     @keyword magrange: (magmin,magmax) Magnitude range.
     @keyword catalog: Name of contributing catalog (see checkCatalogs()).
     @keyword contributor: Name of contributing catalog (see checkContributors()).
@@ -592,7 +636,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         #fh = urllib2.urlopen(eurl)
         data = fh.read()
         fh.close()
-        #sys.stderr.write('%s - After reading %s\n' % (datetime.now(),url))
+        #sys.stderr.write('%s - After reading %s\n' % (ShakeDateTime.now(),url))
         edict = json.loads(data)
         #sometimes you find when you actually open the json for the event that it doesn't
         #REALLY have a moment tensor or focal mechanism, just delete messages for some that USED to be
@@ -685,7 +729,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
              - eventcode (usually) 10 character event code
              - magerr Magnitude uncertainty
              - origins List of origin dictionaries, with fields:
-               - time Datetime object
+               - time ShakeDateTime object
                - year, month, day, hour, minute and (fractional) second
                - timefixed Flag indicating whether time was fixed for inversion.
                - time_error (seconds)
@@ -713,7 +757,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
                - stationdist Event to station distance (degrees)
                - stationaz Event to station azimuth (degrees)
                - phasecode Phase code
-               - time Phase arrival time (datetime)
+               - time Phase arrival time (ShakeDateTime)
                - hour, minute, (fractional) second Phase arrival time
                - timeres Time residual (seconds)
                - azimuth Observed azimuth (degrees)
@@ -780,11 +824,11 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     if starttime is not None:
         urlparams['starttime'] = starttime.strftime(TIMEFMT)
         if endtime is None:
-            urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
+            urlparams['endtime'] = ShakeDateTime.utcnow().strftime(TIMEFMT)
     if endtime is not None:
         urlparams['endtime'] = endtime.strftime(TIMEFMT)
         if starttime is None:
-            urlparams['starttime'] = datetime(1900,1,1,0,0,0).strftime(TIMEFMT)
+            urlparams['starttime'] = ShakeDateTime(1900,1,1,0,0,0).strftime(TIMEFMT)
 
     #we're using a rectangle search here
     if bounds is not None:
@@ -903,7 +947,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     @keyword productProperties: Dictionary of event properties to match. {'alert':'yellow'}
     @keyword radius: Sequence of (lat,lon,minradius,maxradius)
     @keyword listURL: Boolean indicating whether URL for each product source should be printed to stdout.
-    @keyword since: Limit to events after the specified time (datetime). 
+    @keyword since: Limit to events after the specified time (ShakeDateTime). 
     @keyword getAll: Get all versions of a product (only works when eventid keyword is set).
     @return: List of output files.
     @raise Exception: When:
@@ -939,11 +983,11 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     if starttime is not None:
         urlparams['starttime'] = starttime.strftime(TIMEFMT)
         if endtime is None:
-            urlparams['endtime'] = datetime.utcnow().strftime(TIMEFMT)
+            urlparams['endtime'] = ShakeDateTime.utcnow().strftime(TIMEFMT)
     if endtime is not None:
         urlparams['endtime'] = endtime.strftime(TIMEFMT)
         if starttime is None:
-            urlparams['starttime'] = datetime(1900,1,1,0,0,0).strftime(TIMEFMT)
+            urlparams['starttime'] = ShakeDateTime(1900,1,1,0,0,0).strftime(TIMEFMT)
 
     #if specified, only get events updated after a particular time
     if since is not None:
@@ -1077,7 +1121,7 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
 
 if __name__ == '__main__':
     #test associate functionality
-    event = {'lat':40.828,'lon':-125.135,'time':datetime(2014,3,10,5,18,15)}
+    event = {'lat':40.828,'lon':-125.135,'time':ShakeDateTime(2014,3,10,5,18,15)}
     origins = associate(event)
     for origin in origins:
         print origin
@@ -1100,7 +1144,7 @@ if __name__ == '__main__':
     xmax = -113.774414
     ymin = 32.600048
     ymax = 41.851151
-    maxtime = datetime.utcnow()
+    maxtime = ShakeDateTime.utcnow()
     mintime = maxtime - timedelta(days=60)
     bounds = (xmin,xmax,ymin,ymax)
     outfolder = os.path.join(os.path.expanduser('~'),'tmpcomcatdata')

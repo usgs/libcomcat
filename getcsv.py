@@ -43,10 +43,10 @@ def getNewEvent(event,maxmags):
 def maketime(timestring):
     outtime = None
     try:
-        outtime = datetime.strptime(timestring,TIMEFMT)
+        outtime = comcat.ShakeDateTime.strptime(timestring,TIMEFMT)
     except:
         try:
-            outtime = datetime.strptime(timestring,DATEFMT)
+            outtime = comcat.ShakeDateTime.strptime(timestring,DATEFMT)
         except:
             raise Exception,'Could not parse time or date from %s' % timestring
     return outtime
@@ -73,8 +73,8 @@ def main(args):
         print fmt % (nevents,maxevents)
         sys.exit(0)
 
-    stime = datetime(1900,1,1)
-    etime = datetime.utcnow()
+    stime = comcat.ShakeDateTime(1900,1,1)
+    etime = comcat.ShakeDateTime.utcnow()
     if args.startTime:
         stime = args.startTime
     if args.endTime:
@@ -94,7 +94,7 @@ def main(args):
     maxmags = 0
     sys.stderr.write('Breaking request into %i segments.\n' % len(segments))
     for stime,etime in segments:
-        #sys.stderr.write('%s - Getting data for %s => %s\n' % (datetime.now(),stime,etime))
+        #sys.stderr.write('%s - Getting data for %s => %s\n' % (comcat.ShakeDateTime.now(),stime,etime))
         teventlist,tmaxmags = comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
                                                   magrange=args.magRange,catalog=args.catalog,
                                                   contributor=args.contributor,getComponents=args.getComponents,
