@@ -11,7 +11,7 @@ import re
 #third party
 from libcomcat import comcat
 
-TIMEFMT = '%Y-%m-%dT%H:%M:%S'
+TIMEFMT = '%Y-%m-%d %H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
 
 def getNewEvent(event,maxmags):
@@ -120,7 +120,7 @@ def main(args):
     for event in eventlist:
         if args.limitType is not None and event['type'][0].lower() != args.limitType:
             continue
-        event['time'][0] = event['time'][0].strftime(TIMEFMT)
+        event['time'][0] = event['time'][0].strftime(TIMEFMT)[0:-3]
         newevent = getNewEvent(event,maxmags)
         tpl = tuple([v[0] for v in newevent.values()])
         try:
