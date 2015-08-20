@@ -85,6 +85,8 @@ def getUTCTimeStamp(timestamp):
     Designed as a workaround for an apparent lack of Windows C time functions to handle negative values.
     """
     d = ShakeDateTime(1970, 1, 1) + timedelta(microseconds=(timestamp*1000))
+    #this is necessary because adding a timedelta returns a datetime object, not a ShakeDateTime object.
+    d = ShakeDateTime(d.year,d.month,d.day,d.hour,d.minute,d.second,d.microsecond)
     return d
 
 def getURLHandle(url):
