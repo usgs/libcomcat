@@ -144,7 +144,7 @@ def getTimeSegments2(starttime,endtime):
     #endsecs = int(endtime.strftime('%s'))
     endsecs = calendar.timegm(endtime.timetuple())
     starts = range(startsecs,endsecs,WEEKSECS)
-    ends = range(startsecs+WEEKSECS,endsecs+WEEKSECS,WEEKSECS)
+    ends = range(startsecs+WEEKSECS+1,endsecs+WEEKSECS,WEEKSECS)
     if ends[-1] > endsecs:
         ends[-1] = endsecs
     segments = []
