@@ -18,8 +18,8 @@ from neicmap import distance
 import fixed
 import numpy
 
-#SERVER = 'dev-earthquake.cr' #comcat server name
-SERVER = 'earthquake' #comcat server name
+SERVER = 'dev-earthquake.cr' #comcat server name
+#SERVER = 'earthquake' #comcat server name
 URLBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',SERVER)
 COUNTBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
 CHECKBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/%s'.replace('[SERVER]',SERVER)
@@ -144,7 +144,7 @@ def getTimeSegments2(starttime,endtime):
     #endsecs = int(endtime.strftime('%s'))
     endsecs = calendar.timegm(endtime.timetuple())
     starts = range(startsecs,endsecs,WEEKSECS)
-    ends = range(startsecs+WEEKSECS,endsecs+WEEKSECS,WEEKSECS)
+    ends = range(startsecs+WEEKSECS+1,endsecs+WEEKSECS,WEEKSECS)
     if ends[-1] > endsecs:
         ends[-1] = endsecs
     segments = []
