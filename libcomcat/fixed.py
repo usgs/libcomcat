@@ -857,6 +857,8 @@ class PhaseML(object):
             creationinfo = mag.getElementsByTagName('creationInfo')[0]
             if len(creationinfo.getElementsByTagName('agencyID')):
                 author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
+                #sometimes author exceeds allotted 9 spaces, so we'll truncate here
+                author = author[0:9]
             else:
                 author = '' #guess the source based on information in magnitude ID
             self.magnitudes.append({'magnitude':magnitude,'magtype':magtype,'mode':mode,
@@ -1048,6 +1050,8 @@ class PhaseML(object):
         depthfixed = ' '
         if len(origin.getElementsByTagName('creationInfo')):
             author = origin.getElementsByTagName('creationInfo')[0].getElementsByTagName('agencyID')[0].firstChild.data.upper()
+            #because ISF only allows 9 spaces for the "author" field in an origin block, we have to truncate here
+            author = author[0:9]
         else:
             author = ''
         if len(origin.getElementsByTagName('evaluationMode')):
