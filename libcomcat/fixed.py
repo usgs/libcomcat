@@ -940,7 +940,10 @@ class PhaseML(object):
             for arrival in origin.getElementsByTagName('arrival'):
                 pickid = arrival.getElementsByTagName('pickID')[0].firstChild.data
                 phase = arrival.getElementsByTagName('phase')[0].firstChild.data
-                azimuth = float(arrival.getElementsByTagName('azimuth')[0].firstChild.data)
+                try: #sometimes we don't have an azimuth
+                    azimuth = float(arrival.getElementsByTagName('azimuth')[0].firstChild.data)
+                except:
+                    continue
                 if len(arrival.getElementsByTagName('distance')):
                     distance = float(arrival.getElementsByTagName('distance')[0].firstChild.data)
                 else:
@@ -956,7 +959,7 @@ class PhaseML(object):
                     author = ''
                 self.arrivals[pickid] = {'phase':phase,'azimuth':azimuth,'distance':distance,
                                          'timeresidual':timeresidual,'author':author,'originid':originid}
-            
+
     def parseTime(self,timestr):
         timestr = timestr.rstrip('Z')
         if len(timestr) > 19:
