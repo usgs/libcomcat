@@ -856,9 +856,16 @@ class PhaseML(object):
                 status = 'preliminary'
             creationinfo = mag.getElementsByTagName('creationInfo')[0]
             if len(creationinfo.getElementsByTagName('agencyID')):
-                author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
-                #sometimes author exceeds allotted 9 spaces, so we'll truncate here
-                author = author[0:9]
+                #sometimes agencyID looks like this:
+                # <creationInfo>
+                # <agencyID/>
+                # </creationInfo>
+                if creationinfo.getElementsByTagName('agencyID')[0].firstChild is not None:
+                    author = creationinfo.getElementsByTagName('agencyID')[0].firstChild.data
+                    #sometimes author exceeds allotted 9 spaces, so we'll truncate here
+                    author = author[0:9]
+                else:
+                    author = ''
             else:
                 author = '' #guess the source based on information in magnitude ID
             self.magnitudes.append({'magnitude':magnitude,'magtype':magtype,'mode':mode,
