@@ -399,6 +399,24 @@ optional arguments:
                         Project 3x3 matrix error ellipse to surface
 </pre>
 
+Usage for getimpact.py:
+
+<pre>
+usage: getimpact.py [-h] eventID
+
+Return the eventid,origin time,lat,lon,depth,magnitude,impact text for a given
+input event ID. If no impact-text product is found, then the text returned
+will be an empty string "". getimpact.py eventid Example: getimpact.py
+us10003vki Returns: us10003vki,2015-11-07
+17:37:49,8.5000,-71.5000,5.0,4.9,"Felt (V) at Ejido."
+
+positional arguments:
+  eventID     Event ID (i.e., us10003vki).
+
+optional arguments:
+  -h, --help  show this help message and exit
+</pre>
+
 libcomcat API for Developers
 ----------------------------
 The functions that are most likely of interest to developers are in 
