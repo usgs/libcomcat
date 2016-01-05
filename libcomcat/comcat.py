@@ -295,13 +295,13 @@ def __getAllMagnitudes(origins):
                 quakeurl = origin['contents']['quakeml.xml']['url']
                 tmags,tmagtypes,tmagsources = parseQuakeML(quakeurl)
             except Exception,mobj:
-                pass
+                continue #something wasn't valid, so just move on to the next origin
         else:
             try:
                 quakeurl = origin['contents']['eqxml.xml']['url']
                 tmags,tmagtypes,tmagsources = parseEQXML(quakeurl)
             except Exception,mobj:
-                pass
+                continue #something wasn't valid, so just move on to the next origin
         mags += tmags
         magtypes += tmagtypes
         magsources += tmagsources
