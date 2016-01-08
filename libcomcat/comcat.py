@@ -18,7 +18,7 @@ from neicmap import distance
 import fixed
 import numpy
 
-#SERVER = 'dev-earthquake.cr' #comcat server name
+DEVSERVER = 'dev-earthquake.cr' #comcat server name
 SERVER = 'earthquake' #comcat server name
 URLBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/query?%s'.replace('[SERVER]',SERVER)
 COUNTBASE = 'http://[SERVER].usgs.gov/fdsnws/event/1/count?%s'.replace('[SERVER]',SERVER)
@@ -519,7 +519,7 @@ def getEventParams(bounds,radius,starttime,endtime,magrange,
     return urlparams
 
 def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
-                 catalog = None,contributor = None):
+                 catalog = None,contributor = None,devServer=False):
     if catalog is not None and catalog not in checkCatalogs():
         raise Exception,'Unknown catalog %s' % catalog
     if contributor is not None and contributor not in checkContributors():
@@ -533,7 +533,11 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
                                catalog,contributor)
     urlparams['format'] = 'geojson'
     params = urllib.urlencode(urlparams)
-    url = COUNTBASE % params
+    if devServer:
+        countbase = COUNTBASE.replace(SERVER,DEVSERVER)
+    else:
+        countbase = COUNTBASE
+    url = countbase % params
     fh = getURLHandle(url)
     #fh = urllib2.urlopen(url)
     data = fh.read()
@@ -546,7 +550,8 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
     
 def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
                  catalog = None,contributor = None,getComponents=False,
-                 getAngles=False,verbose=False,limitType=None,getAllMags=False):
+                 getAngles=False,verbose=False,limitType=None,getAllMags=False,
+                 devServer=False):
     """Download a list of event dictionaries that could be represented in csv or tab separated format.
 
     The data will include, but not be limited to:
@@ -584,6 +589,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     @keyword getAngles: Boolean indicating whether to retrieve nodal plane angles (if available).
     @keyword verbose: Boolean indicating whether to print message to stderr for every event being retrieved. 
     @keyword limitType: Limit moment tensor retrieved to those of a particular source/type (comcat.MTYPES)
+    @keyword devServer: Use the USGS-internal development ComCat server (will fail for users outside USGS network.)
     """
     if catalog is not None and catalog not in checkCatalogs():
         raise Exception,'Unknown catalog %s' % catalog
@@ -603,7 +609,11 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     urlparams['format'] = 'geojson'
     params = urllib.urlencode(urlparams)
     eventlist = []
-    url = URLBASE % params
+    if devServer:
+        urlbase = URLBASE.replace(SERVER,DEVSERVER)
+    else:
+        urlbase = URLBASE
+    url = urlbase % params
     fh = getURLHandle(url)
     #fh = urllib2.urlopen(url)
     feed_data = fh.read()

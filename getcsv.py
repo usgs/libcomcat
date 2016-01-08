@@ -68,7 +68,7 @@ def main(args):
         nevents,maxevents = comcat.getEventCount(bounds=args.bounds,radius=args.radius,
                                           starttime=args.startTime,endtime=args.endTime,
                                           magrange=args.magRange,catalog=args.catalog,
-                                          contributor=args.contributor)
+                                          contributor=args.contributor,devServer=args.debug)
         fmt = '%i %i'
         print fmt % (nevents,maxevents)
         sys.exit(0)
@@ -98,7 +98,8 @@ def main(args):
         teventlist,tmaxmags = comcat.getEventData(bounds=args.bounds,radius=args.radius,starttime=stime,endtime=etime,
                                                   magrange=args.magRange,catalog=args.catalog,
                                                   contributor=args.contributor,getComponents=args.getComponents,
-                                                  getAngles=args.getAngles,limitType=args.limitType,getAllMags=args.getAllMags)
+                                                  getAngles=args.getAngles,limitType=args.limitType,getAllMags=args.getAllMags,
+                                                  devServer=args.debug)
         eventlist += teventlist
         if tmaxmags > maxmags:
             maxmags = tmaxmags
@@ -200,6 +201,8 @@ if __name__ == '__main__':
                         help='Just return the number of events in search and maximum allowed.')
     parser.add_argument('-v','--verbose', dest='verbose', action='store_true',
                         help='Print progress')
+    parser.add_argument('-d','--debug', dest='debug', action='store_true',
+                        help='Check the USGS development server (only valid inside USGS network).')
     
     pargs = parser.parse_args()
 
