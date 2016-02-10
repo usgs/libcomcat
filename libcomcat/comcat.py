@@ -636,7 +636,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         if depth is None:
             depth = float('nan')
         eventdict['depth'] = [depth,'%.1f']
-        eventdict['mag'] = [mag,'%.1f']
+        eventdict['mag'] = [mag,'%g']
         eventdict['event-type'] = [feature['properties']['type'],'%s']
                 
         if not getComponents and not getAngles and not getAllMags:
