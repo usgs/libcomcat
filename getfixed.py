@@ -94,9 +94,9 @@ if __name__ == '__main__':
     This should print (to stderr) the ids of the events found in the search box, and then print (to stdout)
     the results in ISF format.
 
-    Doing a radius search for multiple events (from 0 km to 30 km):
+    Doing a radius search for multiple events (to 30 km):
     
-    getfixed.py isf -r 35.786 -97.475 0 30 -s 2014-01-01 -e 2014-02-18 > oklahoma.isf
+    getfixed.py isf -r 35.786 -97.475 30 -s 2014-01-01 -e 2014-02-18 > oklahoma.isf
 
     Retrieving a single event:
 
@@ -120,8 +120,8 @@ if __name__ == '__main__':
     parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
-    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmin','rmax'),type=float,
-                        nargs=4,help='Min/max search radius in KM (use instead of bounding box)')
+    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
+                        nargs=3,help='Min/max search radius in KM (use instead of bounding box)')
     parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
                         help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
