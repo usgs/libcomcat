@@ -160,7 +160,7 @@ def getTimeSegments(segments,bounds,radius,starttime,endtime,magrange,catalog,co
     Return a list of ShakeDateTime (start,end) tuples which will result in searches less than 20,000 events.
     @param segments: (Initially) empty list of (start,end) ShakeDateTime tuples.
     @param bounds: Tuple of (lonmin,lonmax,latmin,latmax) spatial bounds or None.
-    @param radius: Tuple of (lat,lon,minradiuskm,maxradiuskm) radius search parameters or None.
+    @param radius: Tuple of (lat,lon,maxradiuskm) radius search parameters or None.
     @param starttime: ShakeDateTime of desired start time for search.
     @param endtime: ShakeDateTime of desired end time for search.
     @param magrange: Tuple of magnitude range (min,max).
@@ -235,7 +235,7 @@ def associate(event,distancewindow=DISTWINDOW,timewindow=TIMEWINDOW,catalog=None
     mintime = etime - timedelta(seconds=timewindow)
     maxtime = etime + timedelta(seconds=timewindow)
 
-    eventlist = getEventData(radius=(lat,lon,0,distancewindow),starttime=mintime,endtime=maxtime,catalog=catalog)
+    eventlist = getEventData(radius=(lat,lon,distancewindow),starttime=mintime,endtime=maxtime,catalog=catalog)
     origins = []
     for e in eventlist:
         euclid,ddist,tdist = __getEuclidean(lat,lon,etime,e['lat'],e['lon'],e['time'],
@@ -504,8 +504,7 @@ def getEventParams(bounds,radius,starttime,endtime,magrange,
     if radius is not None:
         urlparams['latitude'] = radius[0]
         urlparams['longitude'] = radius[1]
-        urlparams['minradiuskm'] = radius[2]
-        urlparams['maxradiuskm'] = radius[3]
+        urlparams['maxradiuskm'] = radius[2]
             
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
@@ -579,7 +578,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
      - Magnitude type (Mwc, Mwb, Mww, etc.)
      - Duration
     @keyword bounds: (lonmin,lonmax,latmin,latmax) Bounding box of search. (dd)
-    @keyword radius: (centerlat,centerlon,minradius,maxradius) Radius search parameters (dd,dd,km,km)
+    @keyword radius: (centerlat,centerlon,maxradius) Radius search parameters (dd,dd,km,km)
     @keyword starttime: Start time of search (ShakeDateTime)
     @keyword endtime: End  time of search (ShakeDateTime)
     @keyword magrange: (magmin,magmax) Magnitude range.
@@ -728,7 +727,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     """Fetch origin, moment tensor and phase data for earthquakes matching input parameters.
 
     @keyword bounds: Sequence of (lonmin,lonmax,latmin,latmax)
-    @keyword radius: Sequence of (lat,lon,radiusmin [km],radiusmax [km]).
+    @keyword radius: Sequence of (lat,lon, radiusmax [km]).
     @keyword starttime: Start time for search (defaults to ~30 days ago). YYYY-mm-ddTHH:MM:SS
     @keyword endtime: End time for search (defaults to now). YYYY-mm-ddTHH:MM:SS
     @keyword magrange: Sequence of (minmag,maxmag)
@@ -858,8 +857,7 @@ def getPhaseData(bounds = None,radius=None,starttime = None,endtime = None,
     if radius is not None:
         urlparams['latitude'] = radius[0]
         urlparams['longitude'] = radius[1]
-        urlparams['minradiuskm'] = radius[2]
-        urlparams['maxradiuskm'] = radius[3]
+        urlparams['maxradiuskm'] = radius[2]
 
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
@@ -957,7 +955,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     @keyword eventid: Event id to search for - restricts search to a single event (usb000ifva)
     @keyword eventProperties: Dictionary of event properties to match. {'reviewstatus':'approved'}
     @keyword productProperties: Dictionary of event properties to match. {'alert':'yellow'}
-    @keyword radius: Sequence of (lat,lon,minradius,maxradius)
+    @keyword radius: Sequence of (lat,lon,maxradius)
     @keyword listURL: Boolean indicating whether URL for each product source should be printed to stdout.
     @keyword since: Limit to events after the specified time (ShakeDateTime). 
     @keyword getAll: Get all versions of a product (only works when eventid keyword is set).
@@ -1024,8 +1022,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
     if radius is not None:
         urlparams['latitude'] = radius[0]
         urlparams['longitude'] = radius[1]
-        urlparams['minradiuskm'] = radius[2]
-        urlparams['maxradiuskm'] = radius[3]
+        urlparams['maxradiuskm'] = radius[2]
 
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
