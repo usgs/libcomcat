@@ -478,10 +478,6 @@ def getEventParams(bounds,radius,starttime,endtime,magrange,
         t30 = ShakeDateTime.utcnow()-timedelta(days=30)
         urlparams['starttime'] = t30.strftime(TIMEFMT)
     if endtime is not None:
-        #trap for when someone was lazy and entered the end-time in YYYY-MM-DD format
-        #most likely they really want the END of the day, not the beginning.
-        if endtime.hour == 0 and endtime.minute == 0 and endtime.second == 0:
-            endtime = ShakeDateTime(endtime.year,endtime.month,endtime.day,23,59,59)
         urlparams['endtime'] = endtime.strftime(TIMEFMT)
         if starttime is None:
             urlparams['starttime'] = ShakeDateTime(1900,1,1,0,0,0).strftime(TIMEFMT)

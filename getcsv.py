@@ -11,7 +11,8 @@ import re
 #third party
 from libcomcat import comcat
 
-TIMEFMT = '%Y-%m-%d %H:%M:%S.%f'
+TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
+TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
 
 def getNewEvent(event,maxmags):
@@ -43,12 +44,15 @@ def getNewEvent(event,maxmags):
 def maketime(timestring):
     outtime = None
     try:
-        outtime = comcat.ShakeDateTime.strptime(timestring,TIMEFMT)
+        outtime = comcat.ShakeDateTime.strptime(timestring,TIMEFMT1)
     except:
         try:
-            outtime = comcat.ShakeDateTime.strptime(timestring,DATEFMT)
+            outtime = comcat.ShakeDateTime.strptime(timestring,TIMEFMT2)
         except:
-            raise Exception,'Could not parse time or date from %s' % timestring
+            try:
+                outtime = comcat.ShakeDateTime.strptime(timestring,DATEFMT)
+            except:
+                raise Exception,'Could not parse time or date from %s' % timestring
     return outtime
 
 def makedict(dictstring):
@@ -81,7 +85,9 @@ def main(args):
         etime = args.endTime
 
     if stime >= etime:
-        print 'End time must be greater than start time.  Your inputs: Start %s End %s' % (stime,etime)
+        stimestr = stime.strftime(TIMEFMT2)
+        etimestr = etime.strftime(TIMEFMT2)
+        print 'End time must be greater than start time.  Your inputs: Start %s End %s' % (stimestr,etimestr)
         sys.exit(1)
 
     #we used to do a count of how many events would be returned, 
@@ -121,7 +127,7 @@ def main(args):
     for event in eventlist:
         if args.limitType is not None and event['type'][0].lower() != args.limitType:
             continue
-        event['time'][0] = event['time'][0].strftime(TIMEFMT)[0:-3]
+        event['time'][0] = event['time'][0].strftime(TIMEFMT2)[0:-3]
         newevent = getNewEvent(event,maxmags)
         tpl = tuple([v[0] for v in newevent.values()])
         try:
@@ -154,6 +160,13 @@ if __name__ == '__main__':
 
     getcsv.py -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
 
+    To download events with fractional days, use the ISO 8601 combined date time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s):
+    getcsv.py -s 2015-01-01T00:00:00 -e 2015-01-01T01:15:00
+
+    NOTE: Any start or end time where only date is specified (YYYY-mm-dd) will be translated to the beginning of that day.
+    Thus, a start time of "2015-01-01" becomes "2015-01-01T:00:00:00" and an end time of "2015-01-02" 
+    becomes ""2015-01-02T:00:00:00".
+    
     Events which do not have a value for a given field (moment tensor components, for example), will have the string "nan" instead.
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
@@ -177,9 +190,9 @@ if __name__ == '__main__':
     parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
                         nargs=3,help='Search radius in KM (use instead of bounding box)')
     parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
-                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
+                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
-                        help='End time for search (defaults to current date/time).  YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
+                        help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
     parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
                         help='Min/max (authoritative) magnitude to restrict search.')
     parser.add_argument('-c','--catalog', dest='catalog', 
