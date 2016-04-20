@@ -126,11 +126,11 @@ optional arguments:
 Usage for getcsv.py
 --------
 <pre>
-usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-r lat lon rmin rmax]
+usage: getcsv.py [-h] [-b lonmin lonmax latmin latmax] [-r lat lon rmax]
                  [-s STARTTIME] [-e ENDTIME] [-m minmag maxmag] [-c CATALOG]
                  [-n CONTRIBUTOR] [-o]
                  [-l {usmww,usmwb,usmwc,usmwr,gcmtmwc,cimwr,ncmwr}] [-a] [-g]
-                 [-f {csv,tab}] [-x] [-v]
+                 [-f {csv,tab}] [-x] [-v] [-d]
 
 Download basic earthquake information in line format (csv, tab, etc.).
 
@@ -152,36 +152,44 @@ Download basic earthquake information in line format (csv, tab, etc.).
 
     getcsv.py -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
 
+    To download events with fractional days, use the ISO 8601 combined date time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s):
+    getcsv.py -s 2015-01-01T00:00:00 -e 2015-01-01T01:15:00
+
+    NOTE: Any start or end time where only date is specified (YYYY-mm-dd) will be translated to the beginning of that day.
+    Thus, a start time of "2015-01-01" becomes "2015-01-01T:00:00:00" and an end time of "2015-01-02"
+    becomes ""2015-01-02T:00:00:00".
+
     Events which do not have a value for a given field (moment tensor components, for example), will have the string "nan" instead.
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
     discrepancy.
 
-    
-    *Queries that exceed this ComCat limit ARE supported by this software, by breaking up one large request into a number of 
+
+    *Queries that exceed this ComCat limit ARE supported by this software, by breaking up one large request into a number of
     smaller ones.  However, large queries, when also configured to retrieve moment tensor parameters, nodal plane angles, or
     moment tensor type can take a very long time to download.  The author has tested queries just over 20,000 events, and it
-    can take ~90 minutes to complete.  This delay is caused by the fact that when this program has to retrieve moment tensor 
-    parameters, nodal plane angles, or moment tensor type, it must open a URL for EACH event and parse the data it finds.  
-    If these parameters are not requested, then the same request will return in much less time (~10 minutes or less for a 
+    can take ~90 minutes to complete.  This delay is caused by the fact that when this program has to retrieve moment tensor
+    parameters, nodal plane angles, or moment tensor type, it must open a URL for EACH event and parse the data it finds.
+    If these parameters are not requested, then the same request will return in much less time (~10 minutes or less for a
     20,000 event query).
-    
+
 
 optional arguments:
   -h, --help            show this help message and exit
   -b lonmin lonmax latmin latmax, --bounds lonmin lonmax latmin latmax
                         Bounds to constrain event search [lonmin lonmax latmin
                         latmax]
-  -r lat lon rmin rmax, --radius lat lon rmin rmax
-                        Min/max search radius in KM (use instead of bounding
-                        box)
+  -r lat lon rmax, --radius lat lon rmax
+                        Search radius in KM (use instead of bounding box)
   -s STARTTIME, --start-time STARTTIME
                         Start time for search (defaults to ~30 days ago).
-                        YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
+                        YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-
+                        ddTHH:MM:SS.s
   -e ENDTIME, --end-time ENDTIME
                         End time for search (defaults to current date/time).
-                        YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
+                        YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-
+                        ddTHH:MM:SS.s
   -m minmag maxmag, --mag-range minmag maxmag
                         Min/max (authoritative) magnitude to restrict search.
   -c CATALOG, --catalog CATALOG
@@ -205,6 +213,8 @@ optional arguments:
   -x, --count           Just return the number of events in search and maximum
                         allowed.
   -v, --verbose         Print progress
+  -d, --debug           Check the USGS development server (only valid inside
+                        USGS network).
 </pre>
 
 Usage for getfixed.py
