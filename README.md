@@ -77,17 +77,31 @@ Usage for getcomcat.py
 --------
 <pre>
 usage: getcomcat.py [-h] [-o OUTPUTFOLDER] [-b lonmin lonmax latmin latmax]
-                    [-s STARTTIME] [-e ENDTIME] [-m minmag maxmag]
+                    [-s STARTTIME] [-e ENDTIME] [-a AFTER] [-m minmag maxmag]
                     [-c CATALOG] [-n CONTRIBUTOR] [-i EVENTID]
-                    [-p PRODUCTPROPERTIES] [-t EVENTPROPERTIES] [-l]
+                    [-p PRODUCTPROPERTIES] [-t EVENTPROPERTIES] [-l] [-g]
                     PRODUCT [CONTENTLIST [CONTENTLIST ...]]
 
-Download product files from USGS ComCat. To download ShakeMap grid.xml files
-for a box around New Zealand during 2013: getcomcat.py shakemap grid.xml -o
-/home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e
-2014-01-01 Note that when specifying a search box that crosses the -180/180
-meridian, you simply specify longitudes as you would if you were not crossing
-that meridian.
+Download product content files from USGS ComCat.
+
+    To download ShakeMap grid.xml files for a box around New Zealand during 2013:
+
+    getcomcat.py shakemap grid.xml -o /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+
+    Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
+    as you would if you were not crossing that meridian.
+
+    Note: Some product content files do not always have the same name, usually because they incorporate the event ID
+    into the file name, such as with most of the files associated with the finite-fault product.  To download these files,
+    you will need to input a unique fragment of the file name that can be matched in a search.
+
+    For example, to retrieve all of the coulomb input files for the finite-fault product, you would construct your
+    search like this:
+    getcomcat.py finite-fault _coulomb.inp -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+
+    To retrieve the moment rate function files, do this:
+    getcomcat.py finite-fault .mr -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+
 
 positional arguments:
   PRODUCT               The name of the desired product (shakemap, dyfi, etc.)
@@ -107,6 +121,9 @@ optional arguments:
   -e ENDTIME, --end-time ENDTIME
                         End time for search (defaults to current date/time).
                         YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS
+  -a AFTER, --after AFTER
+                        Limit to events after specified time. YYYY-mm-dd or
+                        YYYY-mm-ddTHH:MM:SS
   -m minmag maxmag, --mag-range minmag maxmag
                         Min/max magnitude to restrict search.
   -c CATALOG, --catalog CATALOG
@@ -122,6 +139,8 @@ optional arguments:
                         Event property (alert:yellow, status:REVIEWED, etc.).
   -l, --list-url        Only list urls for contents in events that match
                         criteria.
+  -g, --get-all-versions
+                        Get products for every version of every event.
 </pre>
 Usage for getcsv.py
 --------
