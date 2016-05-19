@@ -1109,7 +1109,8 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
         for content in contentlist:
             for contentkey in pdict['contents'].keys():
                 path,contentfile = os.path.split(contentkey)
-                if contentfile.lower() == content.lower():
+                match = re.search(content.lower(),contentfile.lower())
+                if match is not None:
                     contenturl = pdict['contents'][contentkey]['url']
                     if listURL:
                         print contenturl

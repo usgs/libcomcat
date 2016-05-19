@@ -4,6 +4,7 @@
 import argparse
 from datetime import datetime
 import os
+import sys
 
 #third party
 from libcomcat.comcat import getContents
@@ -41,7 +42,7 @@ def main(args):
     print '%i files were downloaded to %s' % (len(files),args.outputFolder)
     
 if __name__ == '__main__':
-    desc = '''Download product files from USGS ComCat.
+    desc = '''Download product content files from USGS ComCat.
 
     To download ShakeMap grid.xml files for a box around New Zealand during 2013:
 
@@ -49,6 +50,18 @@ if __name__ == '__main__':
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
+
+    Note: Some product content files do not always have the same name, usually because they incorporate the event ID
+    into the file name, such as with most of the files associated with the finite-fault product.  To download these files,
+    you will need to input a unique fragment of the file name that can be matched in a search.  
+
+    For example, to retrieve all of the coulomb input files for the finite-fault product, you would construct your
+    search like this:
+    _coulomb.inp
+    getcomcat.py finite-fault _coulomb.inp -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+
+    To retrieve the moment rate function files, do this:
+    getcomcat.py finite-fault .mr -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
     '''
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #positional arguments
