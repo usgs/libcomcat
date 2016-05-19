@@ -57,7 +57,6 @@ if __name__ == '__main__':
 
     For example, to retrieve all of the coulomb input files for the finite-fault product, you would construct your
     search like this:
-    _coulomb.inp
     getcomcat.py finite-fault _coulomb.inp -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
 
     To retrieve the moment rate function files, do this:
