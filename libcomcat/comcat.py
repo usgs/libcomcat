@@ -467,7 +467,7 @@ def checkContributors():
         raise Exception,"Could not open %s to search for list of contributors" % url
     return contributors    
 
-def getEventParams(bounds,radius,starttime,endtime,magrange,
+def getEventParams(bounds,radius,starttime,endtime,magrange,depthrange,
                    catalog,contributor):
     urlparams = {}
     if starttime is not None:
@@ -505,6 +505,10 @@ def getEventParams(bounds,radius,starttime,endtime,magrange,
     if magrange is not None:
         urlparams['minmagnitude'] = magrange[0]
         urlparams['maxmagnitude'] = magrange[1]
+
+    if depthrange is not None:
+        urlparams['mindepth'] = depthrange[0]
+        urlparams['maxdepth'] = depthrange[1]
     
     if catalog is not None:
         urlparams['catalog'] = catalog
@@ -543,7 +547,7 @@ def getEventCount(bounds = None,radius=None,starttime = None,endtime = None,magr
     return (nevents,maxevents)
     
     
-def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,
+def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magrange = None,depthrange=None,
                  catalog = None,contributor = None,getComponents=False,
                  getAngles=False,verbose=False,limitType=None,getAllMags=False,
                  devServer=False):
@@ -578,6 +582,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
     @keyword starttime: Start time of search (ShakeDateTime)
     @keyword endtime: End  time of search (ShakeDateTime)
     @keyword magrange: (magmin,magmax) Magnitude range.
+    @keyword depthrange: (depthmin,depthmax) Depth range.
     @keyword catalog: Name of contributing catalog (see checkCatalogs()).
     @keyword contributor: Name of contributing catalog (see checkContributors()).
     @keyword getComponents: Boolean indicating whether to retrieve moment tensor components, type, and derived hypocenter (if available).
@@ -596,7 +601,7 @@ def getEventData(bounds = None,radius=None,starttime = None,endtime = None,magra
         raise Exception,'Cannot choose bounds search AND radius search.'
     
     #start creating the url parameters
-    urlparams = getEventParams(bounds,radius,starttime,endtime,magrange,
+    urlparams = getEventParams(bounds,radius,starttime,endtime,magrange,depthrange,
                                catalog,contributor)
 
     #search parameters we're not making available to the user (yet)
