@@ -371,14 +371,15 @@ def __getFocalAngles(edict):
     strike2 = float('nan')
     dip2 = float('nan')
     rake2 = float('nan')
-    if not edict['properties']['products'][product][0].has_key('properties'):
-        if not edict['properties']['products'][product][0]['properties'].has_key('nodal-plane-1-dip'):
-            if backup_product is not None and edict['properties']['products'][backup_product][0]['properties'].has_key('nodal-plane-1-dip'):
-                strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['properties']['products'][0][backup_product])
-            else:
-                return (strike1,dip1,rake1,strike2,dip2,rake2)
-
-    strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(edict['properties']['products'][product][0])
+    primary_product = edict['properties']['products'][product][0]
+    if backup_product is not None:
+        secondary_product = edict['properties']['products'][backup_product][0]
+    else:
+        secondary_product = {}
+    if primary_product.has_key('properties') and primary_product['properties'].has_key('nodal-plane-1-dip'):
+        strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(primary_product)
+    elif secondary_product.has_key('properties') and secondary_product['properties'].has_key('nodal-plane-1-dip'):
+        strike1,dip1,rake1,strike2,dip2,rake2 = __getAngles(secondary_product)
     return (strike1,dip1,rake1,strike2,dip2,rake2)
 
 def __getAngles(product):
