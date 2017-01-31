@@ -125,7 +125,7 @@ def getAllVersions(eventid,productname,contentlist,folder=os.getcwd()):
             path,contentfile = os.path.split(pkey)
             contentbase,contentext = os.path.splitext(contentfile)
             for content in contentlist:
-                if contentfile.lower() == content.lower():
+                if re.search(content.lower(),contentfile.lower()) is not None:
                     contenturl = product['contents'][pkey]['url']
                     fh = getURLHandle(contenturl)
                     data = fh.read()
