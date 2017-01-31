@@ -12,6 +12,18 @@ libcomcat is a project designed to provide command line equivalents to the ANSS 
 Installation and Dependencies
 -----------------------------
 
+***************************
+For users of anaconda or miniconda, do the following:
+ - git clone https://github.com/usgs/libcomcat.git
+ - cd libcomcat
+ - conda update conda
+ - bash setup_env.sh
+ - cd ..
+ - pip install --upgrade libcomcat/
+***************************
+
+Other users, see instructions below.
+
 This package depends on numpy, the fundamental package for scientific computing with Python.
 <a href="http://www.numpy.org/">http://www.numpy.org/</a>
 
