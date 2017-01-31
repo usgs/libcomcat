@@ -13,6 +13,7 @@ Installation and Dependencies
 -----------------------------
 
 ***************************
+
 For users of anaconda or miniconda, do the following:
  - git clone https://github.com/usgs/libcomcat.git
  - cd libcomcat
@@ -20,6 +21,7 @@ For users of anaconda or miniconda, do the following:
  - bash setup_env.sh
  - cd ..
  - pip install --upgrade libcomcat/
+
 ***************************
 
 Other users, see instructions below.
