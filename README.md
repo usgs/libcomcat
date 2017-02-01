@@ -19,6 +19,7 @@ For users of anaconda or miniconda, do the following:
  - cd libcomcat
  - conda update conda
  - bash setup_env.sh
+ - source activate comcat
  - cd ..
  - pip install --upgrade libcomcat/
 
