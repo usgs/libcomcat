@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VENV=libcomcat
+VENV=comcat
 PYVER=2.7
 
 DEPARRAY=(numpy scipy matplotlib jupyter ipython)
