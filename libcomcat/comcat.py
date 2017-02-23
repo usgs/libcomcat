@@ -127,8 +127,10 @@ def getAllVersions(eventid,productname,contentlist,folder=os.getcwd()):
             for content in contentlist:
                 if re.search(content.lower(),contentfile.lower()) is not None:
                     contenturl = product['contents'][pkey]['url']
+                    print('Downloading from %s...' % contenturl)
                     fh = getURLHandle(contenturl)
                     data = fh.read()
+                    print('Done.')
                     outfile = os.path.join(folder,'%s_%s_%i%s' % (eventid,contentbase,ptime,contentext))
                     outfiles.append(outfile)
                     f = open(outfile,'wb')
@@ -1066,7 +1068,7 @@ def getContents(product,contentlist,outfolder=None,bounds = None,
         eid = feature['id']
         lat,lon,depth = feature['geometry']['coordinates']
         mag = feature['properties']['mag']
-        efiles = readEventURL(product,contentlist,outfolder,eid,listURL=listURL,productProperties=productProperties)
+        efiles = readEventURL(product,contentlist,outfolder,eid,listURL=listURL,productProperties=productProperties,getAll=getAll)
         outfiles += efiles
 
     return outfiles
@@ -1119,13 +1121,16 @@ def readEventURL(product,contentlist,outfolder,eid,listURL=False,productProperti
                         continue
                     fh = getURLHandle(contenturl)
                     #fh = urllib2.urlopen(contenturl)
-                    #print 'Downloading %s...' % contenturl
+                    print 'Downloading %s...' % contenturl
                     data = fh.read()
                     fh.close()
+                    print('Done.')
+                    print('Saving to file...')
                     outfile = os.path.join(outfolder,'%s_%s' % (eid,contentfile))
                     f = open(outfile,'w')
                     f.write(data)
                     f.close()
+                    print('Done.')
                     outfiles.append(outfile)
     except Exception,msg:
         raise Exception,'Could not parse event information from "%s". Error: "%s"' % (furl,str(msg))
