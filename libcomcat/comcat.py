@@ -117,6 +117,8 @@ def getAllVersions(eventid,productname,contentlist,folder=os.getcwd()):
         print 'Looking at %s product with update time %i' % (productname,product['updateTime'])
         if product['code'] != eventid:
             continue
+        if not isinstance(product['contents'],dict):
+            continue
         pkeys = product['contents'].keys()
         if contentlist[0] not in pkeys:
             pass
