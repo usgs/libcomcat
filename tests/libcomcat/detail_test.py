@@ -10,10 +10,10 @@ pathdir = os.path.abspath(os.path.join(homedir, '..', '..'))
 sys.path.insert(0, pathdir)  # put this at the front of the system path,
 # ignoring any other installations of this library
 
-from libcomcat.detail import DetailEvent,search
+from libcomcat.detail import DetailEvent,search,get_summary_data_frame,get_detail_data_frame
+import pandas as pd
 
-
-def test():
+def test_single():
     eventid = 'ci3144585' # northridge
     detail = DetailEvent(eventid)
     assert detail.id == 'ci3144585'
@@ -30,7 +30,8 @@ def test():
 
     assert shakemap.hasProperty('depth')
     assert shakemap['depth'] == '19'
-
+    
+def test_search_single():
     start_time = datetime(1994,1,17)
     end_time = datetime(1994,1,18)
     events = search(starttime=start_time,
@@ -39,8 +40,24 @@ def test():
 
     devent = events[0].getDetailEvent()
     assert devent.magnitude == 6.7
-    edict = devent.toDict(get_all_magnitudes=True,get_all_tensors=True)
-    x = 1
+    edict = devent.toDict(get_all_magnitudes=True,get_all_tensors=True,get_all_focal=True)
+
+    df = pd.DataFrame(columns=edict.keys())
+    df = df.append(edict,ignore_index=True)
+    print(df)
+
     
+
+def test_search_week():
+    events = search(starttime=datetime(2017,8,8),
+                    endtime=datetime(2017,8,14),minmagnitude=5.5)
+    df = get_summary_data_frame(events)
+    print(df)
+    df2 = get_detail_data_frame(events,get_all_magnitudes=True,
+                                get_all_tensors=True,
+                                get_all_focal=True)
+    print(df2)
 if __name__ == '__main__':
-    test()
+    #test_single()
+    #test_search_single()
+    test_search_week()

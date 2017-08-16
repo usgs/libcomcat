@@ -1,0 +1,172 @@
+#!/usr/bin/env python
+import argparse
+import sys
+
+from libcomcat import detail
+from impactutils.time.ancient_time import HistoricTime
+
+TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
+TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
+DATEFMT = '%Y-%m-%d'
+
+def maketime(timestring):
+    outtime = None
+    try:
+        outtime = HistoricTime.strptime(timestring,TIMEFMT1)
+    except:
+        try:
+            outtime = HistoricTime.strptime(timestring,TIMEFMT2)
+        except:
+            try:
+                outtime = HistoricTime.strptime(timestring,DATEFMT)
+            except:
+                raise Exception('Could not parse time or date from %s' % timestring)
+    return outtime
+
+def main(args):
+    if args.bounds and args.radius:
+        print('Please specify either a bounding box OR radius search.')
+        sys.exit(1)
+
+    latitude = None
+    longitude = None
+    radiuskm = None
+    if args.radius:
+        latitude = args.radius[0]
+        longitude = args.radius[1]
+        radiuskm = args.radius[2]
+
+    minmag = None
+    maxmag = None
+    if args.magRange:
+        minmag  = args.magRange[0]
+        maxmag  = args.magRange[1]
+    events = detail.search(starttime=args.startTime,
+                           endtime=args.endTime,
+                           minlatitude=args.bounds[2],
+                           maxlatitude=args.bounds[3],
+                           minlongitude=args.bounds[0],
+                           maxlongitude=args.bounds[1],
+                           latitude=latitude,
+                           longitude=longitude,
+                           maxradiuskm=radiuskm,
+                           catalog=args.catalog,
+                           contributor=args.contributor,
+                           maxmagnitude=maxmag,
+                           minmagnitude=minmag)
+
+    if args.getAngles or args.getAllMags or args.getComponents:
+        df = detail.get_detail_data_frame(events,get_all_magnitudes=args.getAllMags,
+                                          get_all_tensors=args.getComponents,
+                                          get_all_focal=args.getAngles)
+    else:
+        df = detail.get_summary_data_frame(events)
+
+    #order the columns so that at least the initial parameters come the way we want them...
+    first_columns = list(events[0].toDict().keys())
+    col_list = list(df.columns)
+    for column in first_columns:
+        col_list.remove(column)
+    df = df[first_columns+col_list]
+    
+    if args.format == 'csv':
+        df.to_csv(args.filename)
+    elif args.format == 'tab':
+        df.to_csv(args.filename,sep='\t')
+    else:
+        df.to_excel(args.filename)
+    print('%i records saved to %s.' % (len(df),args.filename))
+    sys.exit(0)
+
+if __name__ == '__main__':
+    desc = '''Download basic earthquake information in line format (csv, tab, etc.).
+
+    To download basic event information (time,lat,lon,depth,magnitude) and
+    moment tensor components for a box around New Zealand during 2013:
+
+    %(prog)s -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 > nz.csv
+
+    To limit that search to only those events with a US Mww moment tensor solution:
+
+    %(prog)s -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww > nz.csv
+
+    To include all magnitudes (including source and type) for that same search, add the -g flag:
+
+    %(prog)s -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -l usmww -g > nz.csv
+
+    To print the number of events that would be returned from the above query,
+    and the maximum number of events supported by ONE ComCat query*:
+
+    %(prog)s -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+
+    To download events with fractional days, use the ISO 8601 combined date
+    time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s): %(prog)s -s
+    2015-01-01T00:00:00 -e 2015-01-01T01:15:00
+
+    NOTE: Any start or end time where only date is specified (YYYY-mm-dd) will
+    be translated to the beginning of that day.  Thus, a start time of
+    "2015-01-01" becomes "2015-01-01T:00:00:00" and an end time of "2015-01-02"
+    becomes ""2015-01-02T:00:00:00".
+    
+    Events which do not have a value for a given field (moment tensor
+    components, for example), will have the string "nan" instead.
+
+    Note that when specifying a search box that crosses the -180/180 meridian,
+    you simply specify longitudes as you would if you were not crossing that
+    meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
+    discrepancy.
+
+    
+    Queries that exceed this ComCat limit ARE supported by this
+    software, by breaking up one large request into a number of
+    smaller ones.  However, large queries, when also configured to
+    retrieve moment tensor parameters, nodal plane angles, or moment
+    tensor type can take a very long time to download.  The author has
+    tested queries just over 20,000 events, and it can take ~90
+    minutes to complete.  This delay is caused by the fact that when
+    this program has to retrieve moment tensor parameters, nodal plane
+    angles, or moment tensor type, it must open a URL for EACH event
+    and parse the data it finds.  If these parameters are not
+    requested, then the same request will return in much less time
+    (~10 minutes or less for a 20,000 event query).
+
+    '''
+    parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
+    #positional arguments
+    parser.add_argument('filename',
+                        metavar='FILENAME',help='Output filename.')
+    #optional arguments
+    parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
+                        dest='bounds', type=float, nargs=4,
+                        help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
+    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
+                        nargs=3,help='Search radius in KM (use instead of bounding box)')
+    parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
+                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+    parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
+                        help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+    parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
+                        help='Min/max (authoritative) magnitude to restrict search.')
+    parser.add_argument('-c','--catalog', dest='catalog', 
+                        help='Source catalog from which products derive (atlas, centennial, etc.)')
+    parser.add_argument('-n','--contributor', dest='contributor', 
+                        help='Source contributor (who loaded product) (us, nc, etc.)')
+    parser.add_argument('-o','--get-moment-components', dest='getComponents', action='store_true',
+                        help='Also extract moment-tensor components (including type and derived hypocenter) where available.')
+    parser.add_argument('-a','--get-focal-angles', dest='getAngles', action='store_true',
+                        help='Also extract focal-mechanism angles (strike,dip,rake) where available.')
+    parser.add_argument('-g','--get-all-magnitudes', dest='getAllMags', action='store_true',
+                        help='Extract all magnitudes (with sources),authoritative listed first.')
+    parser.add_argument('-f','--format', dest='format', choices=['csv','tab','excel'], default='csv',
+                        metavar='FORMAT',help='Output format.')
+    
+    parser.add_argument('-x','--count', dest='getCount', action='store_true',
+                        help='Just return the number of events in search and maximum allowed.')
+    parser.add_argument('-v','--verbose', dest='verbose', action='store_true',
+                        help='Print progress')
+    parser.add_argument('-d','--debug', dest='debug', action='store_true',
+                        help='Check the USGS development server (only valid inside USGS network).')
+    
+    pargs = parser.parse_args()
+
+    main(pargs)

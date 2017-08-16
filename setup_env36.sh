@@ -3,7 +3,7 @@
 VENV=comcat36
 PYVER=3.6
 
-DEPARRAY=(obspy ipython jupyter)
+DEPARRAY=(obspy ipython jupyter pandas xlrd xlwt openpyxl)
 
 #if we're already in an environment called pager, switch out of it so we can remove it
 source activate root
