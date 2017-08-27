@@ -13,6 +13,7 @@ from io import StringIO
 import tempfile
 import os
 import warnings
+import time
 
 #third party imports
 from impactutils.time.ancient_time import HistoricTime
@@ -27,6 +28,34 @@ TIMEOUT = 60
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 
 WEEKSECS = 86400*7
+WAITSECS = 3 #number of seconds to wait after failing download before trying again
+
+TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
+TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
+DATEFMT = '%Y-%m-%d'
+
+def makedict(dictstring):
+    try:
+        parts = dictstring.split(':')
+        key = parts[0]
+        value = parts[1]
+        return {key:value}
+    except:
+        raise Exception('Could not create a single key dictionary out of %s' % dictstring)
+
+def maketime(timestring):
+    outtime = None
+    try:
+        outtime = HistoricTime.strptime(timestring,TIMEFMT1)
+    except:
+        try:
+            outtime = HistoricTime.strptime(timestring,TIMEFMT2)
+        except:
+            try:
+                outtime = HistoricTime.strptime(timestring,DATEFMT)
+            except:
+                raise Exception('Could not parse time or date from %s' % timestring)
+    return outtime
 
 def search(starttime=None,
            endtime=None,
@@ -375,6 +404,7 @@ def _search(**newargs):
     except urllib.error.HTTPError as htpe:
         if htpe.code == 503:
             try:
+                time.sleep(WAITSECS)
                 fh = request.urlopen(url,timeout=TIMEOUT)
                 data = fh.read().decode('utf8')
                 fh.close()
@@ -463,7 +493,7 @@ class SummaryEvent(object):
         :returns:
           Boolean indicating whether that product exists or not.
         """
-        if product not in self._jdict['properties']['types']:
+        if product not in self._jdict['properties']['types'].split(',')[1:]:
             return False
         return True
 
@@ -751,6 +781,16 @@ class Product(object):
         ncontents = len(self._product['contents'])
         tpl = (self._product_name,ncontents)
         return 'Product %s containing %i content files.' % tpl
+
+    def getContentName(self,regexp):
+        for contentkey in self._product['contents'].keys():
+            if re.search(regexp,contentkey) is not None:
+                url = self._product['contents'][contentkey]['url']
+                parts = urlparse(url)
+                content_name = parts.path.split('/')[-1]
+                return content_name
+        return None
+                
     
     def getContent(self,regexp,filename=None):
         """Find and download the file associated with the input content regular expression.
@@ -759,6 +799,8 @@ class Product(object):
           Regular expression which should match one of the content files in the Product.
         :param filename:
           Filename to which content should be downloaded.
+        :returns:
+          The URL from which the content was downloaded.
         """
         for contentkey,content in self._product['contents'].items():
             #print(contentkey)
@@ -773,6 +815,7 @@ class Product(object):
                 return None
 
         raise AttributeError('Could not find any content matching input %s' % regexp)
+        return url
     
     def hasProperty(self,key):
         """Determine if this Product contains a given property.

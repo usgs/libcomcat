@@ -2,26 +2,8 @@
 import argparse
 import sys
 
-from libcomcat import detail
+from libcomcat import detail,maketime
 from impactutils.time.ancient_time import HistoricTime
-
-TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
-TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
-DATEFMT = '%Y-%m-%d'
-
-def maketime(timestring):
-    outtime = None
-    try:
-        outtime = HistoricTime.strptime(timestring,TIMEFMT1)
-    except:
-        try:
-            outtime = HistoricTime.strptime(timestring,TIMEFMT2)
-        except:
-            try:
-                outtime = HistoricTime.strptime(timestring,DATEFMT)
-            except:
-                raise Exception('Could not parse time or date from %s' % timestring)
-    return outtime
 
 def main(args):
     if args.bounds and args.radius:

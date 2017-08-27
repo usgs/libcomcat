@@ -1,45 +1,68 @@
 #!/usr/bin/env python
 
-#stdlib
+#stdlib imports
 import argparse
-from datetime import datetime
-import os
+import os.path
 import sys
 
-#third party
-from libcomcat.comcat import getContents
-
-TIMEFMT = '%Y-%m-%dT%H:%M:%S'
-DATEFMT = '%Y-%m-%d'
-def maketime(timestring):
-    outtime = None
-    try:
-        outtime = datetime.strptime(timestring,TIMEFMT)
-    except:
-        try:
-            outtime = datetime.strptime(timestring,DATEFMT)
-        except:
-            raise Exception,'Could not parse time or date from %s' % timestring
-    return outtime
-
-
+#local imports
+from libcomcat.detail import search,maketime,makedict
 
 def main(args):
-    files = getContents(args.product,args.contents,outfolder=args.outputFolder,bounds=args.bounds,
-                        starttime=args.startTime,endtime=args.endTime,magrange=args.magRange,
-                        catalog=args.catalog,contributor=args.contributor,eventid=args.eventid,
-                        listURL=args.listURL,eventProperties=args.eventProperties,
-                        productProperties=args.productProperties,since=args.after,
-                        getAll=args.getAll)
-    print
-    print '%i files were downloaded to %s' % (len(files),args.outputFolder)
-    
+    if args.bounds and args.radius:
+        print('Please specify either a bounding box OR radius search.')
+        sys.exit(1)
+
+    latitude = None
+    longitude = None
+    radiuskm = None
+    if args.radius:
+        latitude = args.radius[0]
+        longitude = args.radius[1]
+        radiuskm = args.radius[2]
+
+    minmag = None
+    maxmag = None
+    if args.magRange:
+        minmag  = args.magRange[0]
+        maxmag  = args.magRange[1]
+    events = search(starttime=args.startTime,
+                    endtime=args.endTime,
+                    minlatitude=args.bounds[2],
+                    maxlatitude=args.bounds[3],
+                    minlongitude=args.bounds[0],
+                    maxlongitude=args.bounds[1],
+                    latitude=latitude,
+                    longitude=longitude,
+                    maxradiuskm=radiuskm,
+                    catalog=args.catalog,
+                    contributor=args.contributor,
+                    maxmagnitude=maxmag,
+                    minmagnitude=minmag)
+
+    for event in events:
+        if not event.hasProduct(args.product):
+            continue
+        detail = event.getDetailEvent()
+        if not detail.hasProduct(args.product):
+            continue
+        product = detail.getProduct(args.product)
+        for content in args.contents:
+            has_content,url = product.hasContent(content)
+            if not has_content:
+                continue
+            content_name = product.getContentName(content)
+            eventid = detail.id
+            filename = os.path.join(args.outputFolder,'%s_%s' % (eventid,content_name))
+            product.getContent(content,filename=filename)
+            sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
+            
 if __name__ == '__main__':
     desc = '''Download product content files from USGS ComCat.
 
     To download ShakeMap grid.xml files for a box around New Zealand during 2013:
 
-    getcomcat.py shakemap grid.xml -o /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+    %(prog)s shakemap grid.xml -o /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
@@ -50,10 +73,10 @@ if __name__ == '__main__':
 
     For example, to retrieve all of the coulomb input files for the finite-fault product, you would construct your
     search like this:
-    getcomcat.py finite-fault _coulomb.inp -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+    %(prog)s finite-fault _coulomb.inp -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
 
     To retrieve the moment rate function files, do this:
-    getcomcat.py finite-fault .mr -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+    %(prog)s finite-fault .mr -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
     '''
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #positional arguments
@@ -63,10 +86,12 @@ if __name__ == '__main__':
                         help='The names of the product contents (grid.xml, stationlist.txt, etc.) ')
     #optional arguments
     parser.add_argument('-o','--output-folder', dest='outputFolder', default=os.getcwd(),
-                        help='Folder where output files should be written.')
+                        help='Folder where output files should be written (must exist).')
     parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
+    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
+                        nargs=3,help='Search radius in KM (use instead of bounding box)')
     parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
                         help='Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
@@ -93,5 +118,3 @@ if __name__ == '__main__':
     pargs = parser.parse_args()
 
     main(pargs)
-
-    
