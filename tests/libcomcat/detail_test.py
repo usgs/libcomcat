@@ -46,8 +46,6 @@ def test_search_single():
     df = df.append(edict,ignore_index=True)
     print(df)
 
-    
-
 def test_search_week():
     events = search(starttime=datetime(2017,8,8),
                     endtime=datetime(2017,8,14),minmagnitude=5.5)

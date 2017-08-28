@@ -2,6 +2,7 @@
 
 from datetime import datetime,timedelta
 from urllib import request
+from urllib.error import HTTPError
 from urllib.parse import urlparse,urlencode
 import json
 from xml.dom import minidom
@@ -57,6 +58,49 @@ def maketime(timestring):
                 raise Exception('Could not parse time or date from %s' % timestring)
     return outtime
 
+def get_event_by_id(eventid,
+                    includedeleted=False,
+                    includesuperseded=False):
+    """Search the ComCat database for an event matching the input event id.
+
+    This search function is a wrapper around the ComCat Web API described here:
+    
+    https://earthquake.usgs.gov/fdsnws/event/1/
+
+    Some of the search parameters described there are NOT implemented here, usually because they do not 
+    apply to GeoJSON search results, which we are getting here and parsing into Python data structures.
+
+    This function returns DetailEvent object, described elsewhere in this package.
+
+    Usage:
+      TODO
+    
+    :param eventid:
+      Select a specific event by ID; event identifiers are data center specific.
+    :param includesuperseded:
+      Specify if superseded products should be included. This also includes all 
+      deleted products, and is mutually exclusive to the includedeleted parameter. 
+    :param includedeleted:
+      Specify if deleted products should be incuded. 
+    :returns:
+      DetailEvent object.
+    """
+    #getting the inputargs must be the first line of the method!
+    inputargs = locals().copy()
+    newargs = {}
+    for key,value in inputargs.items():
+        if value is True:
+            newargs[key] = 'true'
+            continue
+        if value is False:
+            newargs[key] = 'false'
+            continue
+        if value is None:
+            continue
+        newargs[key] = value
+    event = _search(**newargs) #this should be a DetailEvent
+    return event
+    
 def search(starttime=None,
            endtime=None,
            updatedafter=None,
@@ -70,9 +114,6 @@ def search(starttime=None,
            maxradius=None,
            catalog=None,
            contributor=None,
-           eventid=None,
-           includedeleted=False,
-           includesuperseded=False,
            limit=20000,
            maxdepth=1000,
            maxmagnitude=10.0,
@@ -135,14 +176,6 @@ def search(starttime=None,
       Limit to events from a specified catalog.
     :param contributor:
       Limit to events contributed by a specified contributor.
-    :param eventid:
-      Select a specific event by ID; event identifiers are data center specific.
-    :param includedeleted:
-      Specify if deleted products should be incuded. NOTE: Only works when specifying eventid parameter.
-    :param includesuperseded:
-      Specify if superseded products should be included. This also includes all 
-      deleted products, and is mutually exclusive to the includedeleted parameter. 
-      NOTE: Only works when specifying eventid parameter.
     :param limit:
       Limit the results to the specified number of events.  
       NOTE, this will be throttled by this Python API to the supported Web API limit of 20,000.
@@ -203,6 +236,8 @@ def search(starttime=None,
       Limit to events with a specific review status. The different review statuses are:
        - automatic Limit to events with review status "automatic".
        - reviewed Limit to events with review status "reviewed".
+    :returns:
+      List of SummaryEvent() objects.
     """
     #getting the inputargs must be the first line of the method!
     inputargs = locals().copy()
@@ -220,13 +255,16 @@ def search(starttime=None,
     if newargs['limit'] > 20000:
         newargs['limit'] = 20000
 
-    segments = _get_time_segments(starttime,endtime)
-    events = []
+    if starttime is not None:
+        segments = _get_time_segments(starttime,endtime)
+        events = []
 
-    for stime,etime in segments:
-        newargs['starttime'] = stime
-        newargs['endtime'] = etime
-        events += _search(**newargs)
+        for stime,etime in segments:
+            newargs['starttime'] = stime
+            newargs['endtime'] = etime
+            events += _search(**newargs)
+    else:
+        events = _search(**newargs)
 
     return events
 
@@ -393,6 +431,11 @@ def _search(**newargs):
         
     paramstr = urlencode(newargs)
     url = SEARCH_TEMPLATE+'&'+paramstr
+
+    #handle the case when they're asking for an event id
+    if 'eventid' in newargs:
+        return DetailEvent(url)
+    
     try:
         fh = request.urlopen(url,timeout=TIMEOUT)
         data = fh.read().decode('utf8')
@@ -401,7 +444,7 @@ def _search(**newargs):
         events = []
         for feature in jdict['features']:
             events.append(SummaryEvent(feature))
-    except urllib.error.HTTPError as htpe:
+    except HTTPError as htpe:
         if htpe.code == 503:
             try:
                 time.sleep(WAITSECS)
@@ -520,6 +563,15 @@ class SummaryEvent(object):
         if key not in self._jdict['properties']:
             raise AttributeError('No property %s found for event %s.' % (key,self.id))
         return self._jdict['properties'][key]
+
+    def getDetailURL(self):
+        """Instantiate a DetailEvent object from the URL found in the summary.
+        
+        :returns:
+          URL for detailed version of event.
+        """
+        durl = self._jdict['properties']['detail']
+        return durl
     
     def getDetailEvent(self):
         """Instantiate a DetailEvent object from the URL found in the summary.

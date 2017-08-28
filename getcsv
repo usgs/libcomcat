@@ -13,11 +13,15 @@ def main(args):
     latitude = None
     longitude = None
     radiuskm = None
+    lonmin = latmin = lonmax = latmax = None
     if args.radius:
         latitude = args.radius[0]
         longitude = args.radius[1]
         radiuskm = args.radius[2]
-
+        
+    if args.bounds:
+        lonmin,lonmax,latmin,latmax = args.bounds
+        
     minmag = None
     maxmag = None
     if args.magRange:
@@ -25,10 +29,11 @@ def main(args):
         maxmag  = args.magRange[1]
     events = detail.search(starttime=args.startTime,
                            endtime=args.endTime,
-                           minlatitude=args.bounds[2],
-                           maxlatitude=args.bounds[3],
-                           minlongitude=args.bounds[0],
-                           maxlongitude=args.bounds[1],
+                           updatedafter=args.after,
+                           minlatitude=latmin,
+                           maxlatitude=latmax,
+                           minlongitude=lonmin,
+                           maxlongitude=lonmax,
                            latitude=latitude,
                            longitude=longitude,
                            maxradiuskm=radiuskm,
@@ -127,6 +132,8 @@ if __name__ == '__main__':
                         help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
                         help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+    parser.add_argument('-t','--time-after', dest='after', type=maketime,
+                        help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
                         help='Min/max (authoritative) magnitude to restrict search.')
     parser.add_argument('-c','--catalog', dest='catalog', 

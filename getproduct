@@ -6,9 +6,30 @@ import os.path
 import sys
 
 #local imports
-from libcomcat.detail import search,maketime,makedict
+from libcomcat.detail import search,maketime,makedict,get_event_by_id
+
+def _get_product_from_detail(detail,product,contents,folder):
+    if not detail.hasProduct(product):
+        return False
+    product = detail.getProduct(product)
+    for content in contents:
+        has_content,url = product.hasContent(content)
+        if not has_content:
+            continue
+        content_name = product.getContentName(content)
+        eventid = detail.id
+        filename = os.path.join(folder,'%s_%s' % (eventid,content_name))
+        product.getContent(content,filename=filename)
+        sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
+
+    return True
 
 def main(args):
+    if args.eventid:
+        detail = get_event_by_id(args.eventid,includesuperseded=args.getAll)
+        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder)
+        sys.exit(0)
+        
     if args.bounds and args.radius:
         print('Please specify either a bounding box OR radius search.')
         sys.exit(1)
@@ -16,10 +37,15 @@ def main(args):
     latitude = None
     longitude = None
     radiuskm = None
+    lonmin = latmin = lonmax = latmax = None
+    starttime = endtime = None
     if args.radius:
         latitude = args.radius[0]
         longitude = args.radius[1]
         radiuskm = args.radius[2]
+        
+    if args.bounds:
+        lonmin,lonmax,latmin,latmax = args.bounds
 
     minmag = None
     maxmag = None
@@ -28,10 +54,11 @@ def main(args):
         maxmag  = args.magRange[1]
     events = search(starttime=args.startTime,
                     endtime=args.endTime,
-                    minlatitude=args.bounds[2],
-                    maxlatitude=args.bounds[3],
-                    minlongitude=args.bounds[0],
-                    maxlongitude=args.bounds[1],
+                    updatedafter=args.after,
+                    minlatitude=latmin,
+                    maxlatitude=latmax,
+                    minlongitude=lonmin,
+                    maxlongitude=lonmax,
                     latitude=latitude,
                     longitude=longitude,
                     maxradiuskm=radiuskm,
@@ -41,22 +68,15 @@ def main(args):
                     minmagnitude=minmag)
 
     for event in events:
+        if args.listURL:
+            print(event.getDetailURL())
         if not event.hasProduct(args.product):
             continue
         detail = event.getDetailEvent()
-        if not detail.hasProduct(args.product):
-            continue
-        product = detail.getProduct(args.product)
-        for content in args.contents:
-            has_content,url = product.hasContent(content)
-            if not has_content:
-                continue
-            content_name = product.getContentName(content)
-            eventid = detail.id
-            filename = os.path.join(args.outputFolder,'%s_%s' % (eventid,content_name))
-            product.getContent(content,filename=filename)
-            sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
-            
+        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder)
+
+    sys.exit(0)
+        
 if __name__ == '__main__':
     desc = '''Download product content files from USGS ComCat.
 
