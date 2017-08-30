@@ -8,26 +8,33 @@ import sys
 #local imports
 from libcomcat.detail import search,maketime,makedict,get_event_by_id
 
-def _get_product_from_detail(detail,product,contents,folder):
+def _get_product_from_detail(detail,product,contents,folder,get_all):
     if not detail.hasProduct(product):
         return False
-    product = detail.getProduct(product)
-    for content in contents:
-        has_content,url = product.hasContent(content)
-        if not has_content:
-            continue
-        content_name = product.getContentName(content)
-        eventid = detail.id
-        filename = os.path.join(folder,'%s_%s' % (eventid,content_name))
-        product.getContent(content,filename=filename)
-        sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
-
+    if get_all:
+        products = detail.getProduct(product,get_all=True)
+    else:
+        products = [detail.getProduct(product)]
+    ic = len(products)
+    for product in products:
+        for content in contents:
+            has_content,url = product.hasContent(content)
+            if not has_content:
+                continue
+            content_name = product.getContentName(content)
+            eventid = detail.id
+            filename = os.path.join(folder,'%s_v%i_%s' % (eventid,ic,content_name))
+            product.getContent(content,filename=filename)
+            sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
+        ic -= 1
     return True
 
 def main(args):
+    if args.getAll and not args.eventid:
+        print('Warning: --get-all-versions (-g) option only works when used with -i option.')
     if args.eventid:
         detail = get_event_by_id(args.eventid,includesuperseded=args.getAll)
-        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder)
+        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder,args.getAll)
         sys.exit(0)
         
     if args.bounds and args.radius:
@@ -47,6 +54,10 @@ def main(args):
     if args.bounds:
         lonmin,lonmax,latmin,latmax = args.bounds
 
+    #fix longitude bounds when crossing dateline
+    if lonmin > lonmax and lonmax >= -180:
+        lonmin -= 360
+
     minmag = None
     maxmag = None
     if args.magRange:
@@ -64,6 +75,7 @@ def main(args):
                     maxradiuskm=radiuskm,
                     catalog=args.catalog,
                     contributor=args.contributor,
+                    producttype=args.product,
                     maxmagnitude=maxmag,
                     minmagnitude=minmag)
 
@@ -73,7 +85,7 @@ def main(args):
         if not event.hasProduct(args.product):
             continue
         detail = event.getDetailEvent()
-        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder)
+        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder,args.getAll)
 
     sys.exit(0)
         
@@ -82,7 +94,7 @@ if __name__ == '__main__':
 
     To download ShakeMap grid.xml files for a box around New Zealand during 2013:
 
-    %(prog)s shakemap grid.xml -o /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+    %(prog)s shakemap "grid.xml" -o /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.

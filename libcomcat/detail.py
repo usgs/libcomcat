@@ -20,9 +20,11 @@ import time
 from impactutils.time.ancient_time import HistoricTime
 from obspy.core.event import read_events
 from pandas import DataFrame
+import numpy as np
 
 URL_TEMPLATE = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/[EVENTID].geojson'
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
+CATALOG_COUNT_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson'
 CONTRIBUTORS_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/contributors'
 SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson'
 TIMEOUT = 60
@@ -57,6 +59,171 @@ def maketime(timestring):
             except:
                 raise Exception('Could not parse time or date from %s' % timestring)
     return outtime
+
+def count(starttime=None,
+          endtime=None,
+          updatedafter=None,
+          minlatitude=None,
+          maxlatitude=None,
+          minlongitude=None,
+          maxlongitude=None,
+          latitude=None,
+          longitude=None,
+          maxradiuskm=None,
+          maxradius=None,
+          catalog=None,
+          contributor=None,
+          limit=20000,
+          maxdepth=1000,
+          maxmagnitude=10.0,
+          mindepth=-100,
+          minmagnitude=0,
+          offset=1,
+          orderby='time-asc',
+          alertlevel=None,
+          eventtype='earthquake',
+          maxcdi=None,
+          maxgap=None,
+          maxmmi=None,
+          maxsig=None,
+          mincdi=None,
+          minfelt=None,
+          mingap=None,
+          minsig=None,
+          producttype=None,
+          productcode=None,
+          reviewstatus=None):
+    """Ask the ComCat database for the number of events matching input criteria.
+
+    This count function is a wrapper around the ComCat Web API described here:
+    
+    https://earthquake.usgs.gov/fdsnws/event/1/ (see count section)
+
+    Some of the search parameters described there are NOT implemented here, usually because they do not 
+    apply to GeoJSON search results, which we are getting here and parsing into Python data structures.
+
+    This function returns a list of SummaryEvent objects, described elsewhere in this package.
+
+    Usage:
+      TODO
+    
+    :param starttime:
+      Python datetime - Limit to events on or after the specified start time. 
+    :param endtime:
+      Python datetime - Limit to events on or before the specified end time. 
+    :param updatedafter:
+      Python datetime - Limit to events updated after the specified time.
+    :param minlatitude:
+      Limit to events with a latitude larger than the specified minimum.
+    :param maxlatitude:
+      Limit to events with a latitude smaller than the specified maximum.
+    :param minlongitude:
+      Limit to events with a longitude larger than the specified minimum.
+    :param maxlongitude:
+      Limit to events with a longitude smaller than the specified maximum.
+    :param latitude:
+      Specify the latitude to be used for a radius search.
+    :param longitude:
+      Specify the longitude to be used for a radius search.
+    :param maxradiuskm:
+      Limit to events within the specified maximum number of kilometers 
+      from the geographic point defined by the latitude and longitude parameters.
+    :param maxradius:
+      Limit to events within the specified maximum number of degrees 
+      from the geographic point defined by the latitude and longitude parameters.
+    :param catalog:
+      Limit to events from a specified catalog.
+    :param contributor:
+      Limit to events contributed by a specified contributor.
+    :param limit:
+      Limit the results to the specified number of events.  
+      NOTE, this will be throttled by this Python API to the supported Web API limit of 20,000.
+    :param maxdepth:
+      Limit to events with depth less than the specified maximum.
+    :param maxmagnitude:
+      Limit to events with a magnitude smaller than the specified maximum.
+    :param mindepth:
+      Limit to events with depth more than the specified minimum.
+    :param minmagnitude:
+      Limit to events with a magnitude larger than the specified minimum.
+    :param offset:
+      Return results starting at the event count specified, starting at 1.
+    :param orderby:
+      Order the results. The allowed values are:
+        - time order by origin descending time
+        - time-asc order by origin ascending time
+        - magnitude order by descending magnitude
+        - magnitude-asc order by ascending magnitude
+    :param alertlevel:
+      Limit to events with a specific PAGER alert level. The allowed values are:
+      - green Limit to events with PAGER alert level "green".
+      - yellow Limit to events with PAGER alert level "yellow".
+      - orange Limit to events with PAGER alert level "orange".
+      - red Limit to events with PAGER alert level "red".
+    :param eventtype:
+      Limit to events of a specific type. NOTE: "earthquake" will filter non-earthquake events.
+    :param maxcdi:
+      Maximum value for Maximum Community Determined Intensity reported by DYFI.
+    :param maxgap:
+      Limit to events with no more than this azimuthal gap.
+    :param maxmmi:
+      Maximum value for Maximum Modified Mercalli Intensity reported by ShakeMap.
+    :param maxsig:
+      Limit to events with no more than this significance.
+    :param mincdi:
+      Minimum value for Maximum Community Determined Intensity reported by DYFI.
+    :param minfelt:
+      Limit to events with this many DYFI responses.
+    :param mingap:
+      Limit to events with no less than this azimuthal gap.
+    :param minsig:
+      Limit to events with no less than this significance.
+    :param producttype:
+      Limit to events that have this type of product associated. Example producttypes:
+       - moment-tensor
+       - focal-mechanism
+       - shakemap
+       - losspager
+       - dyfi
+    :param productcode:
+      Return the event that is associated with the productcode. 
+      The event will be returned even if the productcode is not 
+      the preferred code for the event. Example productcodes:
+       - nn00458749
+       - at00ndf1fr
+    :param reviewstatus:
+      Limit to events with a specific review status. The different review statuses are:
+       - automatic Limit to events with review status "automatic".
+       - reviewed Limit to events with review status "reviewed".
+    :returns:
+      List of SummaryEvent() objects.
+    """
+    #getting the inputargs must be the first line of the method!
+    inputargs = locals().copy()
+    newargs = {}
+    for key,value in inputargs.items():
+        if value is True:
+            newargs[key] = 'true'
+            continue
+        if value is False:
+            newargs[key] = 'false'
+            continue
+        if value is None:
+            continue
+        newargs[key] = value
+    if newargs['limit'] > 20000:
+        newargs['limit'] = 20000
+    if starttime is not None:
+        segments = _get_time_segments(starttime,endtime)
+        nevents = 0
+
+        for stime,etime in segments:
+            newargs['starttime'] = stime
+            newargs['endtime'] = etime
+            nevents += _count(**newargs)
+    else:
+        nevents = _count(**newargs)
+    return nevents
 
 def get_event_by_id(eventid,
                     includedeleted=False,
@@ -323,12 +490,23 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
       Pandas DataFrame with one row per event, and all relevant information in columns.
     """
     df = DataFrame()
+    sys.stderr.write('%i events downloaded.' % len(events))
+    ic = 0
+    inc = np.power(10,np.floor(np.log10(len(events)))-1)
     for event in events:
-        detail = event.getDetailEvent()
+        try:
+            detail = event.getDetailEvent()
+        except Exception as e:
+            print('Failed to get detailed version of event %s' % event.id)
+            continue
         edict = detail.toDict(get_all_magnitudes=get_all_magnitudes,
                               get_all_tensors=get_all_tensors,
                               get_all_focal=get_all_focal)
         df = df.append(edict,ignore_index=True)
+        if ic % inc == 0:
+            msg = 'Getting detailed information for %s, %i of %i events.\n'
+            sys.stderr.write(msg % (event.id,ic,len(events)))
+        ic += 1
     return df
         
 def get_summary_data_frame(events):
@@ -364,12 +542,12 @@ def _get_moment_tensor_info(tensor,get_angles=False):
         msource = 'unknown'
         
     edict = OrderedDict()
-    edict['%s_mrr' % msource] = tensor['tensor-mrr']
-    edict['%s_mtt' % msource] = tensor['tensor-mtt']
-    edict['%s_mpp' % msource] = tensor['tensor-mpp']
-    edict['%s_mrt' % msource] = tensor['tensor-mrt']
-    edict['%s_mrp' % msource] = tensor['tensor-mrp']
-    edict['%s_mtp' % msource] = tensor['tensor-mtp']
+    edict['%s_mrr' % msource] = float(tensor['tensor-mrr'])
+    edict['%s_mtt' % msource] = float(tensor['tensor-mtt'])
+    edict['%s_mpp' % msource] = float(tensor['tensor-mpp'])
+    edict['%s_mrt' % msource] = float(tensor['tensor-mrt'])
+    edict['%s_mrp' % msource] = float(tensor['tensor-mrp'])
+    edict['%s_mtp' % msource] = float(tensor['tensor-mtp'])
     if get_angles:
         edict['%s_np1_strike' % msource] = tensor['nodal-plane-1-strike']
         edict['%s_np1_dip' % msource] = tensor['nodal-plane-1-dip']
@@ -461,6 +639,40 @@ def _search(**newargs):
         raise Exception('Error downloading data from url %s.  "%s".' % (url,msg))
             
     return events
+
+def _count(**newargs):
+    if 'starttime' in newargs:
+        newargs['starttime'] = newargs['starttime'].strftime(TIMEFMT)
+    if 'endtime' in newargs:
+        newargs['endtime'] = newargs['endtime'].strftime(TIMEFMT)
+    if 'updatedafter' in newargs:
+        newargs['updatedafter'] = newargs['updatedafter'].strftime(TIMEFMT)
+        
+    paramstr = urlencode(newargs)
+    url = CATALOG_COUNT_TEMPLATE+'&'+paramstr
+
+    try:
+        fh = request.urlopen(url,timeout=TIMEOUT)
+        data = fh.read().decode('utf8')
+        fh.close()
+        jdict = json.loads(data)
+        nevents = jdict['count']
+    except HTTPError as htpe:
+        if htpe.code == 503:
+            try:
+                time.sleep(WAITSECS)
+                fh = request.urlopen(url,timeout=TIMEOUT)
+                data = fh.read().decode('utf8')
+                fh.close()
+                jdict = json.loads(data)
+                nevents = jdict['count']
+            except Exception as msg:
+                raise Exception('Error downloading data from url %s.  "%s".' % (url,msg))
+    except Exception as msg:
+        raise Exception('Error downloading data from url %s.  "%s".' % (url,msg))
+            
+    return nevents
+
 
 class SummaryEvent(object):
     """Wrapper around summary feature as returned by ComCat GeoJSON search results.
@@ -626,8 +838,14 @@ class DetailEvent(object):
             data = fh.read().decode('utf-8')
             fh.close()
             self._jdict = json.loads(data)
-        except Exception as e:
-            raise Exception('Could not connect to ComCat server.').with_traceback(e.__traceback__)
+        except HTTPError as htpe:
+            try:
+                fh = request.urlopen(url,timeout=TIMEOUT)
+                data = fh.read().decode('utf-8')
+                fh.close()
+                self._jdict = json.loads(data)
+            except Exception as msg:
+                raise Exception('Could not connect to ComCat server - %s.' % url).with_traceback(e.__traceback__)
         
     def __repr__(self):
         tpl = (self.id,str(self.time),self.latitude,self.longitude,self.depth,self.magnitude)
@@ -772,7 +990,7 @@ class DetailEvent(object):
             raise AttributeError('Event %s has no product of type %s' % (self.id,product_name))
         return len(self._jdict['properties']['products'][product_name])
     
-    def getProduct(self,product_name,auth=True,index=0):
+    def getProduct(self,product_name,auth=True,index=0,get_all=False):
         """Retrieve a Product object from this DetailEvent.
 
         :param product_name:
@@ -781,11 +999,22 @@ class DetailEvent(object):
           Boolean indicating whether to retrieve the authoritative version of the product.
         :param index:
           If auth==False, then use this index value (starts at 0) of desired version.
+        :param get_all:
+          Bolean indicating whether all versions of the product should be retrieved.
         :returns:
-          Product object, from authoritative version or version at a given index.
+          Product object (or list of objects), from authoritative version or 
+          version at a given index.
         """
         if not self.hasProduct(product_name):
             raise AttributeError('Event %s has no product of type %s' % (self.id,product))
+        #if user wants all products
+        if get_all:
+            products = []
+            for product in self._jdict['properties']['products'][product_name]:
+                prod = Product(product_name,product)
+                products.append(prod)
+            return products
+            
         # if user wants authoritative product
         if auth:
             weights = []
@@ -827,7 +1056,7 @@ class Product(object):
                 url = self._product['contents'][contentkey]['url']
                 return (True,url)
 
-        return False
+        return (False,None)
 
     def __repr__(self):
         ncontents = len(self._product['contents'])

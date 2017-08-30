@@ -2,14 +2,10 @@
 import argparse
 import sys
 
-from libcomcat import detail,maketime
+from libcomcat import detail
 from impactutils.time.ancient_time import HistoricTime
 
 def main(args):
-    if args.bounds and args.radius:
-        print('Please specify either a bounding box OR radius search.')
-        sys.exit(1)
-
     latitude = None
     longitude = None
     radiuskm = None
@@ -21,12 +17,40 @@ def main(args):
         
     if args.bounds:
         lonmin,lonmax,latmin,latmax = args.bounds
+
+    #fix longitude bounds when crossing dateline
+    if lonmin > lonmax and lonmax >= -180:
+        lonmin -= 360
         
     minmag = None
     maxmag = None
     if args.magRange:
         minmag  = args.magRange[0]
         maxmag  = args.magRange[1]
+    
+    if args.getCount:
+        nevents = detail.count(starttime=args.startTime,
+                                endtime=args.endTime,
+                                updatedafter=args.after,
+                                minlatitude=latmin,
+                                maxlatitude=latmax,
+                                minlongitude=lonmin,
+                                maxlongitude=lonmax,
+                                latitude=latitude,
+                                longitude=longitude,
+                                maxradiuskm=radiuskm,
+                                catalog=args.catalog,
+                                contributor=args.contributor,
+                                maxmagnitude=maxmag,
+                                minmagnitude=minmag)
+        print('There are %i events matching input criteria.' % nevents)
+        sys.exit(0)
+        
+    if args.bounds and args.radius:
+        print('Please specify either a bounding box OR radius search.')
+        sys.exit(1)
+
+    
     events = detail.search(starttime=args.startTime,
                            endtime=args.endTime,
                            updatedafter=args.after,
@@ -128,11 +152,11 @@ if __name__ == '__main__':
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
     parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
                         nargs=3,help='Search radius in KM (use instead of bounding box)')
-    parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
+    parser.add_argument('-s','--start-time', dest='startTime', type=detail.maketime,
                         help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
-    parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
+    parser.add_argument('-e','--end-time', dest='endTime', type=detail.maketime,
                         help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
-    parser.add_argument('-t','--time-after', dest='after', type=maketime,
+    parser.add_argument('-t','--time-after', dest='after', type=detail.maketime,
                         help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
                         help='Min/max (authoritative) magnitude to restrict search.')
