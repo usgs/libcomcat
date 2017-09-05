@@ -422,6 +422,26 @@ def search(starttime=None,
     if newargs['limit'] > 20000:
         newargs['limit'] = 20000
 
+    #play around with estimating how many earthquakes we have
+    if 'starttime' in newargs:
+        starttime = newargs['starttime']
+    else:
+        starttime = datetime.utcnow() - timedelta(days=30)
+    if 'endtime' in newargs:
+        endtime = newargs['endtime']
+    else:
+        endtime = datetime.utcnow()
+    if 'minmagnitude' in newargs:
+        minmag = newargs['minmag']
+    else:
+        minmag = 0.0
+
+    dt_days = (endtime-starttime).days
+    numbers = np.log10
+        
+        
+        
+        
     if starttime is not None:
         segments = _get_time_segments(starttime,endtime)
         events = []
@@ -717,10 +737,11 @@ class SummaryEvent(object):
     def time(self):
         """Authoritative origin time.
         """
-        itime = self._jdict['properties']['time']
-        itime_secs = itime//1000
-        dtime = datetime.utcfromtimestamp(itime_secs)
-        dt = timedelta(milliseconds=itime-itime_secs)
+        time_in_msec = self._jdict['properties']['time']
+        time_in_sec = time_in_msec//1000
+        msec = time_in_msec - (time_in_sec*1000)
+        dtime = datetime.utcfromtimestamp(time_in_sec)
+        dt = timedelta(milliseconds=msec)
         dtime = dtime + dt
         return dtime
 
@@ -807,11 +828,11 @@ class SummaryEvent(object):
             - magnitude (float) Authoritative event magnitude.
         """
         edict = OrderedDict()
-        edict['id'] = self.id,
-        edict['time'] = self.time,
-        edict['latitude'] = self.latitude,
-        edict['longitude'] = self.longitude,
-        edict['depth'] = self.depth,
+        edict['id'] = self.id
+        edict['time'] = self.time
+        edict['latitude'] = self.latitude
+        edict['longitude'] = self.longitude
+        edict['depth'] = self.depth
         edict['magnitude'] = self.magnitude
         return edict
     
@@ -879,10 +900,11 @@ class DetailEvent(object):
     def time(self):
         """Authoritative origin time.
         """
-        itime = self._jdict['properties']['time']
-        itime_secs = itime//1000
-        dtime = datetime.utcfromtimestamp(itime_secs)
-        dt = timedelta(milliseconds=itime-itime_secs)
+        time_in_msec = self._jdict['properties']['time']
+        time_in_sec = time_in_msec//1000
+        msec = time_in_msec - (time_in_sec*1000)
+        dtime = datetime.utcfromtimestamp(time_in_sec)
+        dt = timedelta(milliseconds=msec)
         dtime = dtime + dt
         return dtime
 
@@ -910,6 +932,31 @@ class DetailEvent(object):
             return True
         return False
 
+    def hasProperty(self,key):
+        """Test to see whether a property with a given key is present in list of properties.
+        
+        :param key:
+          Property to search for.
+        :returns:
+          Boolean indicating whether that key exists or not.
+        """
+        if key not in self._jdict['properties']:
+            return False
+        return True
+
+    def __getitem__(self,key):
+        """Extract DetailEvent property using the [] operator.
+        
+        :param key:
+          Property to extract.
+        :returns:
+          Desired property.
+        """
+        if key not in self._jdict['properties']:
+            raise AttributeError('No property %s found for event %s.' % (key,self.id))
+        return self._jdict['properties'][key]
+        
+    
     def toDict(self,get_all_magnitudes=False,get_all_tensors=False,get_all_focal=False):
         """Return known origin, focal mechanism, and moment tensor information for an event.
 
@@ -1066,12 +1113,8 @@ class Product(object):
     def getContentName(self,regexp):
         for contentkey in self._product['contents'].keys():
             if re.search(regexp,contentkey) is not None:
-                url = self._product['contents'][contentkey]['url']
-                parts = urlparse(url)
-                content_name = parts.path.split('/')[-1]
-                return content_name
+                return contentkey
         return None
-                
     
     def getContent(self,regexp,filename=None):
         """Find and download the file associated with the input content regular expression.
@@ -1110,11 +1153,29 @@ class Product(object):
             return False
         return True
 
+    def __getitem__(self,key):
+        """Extract Product property using the [] operator.
+        
+        :param key:
+          Property to extract.
+        :returns:
+          Desired property.
+        """
+        if key not in self._jdict['properties']:
+            raise AttributeError('No property %s found for event %s.' % (key,self.id))
+        return self._jdict['properties'][key]
+    
     @property
     def properties(self):
-        """List of summary event properties (retrievable from object with [] operator).
+        """List of product properties (retrievable from object with [] operator).
         """
         return list(self._product['properties'].keys())
+
+    @property
+    def contents(self):
+        """List of product properties (retrievable from object with getContent() method).
+        """
+        return list(self._product['contents'].keys())
     
     def __getitem__(self,key):
         """Extract Product property using the [] operator.
