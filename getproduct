@@ -6,90 +6,65 @@ import os.path
 import sys
 
 #local imports
-from libcomcat.detail import search,maketime,makedict,get_event_by_id
+from libcomcat.search import search,get_event_by_id
+from libcomcat.utils import maketime,makedict
+from libcomcat.classes import VersionOption
 
-def _get_product_from_detail(detail,product,contents,folder,get_all):
+#third party imports
+import numpy as np
+import pandas as pd
+
+def _get_product_from_detail(detail,product,contents,folder,
+                             version,source,list_only=False):
     if not detail.hasProduct(product):
         return False
-    if get_all:
-        products = detail.getProduct(product,get_all=True)
+
+    version_option = None
+    if version == 'first':
+        version_option = VersionOption.FIRST
+    elif version == 'last':
+        version_option = VersionOption.LAST
     else:
-        products = [detail.getProduct(product)]
+        version_option = VersionOption.ALL
+        
+    products = detail.getProducts(product,source=source,version_option=version_option)
+    
     ic = len(products)
+    eventfolder = os.path.join(folder,detail.id)
+    if not os.path.isdir(eventfolder):
+        os.makedirs(eventfolder)
+    
+    nzeros = int(np.ceil(np.log10(len(products))))
+    fmt = '%%0%ii' % (nzeros+1)
+    eventid = detail.id
     for product in products:
+        iversion = product.version
+        prodsource = product.source
         for content in contents:
-            has_content,url = product.hasContent(content)
-            if not has_content:
+            matching_contents = product.getContentsMatching(content)
+            content_name = matching_contents[0]
+            if not len(matching_contents):
+                sys.stderr.write('No %s for %s %s product.\n' % (content,detail.id,product))
                 continue
-            content_name = product.getContentName(content)
-            eventid = detail.id
-            filename = os.path.join(folder,'%s_v%i_%s' % (eventid,ic,content_name))
-            product.getContent(content,filename=filename)
-            sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
+            if not list_only:
+                sversion = fmt % iversion
+                fname = '%s_%s_%s_%s' % (eventid,prodsource,sversion,content_name)
+                filename = os.path.join(eventfolder,fname)
+                try:
+                    product.getContent(content_name,filename=filename)
+                except Exception as e:
+                    print('Could not download %s from event %s.  Continuing...' % (content_name,detail.id))
+                    continue
+                sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
+            else:
+                url = product.getContentURL(content_name)
+                print(url)
+            iversion += 1
+            
         ic -= 1
     return True
 
-def main(args):
-    if args.getAll and not args.eventid:
-        print('Warning: --get-all-versions (-g) option only works when used with -i option.')
-    if args.eventid:
-        detail = get_event_by_id(args.eventid,includesuperseded=args.getAll)
-        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder,args.getAll)
-        sys.exit(0)
-        
-    if args.bounds and args.radius:
-        print('Please specify either a bounding box OR radius search.')
-        sys.exit(1)
-
-    latitude = None
-    longitude = None
-    radiuskm = None
-    lonmin = latmin = lonmax = latmax = None
-    starttime = endtime = None
-    if args.radius:
-        latitude = args.radius[0]
-        longitude = args.radius[1]
-        radiuskm = args.radius[2]
-        
-    if args.bounds:
-        lonmin,lonmax,latmin,latmax = args.bounds
-
-    #fix longitude bounds when crossing dateline
-    if lonmin > lonmax and lonmax >= -180:
-        lonmin -= 360
-
-    minmag = None
-    maxmag = None
-    if args.magRange:
-        minmag  = args.magRange[0]
-        maxmag  = args.magRange[1]
-    events = search(starttime=args.startTime,
-                    endtime=args.endTime,
-                    updatedafter=args.after,
-                    minlatitude=latmin,
-                    maxlatitude=latmax,
-                    minlongitude=lonmin,
-                    maxlongitude=lonmax,
-                    latitude=latitude,
-                    longitude=longitude,
-                    maxradiuskm=radiuskm,
-                    catalog=args.catalog,
-                    contributor=args.contributor,
-                    producttype=args.product,
-                    maxmagnitude=maxmag,
-                    minmagnitude=minmag)
-
-    for event in events:
-        if args.listURL:
-            print(event.getDetailURL())
-        if not event.hasProduct(args.product):
-            continue
-        detail = event.getDetailEvent()
-        _get_product_from_detail(detail,args.product,args.contents,args.outputFolder,args.getAll)
-
-    sys.exit(0)
-        
-if __name__ == '__main__':
+def get_parser():
     desc = '''Download product content files from USGS ComCat.
 
     To download ShakeMap grid.xml files for a box around New Zealand during 2013:
@@ -142,10 +117,85 @@ if __name__ == '__main__':
                         help='Product property (reviewstatus:approved).')
     parser.add_argument('-t','--event-property', dest='eventProperties', 
                         help='Event property (alert:yellow, status:REVIEWED, etc.).',type=makedict)
-    parser.add_argument('-l','--list-url', dest='listURL', action='store_true',
+    parser.add_argument('-l','--list-url', dest='list_only', action='store_true',
                         help='Only list urls for contents in events that match criteria.')
-    parser.add_argument('-g','--get-all-versions', dest='getAll', action='store_true',
-                        help='Get products for every version of every event.')
+    
+    parser.add_argument('--get-version', dest='version', choices=['first','last','all'],
+                        help='Get contents for first, last or all versions of event.',default='last')
+    parser.add_argument('--get-source', dest='source', default='preferred',
+                        help='Get contents for the "preferred" source, "all" sources, or a specific source ("us").')
+    return parser
+
+def main(args):
+    if args.eventid:
+        detail = get_event_by_id(args.eventid,includesuperseded=True)
+        _get_product_from_detail(detail,args.product,args.contents,
+                                     args.outputFolder,args.version,
+                                     args.source,list_only=args.list_only)
+        sys.exit(0)
+        
+    if args.bounds and args.radius:
+        print('Please specify either a bounding box OR radius search.')
+        sys.exit(1)
+
+    latitude = None
+    longitude = None
+    radiuskm = None
+    lonmin = latmin = lonmax = latmax = None
+    starttime = endtime = None
+    if args.radius:
+        latitude = args.radius[0]
+        longitude = args.radius[1]
+        radiuskm = args.radius[2]
+        
+    if args.bounds:
+        lonmin,lonmax,latmin,latmax = args.bounds
+        #fix longitude bounds when crossing dateline
+        if lonmin > lonmax and lonmax >= -180:
+            lonmin -= 360
+
+    minmag = 0.0
+    maxmag = 9.9
+    if args.magRange:
+        minmag  = args.magRange[0]
+        maxmag  = args.magRange[1]
+
+    events = search(starttime=args.startTime,
+                    endtime=args.endTime,
+                    updatedafter=args.after,
+                    minlatitude=latmin,
+                    maxlatitude=latmax,
+                    minlongitude=lonmin,
+                    maxlongitude=lonmax,
+                    latitude=latitude,
+                    longitude=longitude,
+                    maxradiuskm=radiuskm,
+                    catalog=args.catalog,
+                    contributor=args.contributor,
+                    producttype=args.product,
+                    maxmagnitude=maxmag,
+                    minmagnitude=minmag)
+
+    if not len(events):
+        print('No events found matching your search criteria. Exiting.')
+        sys.exit(0)
+    
+    for event in events:
+        if not event.hasProduct(args.product):
+            continue
+        try:
+            detail = event.getDetailEvent(includesuperseded=True)
+        except Exception as e:
+            print('Failed to retrieve detail event for event %s... continuing.' % event.id)
+            continue
+        _get_product_from_detail(detail,args.product,
+                                 args.contents,args.outputFolder,
+                                 args.version,args.source,list_only=args.list_only)
+
+    sys.exit(0)
+        
+if __name__ == '__main__':
+    parser = get_parser()
     
     pargs = parser.parse_args()
 

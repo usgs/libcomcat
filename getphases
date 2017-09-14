@@ -1,0 +1,307 @@
+#!/usr/bin/env python
+
+#stdlib imports
+from urllib.request import urlopen
+from datetime import datetime
+import sys
+import json
+import argparse
+import os.path
+import warnings
+
+#third party imports
+from obspy.io.quakeml.core import Unpickler
+import pandas as pd
+import openpyxl
+
+#local imports
+from libcomcat.utils import maketime
+from libcomcat.search import search,get_event_by_id
+
+TIMEOUT = 60 #how many seconds to wait to fetch a url?
+
+def get_parser():
+    desc = '''Download phase data for matching events into CSV or Excel format.
+
+    The resulting files will contain a "header" consisting of basic earthquake information
+    (Id,Time,Latitude,Longitude,Depth,Magnitude) at the top of the file. In the Excel
+    format, this information takes the first six rows and two columns. In CSV format, the
+    values are the first six lines of the file, prepended with a "#" (comment) character.
+
+    To download phase data to Excel format for a small rectangle in Oklahoma in 2017:
+    %(prog)s ~/tmp/phase_data -b -97.573 -97.460 36.247 36.329 -s 2017-08-26 -e 2017-09-15 -f excel
+    '''
+    parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
+    #positional arguments
+    parser.add_argument('directory',
+                        metavar='DIRECTORY',help='Output directory.')
+    #optional arguments
+    parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
+                        dest='bounds', type=float, nargs=4,
+                        help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
+    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
+                        nargs=3,help='Search radius in KM (use instead of bounding box)')
+    parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
+                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+    parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
+                        help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+    parser.add_argument('-i','--event-id', dest='eventid', 
+                        help='Extract phase data for a single event, using ComCat event ID.')
+    parser.add_argument('-t','--time-after', dest='after', type=maketime,
+                        help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
+    parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
+                        help='Min/max (authoritative) magnitude to restrict search.')
+    parser.add_argument('-c','--catalog', dest='catalog', 
+                        help='Source catalog from which products derive (atlas, centennial, etc.)')
+    parser.add_argument('-n','--contributor', dest='contributor', 
+                        help='Source contributor (who loaded product) (us, nc, etc.)')
+    parser.add_argument('-f','--format', dest='format', choices=['csv','tab','excel'], default='csv',
+                        metavar='FORMAT',help='Output format.')
+    return parser
+
+def stringify(waveform):
+    """Turn waveform object into NSCL-style station code
+
+    :param waveform:
+      Obspy Catalog Waveform object.
+    :returns:
+      NSCL- style string representation of waveform object.
+    """
+    fmt = '%s.%s.%s.%s'
+    tpl = (waveform.network_code,waveform.station_code,waveform.channel_code,waveform.location_code)
+    return fmt % tpl
+
+def get_amplitude(event,waveform_id):
+    """Find the amplitude object in a Catalog Event corresponding to input waveform id.
+    :param event:
+      Obspy Catalog Event object.
+    :param waveform_id:
+      Waveform ID string.
+    :returns:
+      Obspy Catalog amplitude object.
+    """
+    idlist = [amp.waveform_id for amp in event.amplitudes]
+    if waveform_id not in idlist:
+        return None
+    idx = idlist.index(waveform_id)
+    amplitude = event.amplitudes[idx]
+    return amplitude
+
+def get_magnitude(event,ampid):
+    """Find the magnitude object in a Catalog Event corresponding to input amplitude id.
+    :param event:
+      Obspy Catalog Event object.
+    :param ampid:
+      Amplitude ID string.
+    :returns:
+      Obspy Catalog magnitude object.
+    """
+    idlist = [mag.amplitude_id for mag in event.station_magnitudes]
+    if ampid not in idlist:
+        return None
+    idx = idlist.index(ampid)
+    magnitude = event.station_magnitudes[idx]
+    return magnitude
+
+def get_arrival(event,pickid):
+    """Find the arrival object in a Catalog Event corresponding to input pick id.
+    :param event:
+      Obspy Catalog Event object.
+    :param pickid:
+      Pick ID string.
+    :returns:
+      Obspy Catalog arrival object.
+    """
+    for origin in event.origins:
+        idlist = [arr.pick_id for arr in origin.arrivals]
+        if pickid not in idlist:
+            continue
+        idx = idlist.index(pickid)
+        arrival = origin.arrivals[idx]
+        return arrival
+    if pickid is None:
+        return None
+
+def get_phaserow(pick,catevent):
+    """Return a dictionary containing Phase data matching that found on ComCat event page.
+    Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin 
+    (Click on the Phases tab).
+
+    :param pick:
+      Obspy Catalog Pick object.
+    :param catevent:
+      Obspy Catalog Event object.
+    :returns:
+      Dictionary containing:
+        - Channel: NSCL-style channel string.
+        - Distance: Distance (km) from station to origin.
+        - Azimuth: Azimuth (deg.) from epicenter to station.
+        - Phase: Name of the phase (Pn,Pg, etc.)
+        - Arrival Time: Pick arrival time (UTC).
+        - Status: "manual" or "automatic".
+        - Residual: Arrival time residual.
+        - Weight: Arrival weight.
+    """
+    pick_id = pick.resource_id
+    waveform_id = pick.waveform_id
+    amplitude = get_amplitude(catevent,waveform_id)
+    if amplitude is None:
+      #print('could not find amplitude for pick %s' % stringify(waveform_id))
+      return None
+    magnitude = get_magnitude(catevent,amplitude.resource_id)
+    if magnitude is None:
+      #print('could not find magnitude for amplitude %s' % amplitude.resource_id)
+      return None
+    arrival = get_arrival(catevent,pick_id)
+    if arrival is None:
+      #print('could not find arrival for pick %s' % pick_id)
+      return None
+
+    #save info to row of dataframe
+    etime = datetime(pick.time.year,pick.time.month,pick.time.day,
+                     pick.time.hour,pick.time.minute,pick.time.second)
+    channel = stringify(waveform_id)
+    row = {'Channel':channel,
+           'Distance':arrival.distance,
+           'Azimuth':arrival.azimuth,
+           'Phase':arrival.phase,
+           'Arrival Time':etime,
+           'Status':pick.evaluation_mode,
+           'Residual':arrival.time_residual,
+           'Weight':arrival.time_weight}
+    return row
+
+def get_phase_dataframe(detail):
+    df = pd.DataFrame(columns=['Channel','Distance','Azimuth',
+                               'Phase','Arrival Time','Status',
+                               'Residual','Weight'])
+    phasedata = detail.getProducts('phase-data')[0]
+    quakeurl = phasedata.getContentURL('quakeml.xml')
+    try:
+        fh = urlopen(quakeurl,timeout=TIMEOUT)
+        data = fh.read()
+        fh.close()
+    except Exception as msg:
+        return None
+    unpickler = Unpickler()
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore",category=UserWarning)
+        catalog = unpickler.loads(data)
+        catevent = catalog.events[0]
+        for pick in catevent.picks:
+            phaserow = get_phaserow(pick,catevent)
+            if phaserow is None:
+                continue
+            df = df.append(phaserow,ignore_index=True)
+    return df
+
+def main(args):
+    if args.eventid:
+        detail = get_event_by_id(args.eventid)
+        df = get_phase_dataframe(detail)
+        filename = save_dataframe(df,args.directory,detail,args.format)
+        print('Saved phase data for %s to %s' % (detail.id,filename))
+        sys.exit(0)
+        
+    if args.bounds and args.radius:
+        print('Please specify either a bounding box OR radius search.')
+        sys.exit(1)
+
+    if not os.path.isdir(args.directory):
+        os.makedirs(args.directory)
+        
+    latitude = None
+    longitude = None
+    radiuskm = None
+    lonmin = latmin = lonmax = latmax = None
+    starttime = endtime = None
+    if args.radius:
+        latitude = args.radius[0]
+        longitude = args.radius[1]
+        radiuskm = args.radius[2]
+        
+    if args.bounds:
+        lonmin,lonmax,latmin,latmax = args.bounds
+        #fix longitude bounds when crossing dateline
+        if lonmin > lonmax and lonmax >= -180:
+            lonmin -= 360
+
+    minmag = 0.0
+    maxmag = 9.9
+    if args.magRange:
+        minmag  = args.magRange[0]
+        maxmag  = args.magRange[1]
+
+    events = search(starttime=args.startTime,
+                    endtime=args.endTime,
+                    updatedafter=args.after,
+                    minlatitude=latmin,
+                    maxlatitude=latmax,
+                    minlongitude=lonmin,
+                    maxlongitude=lonmax,
+                    latitude=latitude,
+                    longitude=longitude,
+                    maxradiuskm=radiuskm,
+                    catalog=args.catalog,
+                    contributor=args.contributor,
+                    maxmagnitude=maxmag,
+                    minmagnitude=minmag)
+    
+    if not len(events):
+        print('No events found matching your search criteria. Exiting.')
+        sys.exit(0)
+        
+    for event in events:
+        if not event.hasProduct('phase-data'):
+            continue
+        try:
+            detail = event.getDetailEvent()
+            df = get_phase_dataframe(detail)
+            filename = save_dataframe(df,args.directory,detail,args.format)
+            
+            print('Saved phase data for %s to %s' % (event.id,filename))
+        except Exception as e:
+            print('Failed to retrieve phase data for event %s.  Error "%s"... continuing.' % (event.id,str(e)))
+            continue
+
+def save_dataframe(df,directory,event,file_format):
+    if file_format == 'excel':
+        ext = 'xlsx'
+        filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
+        writer = pd.ExcelWriter(filename, engine='openpyxl')
+        df.to_excel(writer,index=False,startrow=6,startcol=0)
+        workbook  = writer.book
+        ws = workbook.active
+        ws['A1'] = 'Id'
+        ws['B1'] = event.id
+        ws['A2'] = 'Time'
+        ws['B2'] = event.time
+        ws['A3'] = 'Latitude'
+        ws['B3'] = event.latitude
+        ws['A4'] = 'Longitude'
+        ws['B4'] = event.longitude
+        ws['A5'] = 'Depth'
+        ws['B5'] = event.depth
+        ws['A6'] = 'Magnitude'
+        ws['B6'] = event.magnitude
+        workbook.save(filename)
+    else:
+        ext = 'csv'
+        filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
+        f = open(filename,'wt')
+        f.write('#Id = %s\n' % event.id)
+        f.write('#Time = %s\n' % (str(event.time)))
+        f.write('#Latitude = %.4f\n' % event.latitude)
+        f.write('#Longitude = %.4f\n' % event.longitude)
+        f.write('#Depth = %.4f\n' % event.depth)
+        f.write('#Magnitude = %.4f\n' % event.magnitude)
+        df.to_csv(f,index=False)
+        f.close()
+    return filename
+        
+if __name__ == '__main__':
+    parser = get_parser()
+    pargs = parser.parse_args()
+    main(pargs)
+
+    
