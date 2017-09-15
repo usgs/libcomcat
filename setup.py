@@ -7,5 +7,5 @@ setup(name='libcomcat',
       author_email='mhearne@usgs.gov',
       url='',
       packages=['libcomcat'],
-      scripts = ['getproduct','getcsv','findid'],
+      scripts = ['getproduct','getcsv','findid','getphases'],
 )

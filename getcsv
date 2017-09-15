@@ -185,11 +185,11 @@ def main(args):
     df = df[first_columns+col_list]
     
     if args.format == 'csv':
-        df.to_csv(args.filename)
+        df.to_csv(args.filename,index=False)
     elif args.format == 'tab':
-        df.to_csv(args.filename,sep='\t')
+        df.to_csv(args.filename,sep='\t',index=False)
     else:
-        df.to_excel(args.filename)
+        df.to_excel(args.filename,index=False)
     print('%i records saved to %s.' % (len(df),args.filename))
     sys.exit(0)
 

@@ -7,4 +7,5 @@ libcomcat Programs
    getcsv
    getproduct
    findid
+   getphases
 

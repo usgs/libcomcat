@@ -196,7 +196,7 @@ def count(starttime=None,
 
     return nevents
 
-def get_event_by_id(eventid,
+def get_event_by_id(eventid,catalog=None,
                     includedeleted=False,
                     includesuperseded=False):
     """Search the ComCat database for an event matching the input event id.
@@ -236,7 +236,27 @@ def get_event_by_id(eventid,
         if value is None:
             continue
         newargs[key] = value
+        
     event = _search(**newargs) #this should be a DetailEvent
+    #hack around inconsistent behavior in Comcat API
+    #when search with eventid parameter is specified, catalog parameter
+    #has no effect.
+    #so, let's do two searches:
+    #one using eventid parameter to get eq parameters
+    #second using those parameters to do a regular search.
+    if 'catalog' in newargs:
+        time = event.time
+        lat = event.latitude
+        lon = event.longitude
+        summary_events = _search(starttime = time - timedelta(seconds=1),
+                                 endtime = time + timedelta(seconds=1),
+                                 latitude = lat,
+                                 longitude = lon,
+                                 maxradiuskm = 0.1,
+                                 catalog=catalog)
+
+
+        event = summary_events[0].getDetailEvent()
     return event
     
 def search(starttime=None,

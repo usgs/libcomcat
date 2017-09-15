@@ -14,6 +14,7 @@ from enum import Enum
 #third party imports
 from obspy.core.event import read_events
 import pandas as pd
+import dateutil
 
 #constants
 #the detail event URL template
@@ -45,7 +46,7 @@ def _get_moment_tensor_info(tensor,get_angles=False):
     edict['%s_mrt' % msource] = float(tensor['tensor-mrt'])
     edict['%s_mrp' % msource] = float(tensor['tensor-mrp'])
     edict['%s_mtp' % msource] = float(tensor['tensor-mtp'])
-    if get_angles:
+    if get_angles and tensor.hasProperty('nodal-plane-1-strike'):
         edict['%s_np1_strike' % msource] = tensor['nodal-plane-1-strike']
         edict['%s_np1_dip' % msource] = tensor['nodal-plane-1-dip']
         if tensor.hasProperty('nodal-plane-1-rake'):
@@ -94,6 +95,18 @@ class SummaryEvent(object):
         """
         self._jdict = feature.copy()
 
+    @property
+    def location(self):
+        """Earthquake location string.
+        """
+        return self._jdict['properties']['place']
+
+    @property
+    def url(self):
+        """ComCat URL.
+        """
+        return self._jdict['properties']['url']
+    
     @property
     def latitude(self):
         """Authoritative origin latitude.
@@ -222,11 +235,12 @@ class SummaryEvent(object):
         edict = OrderedDict()
         edict['id'] = self.id
         edict['time'] = self.time
+        edict['location'] = self.location
         edict['latitude'] = self.latitude
         edict['longitude'] = self.longitude
         edict['depth'] = self.depth
         edict['magnitude'] = self.magnitude
-        edict['url'] = self['url']
+        edict['url'] = self.url
         return edict
     
 class DetailEvent(object):
@@ -259,7 +273,19 @@ class DetailEvent(object):
     def __repr__(self):
         tpl = (self.id,str(self.time),self.latitude,self.longitude,self.depth,self.magnitude)
         return '%s %s (%.3f,%.3f) %.1f km M%.1f' % tpl
-        
+
+    @property
+    def location(self):
+        """Earthquake location string.
+        """
+        return self._jdict['properties']['place']
+
+    @property
+    def url(self):
+        """ComCat URL.
+        """
+        return self._jdict['properties']['url']
+    
     @property
     def latitude(self):
         """Authoritative origin latitude.
@@ -345,9 +371,15 @@ class DetailEvent(object):
         return self._jdict['properties'][key]
         
     
-    def toDict(self,get_all_magnitudes=False,get_all_tensors=False,get_all_focal=False):
+    def toDict(self,catalog=None,
+               get_all_magnitudes=False,
+               get_all_tensors=False,
+               get_all_focal=False):
         """Return known origin, focal mechanism, and moment tensor information for an event.
 
+        :param catalog:
+          Retrieve the primary event information (time,lat,lon...) from the catalog given.
+          If no source for this information exists, an AttributeError will be raised.
         :param get_all_magnitudes:
           Boolean indicating whether all known magnitudes for this event should be returned.
           NOTE: The ComCat phase-data product's QuakeML file will be downloaded and parsed,
@@ -362,23 +394,41 @@ class DetailEvent(object):
           data.  The number and name of the fields will vary by what data is available.
         """
         edict = OrderedDict()
-        edict['id'] = self.id
-        edict['time'] = self.time
-        edict['latitude'] = self.latitude
-        edict['longitude'] = self.longitude
-        edict['depth'] = self.depth
-        edict['magnitude'] = self.magnitude
-        edict['magtype'] = self._jdict['properties']['magType']
+
+        if catalog is None:
+            edict['id'] = self.id
+            edict['time'] = self.time
+            edict['location'] = self.location
+            edict['latitude'] = self.latitude
+            edict['longitude'] = self.longitude
+            edict['depth'] = self.depth
+            edict['magnitude'] = self.magnitude
+            edict['magtype'] = self._jdict['properties']['magType']
+            edict['url'] = self.url
+        else:
+            try:
+                phasedata = self.getProducts('phase-data',source=catalog)[0]
+                edict['id'] = phasedata['eventsource']+phasedata['eventsourcecode']
+                edict['time'] = dateutil.parser.parse(phasedata['eventtime'])
+                edict['location'] = self.location
+                edict['latitude'] = float(phasedata['latitude'])
+                edict['longitude'] = float(phasedata['longitude'])
+                edict['depth'] = float(phasedata['depth'])
+                edict['magnitude'] = float(phasedata['magnitude'])
+                edict['magtype'] = phasedata['magnitude-type']
+            except AttributeError as ae:
+                raise ae
 
         if not get_all_tensors:
             if self.hasProduct('moment-tensor'):
-                edict.update(_get_moment_tensor_info(self.getProducts('moment-tensor')[0]))
+                tensor = self.getProducts('moment-tensor')[0]
+                edict.update(_get_moment_tensor_info(tensor,get_angles=True))
         else:
             if self.hasProduct('moment-tensor'):
                 num_tensors = self.getNumVersions('moment-tensor')
                 for idx in range(0,num_tensors):
                     tensor = self.getProducts('moment-tensor',auth=False,index=idx)[0]
-                    edict.update(_get_moment_tensor_info(tensor,get_angles=get_all_focal))
+                    edict.update(_get_moment_tensor_info(tensor,get_angles=True))
         if not get_all_focal:
             if self.hasProduct('focal-mechanism'):
                 edict.update(_get_focal_mechanism_info(self.getProducts('focal-mechanism')[0]))

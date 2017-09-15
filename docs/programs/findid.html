@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="libcomcat" href="../apidoc/libcomcat.html" />
+    <link rel="next" title="getphases" href="getphases.html" />
     <link rel="prev" title="getproduct" href="getproduct.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -57,6 +57,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="getphases.html">getphases</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../apidoc/libcomcat.html">libcomcat 0.5 API</a></li>
@@ -84,22 +85,17 @@
 <p><p>Find the id(s) of the closest earthquake to input parameters.</p>
 <blockquote>
 <div><p>To print the authoritative id of the event closest in time and space 
-inside a 100 km, 16 second window to “2015-03-29T23:48:31,-4.763,152.561”:</p>
-<p>findid  2015-03-29T23:48:31 -4.763 152.561</p>
-<p>To repeat that query but with a custom distance/time window of 50km and 5 seconds:</p>
-<p>findid -r 50 -w 5  2015-03-29T23:48:31 -4.763 152.561</p>
-<p>To print the authoritative id of the event closest in time and space to “2015-03-29T23:48:31,-4.763,152.561” AND
-the url of said event:</p>
-<p>findid -u 2015-03-29T23:48:31 -4.763 152.561</p>
+inside a 100 km, 16 second window to “2017-08-30 03:00:33 UTC 37.571   118.888”:</p>
+<p>%(prog)s  2017-08-30T03:00:33 37.571 -118.888</p>
+<p>To make a similar query but with the time shifted by 2 minutes, and a 
+custom time window of 3 minutes:</p>
+<p>%(prog)s  -w 180 2017-08-30T03:00:33 37.571 -118.888</p>
+<p>To print the authoritative id AND the url of the event closest in time and space to that point:</p>
+<p>%(prog)s  -u -w 180 2017-08-30T03:00:33 37.571 -118.888</p>
 <p>To print all of the ids associated with the event closest to above:</p>
-<p>findid -a 2015-03-29T23:48:31 -4.763 152.561</p>
+<p>%(prog)s -a 2015-03-29T23:48:31 -4.763 152.561</p>
 <p>To print the id(s), time/distance deltas, and azimuth from input to nearest event:</p>
-<p>findid -v 2015-03-29T23:48:31 -4.763 152.561</p>
-<p>To find the ids for events found in a CSV file (time,lat,lon,…):
-(Create a file by doing the following: getcsv -s 2015-04-07 -e 2015-04-08T15:00:00 -m 4.0 5.5 | cut -f2,3,4,5,6,7 -d’,’ &gt; eventlist.csv)
-./findid -f eventlist.csv
-Output will be the input CSV data, with id added as the first column.</p>
-<p>If -u option is supplied, the url will be the second column.</p>
+<p>%(prog)s -v 2015-03-29T23:48:31 -4.763 152.561</p>
 <dl class="docutils">
 <dt>Notes:</dt>
 <dd><ul class="first simple">

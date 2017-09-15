@@ -171,11 +171,13 @@ def get_phaserow(pick,catevent):
            'Weight':arrival.time_weight}
     return row
 
-def get_phase_dataframe(detail):
+def get_phase_dataframe(detail,catalog):
     df = pd.DataFrame(columns=['Channel','Distance','Azimuth',
                                'Phase','Arrival Time','Status',
                                'Residual','Weight'])
-    phasedata = detail.getProducts('phase-data')[0]
+    if catalog is None:
+        catalog = 'preferred'
+    phasedata = detail.getProducts('phase-data',source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
     try:
         fh = urlopen(quakeurl,timeout=TIMEOUT)
@@ -197,9 +199,9 @@ def get_phase_dataframe(detail):
 
 def main(args):
     if args.eventid:
-        detail = get_event_by_id(args.eventid)
-        df = get_phase_dataframe(detail)
-        filename = save_dataframe(df,args.directory,detail,args.format)
+        detail = get_event_by_id(args.eventid,catalog=args.catalog)
+        df = get_phase_dataframe(detail,args.catalog)
+        filename = save_dataframe(df,args.directory,detail,args.format,catalog=args.catalog)
         print('Saved phase data for %s to %s' % (detail.id,filename))
         sys.exit(0)
         
@@ -256,45 +258,52 @@ def main(args):
             continue
         try:
             detail = event.getDetailEvent()
-            df = get_phase_dataframe(detail)
-            filename = save_dataframe(df,args.directory,detail,args.format)
+            df = get_phase_dataframe(detail,args.catalog)
+            filename = save_dataframe(df,args.directory,detail,args.format,catalog=args.catalog)
             
             print('Saved phase data for %s to %s' % (event.id,filename))
         except Exception as e:
             print('Failed to retrieve phase data for event %s.  Error "%s"... continuing.' % (event.id,str(e)))
             continue
 
-def save_dataframe(df,directory,event,file_format):
+def save_dataframe(df,directory,event,file_format,catalog=None):
+    edict = event.toDict(catalog=catalog)
     if file_format == 'excel':
         ext = 'xlsx'
         filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
         writer = pd.ExcelWriter(filename, engine='openpyxl')
-        df.to_excel(writer,index=False,startrow=6,startcol=0)
+        df.to_excel(writer,index=False,startrow=len(edict),startcol=0)
         workbook  = writer.book
         ws = workbook.active
-        ws['A1'] = 'Id'
-        ws['B1'] = event.id
-        ws['A2'] = 'Time'
-        ws['B2'] = event.time
-        ws['A3'] = 'Latitude'
-        ws['B3'] = event.latitude
-        ws['A4'] = 'Longitude'
-        ws['B4'] = event.longitude
-        ws['A5'] = 'Depth'
-        ws['B5'] = event.depth
-        ws['A6'] = 'Magnitude'
-        ws['B6'] = event.magnitude
+        
+        rowidx = 1
+        for key,value in edict.items():
+            keyidx = 'A%i' % rowidx
+            validx = 'B%i' % rowidx
+            ws[keyidx] = key
+            ws[validx] = value
+            rowidx += 1
         workbook.save(filename)
     else:
         ext = 'csv'
         filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
         f = open(filename,'wt')
-        f.write('#Id = %s\n' % event.id)
-        f.write('#Time = %s\n' % (str(event.time)))
-        f.write('#Latitude = %.4f\n' % event.latitude)
-        f.write('#Longitude = %.4f\n' % event.longitude)
-        f.write('#Depth = %.4f\n' % event.depth)
-        f.write('#Magnitude = %.4f\n' % event.magnitude)
+        typedict = {'latitude':'%.4f',
+                    'longitude':'%.4f',
+                    'magnitude':'%.1f',
+                    'depth':'%.1f'}
+        for key,value in edict.items():
+            if key in typedict:
+                fmt = '#%s = '+typedict[key]+'\n'
+            elif isinstance(value,int):
+                fmt = '#%s = %i\n'
+            elif isinstance(value,float):
+                fmt = '#%s = %i\n'
+            else:
+                fmt = '#%s = %s\n'
+                value = str(value)
+            f.write(fmt % (key,value))
+                        
         df.to_csv(f,index=False)
         f.close()
     return filename
