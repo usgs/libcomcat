@@ -1,0 +1,895 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>libcomcat.classes &#8212; libcomcat Documentation  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">libcomcat Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../programs/programs.html">libcomcat 0.5 Command Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../apidoc/libcomcat.html">libcomcat 0.5 API</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for libcomcat.classes</h1><div class="highlight"><pre>
+<span></span><span class="c1">#stdlib imports</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span><span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">urllib</span> <span class="k">import</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">urllib.error</span> <span class="k">import</span> <span class="n">HTTPError</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urlparse</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+
+<span class="c1">#third party imports</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="k">import</span> <span class="n">read_events</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">dateutil</span>
+
+<span class="c1">#constants</span>
+<span class="c1">#the detail event URL template</span>
+<span class="n">URL_TEMPLATE</span> <span class="o">=</span> <span class="s1">&#39;https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/[EVENTID].geojson&#39;</span>
+<span class="c1">#the search template for a detail event that may include one or both of includesuperseded/includedeleted.</span>
+<span class="n">SEARCH_DETAIL_TEMPLATE</span> <span class="o">=</span> <span class="s1">&#39;https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&amp;eventid=</span><span class="si">%s</span><span class="s1">&amp;includesuperseded=</span><span class="si">%s</span><span class="s1">&amp;includedeleted=</span><span class="si">%s</span><span class="s1">&#39;</span>
+<span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span> <span class="c1">#how long should we wait for a url to return?</span>
+<span class="n">WAITSECS</span> <span class="o">=</span> <span class="mi">3</span>
+
+<div class="viewcode-block" id="VersionOption"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.VersionOption">[docs]</a><span class="k">class</span> <span class="nc">VersionOption</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">LAST</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">FIRST</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">ALL</span> <span class="o">=</span> <span class="mi">3</span></div>
+
+<span class="k">def</span> <span class="nf">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal - gather up tensor components and focal mechanism angles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">msource</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;eventsource&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;eventsourcecode&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;derived-magnitude-type&#39;</span><span class="p">):</span>
+        <span class="n">msource</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;derived-magnitude-type&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;beachball-type&#39;</span><span class="p">):</span>
+        <span class="n">btype</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;beachball-type&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">btype</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">btype</span> <span class="o">=</span> <span class="n">btype</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">msource</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">btype</span>
+
+    <span class="n">edict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mrr&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mrr&#39;</span><span class="p">])</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mtt&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mtt&#39;</span><span class="p">])</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mpp&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mpp&#39;</span><span class="p">])</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mrt&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mrt&#39;</span><span class="p">])</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mrp&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mrp&#39;</span><span class="p">])</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mtp&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mtp&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">get_angles</span> <span class="ow">and</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;nodal-plane-1-strike&#39;</span><span class="p">):</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_strike&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-strike&#39;</span><span class="p">]</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_dip&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-dip&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;nodal-plane-1-rake&#39;</span><span class="p">):</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-rake&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-slip&#39;</span><span class="p">]</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_strike&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-strike&#39;</span><span class="p">]</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_dip&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-dip&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;nodal-plane-2-rake&#39;</span><span class="p">):</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-rake&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-slip&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">edict</span>
+
+<span class="k">def</span> <span class="nf">_get_focal_mechanism_info</span><span class="p">(</span><span class="n">focal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal - gather up focal mechanism angles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">msource</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;eventsource&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">focal</span><span class="p">[</span><span class="s1">&#39;eventsourcecode&#39;</span><span class="p">]</span>
+    <span class="n">edict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_strike&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-strike&#39;</span><span class="p">]</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_dip&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-dip&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">focal</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;nodal-plane-1-rake&#39;</span><span class="p">):</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-rake&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-slip&#39;</span><span class="p">]</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_strike&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-strike&#39;</span><span class="p">]</span>
+    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_dip&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-dip&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">focal</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;nodal-plane-2-rake&#39;</span><span class="p">):</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-rake&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-slip&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">edict</span>
+
+<div class="viewcode-block" id="SummaryEvent"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.SummaryEvent">[docs]</a><span class="k">class</span> <span class="nc">SummaryEvent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper around summary feature as returned by ComCat GeoJSON search results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">feature</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate a SummaryEvent object with a feature.</span>
+<span class="sd">        </span>
+<span class="sd">        See summary documentation here:</span>
+
+<span class="sd">        https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php</span>
+
+<span class="sd">        :param feature:</span>
+<span class="sd">          GeoJSON feature as described at above URL.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">location</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Earthquake location string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;place&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;ComCat URL.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin latitude.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin longitude.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin depth.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin ID.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_in_msec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
+        <span class="n">time_in_sec</span> <span class="o">=</span> <span class="n">time_in_msec</span><span class="o">//</span><span class="mi">1000</span>
+        <span class="n">msec</span> <span class="o">=</span> <span class="n">time_in_msec</span> <span class="o">-</span> <span class="p">(</span><span class="n">time_in_sec</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">time_in_sec</span><span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="n">msec</span><span class="p">)</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="n">dtime</span> <span class="o">+</span> <span class="n">dt</span>
+        <span class="k">return</span> <span class="n">dtime</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">magnitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin magnitude.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;mag&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tpl</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%.3f</span><span class="s1">,</span><span class="si">%.3f</span><span class="s1">) </span><span class="si">%.1f</span><span class="s1"> km M</span><span class="si">%.1f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">tpl</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of summary event properties (retrievable from object with [] operator).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="SummaryEvent.hasProduct"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.SummaryEvent.hasProduct">[docs]</a>    <span class="k">def</span> <span class="nf">hasProduct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">product</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test to see whether a given product exists for this event.</span>
+<span class="sd">        </span>
+<span class="sd">        :param product:</span>
+<span class="sd">          Product to search for.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Boolean indicating whether that product exists or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">product</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;types&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="SummaryEvent.hasProperty"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.SummaryEvent.hasProperty">[docs]</a>    <span class="k">def</span> <span class="nf">hasProperty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test to see whether a property with a given key is present in list of properties.</span>
+<span class="sd">        </span>
+<span class="sd">        :param key:</span>
+<span class="sd">          Property to search for.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Boolean indicating whether that key exists or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract SummaryEvent property using the [] operator.</span>
+<span class="sd">        </span>
+<span class="sd">        :param key:</span>
+<span class="sd">          Property to extract.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Desired property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No property </span><span class="si">%s</span><span class="s1"> found for event </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SummaryEvent.getDetailURL"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.SummaryEvent.getDetailURL">[docs]</a>    <span class="k">def</span> <span class="nf">getDetailURL</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate a DetailEvent object from the URL found in the summary.</span>
+<span class="sd">        </span>
+<span class="sd">        :returns:</span>
+<span class="sd">          URL for detailed version of event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">durl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;detail&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">durl</span></div>
+    
+<div class="viewcode-block" id="SummaryEvent.getDetailEvent"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.SummaryEvent.getDetailEvent">[docs]</a>    <span class="k">def</span> <span class="nf">getDetailEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">includedeleted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">includesuperseded</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate a DetailEvent object from the URL found in the summary.</span>
+<span class="sd">        :param includedeleted:</span>
+<span class="sd">          Boolean indicating wheather to return versions of products that have been deleted.</span>
+<span class="sd">          Cannot be used with includesuperseded.</span>
+<span class="sd">        :param includesuperseded:</span>
+<span class="sd">          Boolean indicating wheather to return versions of products that have been replaced by</span>
+<span class="sd">          newer versions.</span>
+<span class="sd">          Cannot be used with includedeleted.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          DetailEvent version of SummaryEvent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">includesuperseded</span> <span class="ow">and</span> <span class="n">includedeleted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;includedeleted and includesuperseded cannot be used together.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">includedeleted</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">includesuperseded</span><span class="p">:</span>
+            <span class="n">durl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;detail&#39;</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">DetailEvent</span><span class="p">(</span><span class="n">durl</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">true_false</span> <span class="o">=</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;true&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">:</span><span class="s1">&#39;false&#39;</span><span class="p">}</span>
+            <span class="n">deleted</span> <span class="o">=</span> <span class="n">true_false</span><span class="p">[</span><span class="n">includedeleted</span><span class="p">]</span>
+            <span class="n">superseded</span> <span class="o">=</span> <span class="n">true_false</span><span class="p">[</span><span class="n">includesuperseded</span><span class="p">]</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">SEARCH_DETAIL_TEMPLATE</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">superseded</span><span class="p">,</span><span class="n">deleted</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">DetailEvent</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SummaryEvent.toDict"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.SummaryEvent.toDict">[docs]</a>    <span class="k">def</span> <span class="nf">toDict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Render the SummaryEvent origin information as an OrderedDict().</span>
+<span class="sd">        </span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Dictionary containing fields:</span>
+<span class="sd">            - id (string) Authoritative ComCat event ID.</span>
+<span class="sd">            - time (datetime) Authoritative event origin time.</span>
+<span class="sd">            - latitude (float) Authoritative event latitude.</span>
+<span class="sd">            - longitude (float) Authoritative event longitude.</span>
+<span class="sd">            - depth (float) Authoritative event depth.</span>
+<span class="sd">            - magnitude (float) Authoritative event magnitude.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;magnitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">magnitude</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span>
+        <span class="k">return</span> <span class="n">edict</span></div></div>
+    
+<div class="viewcode-block" id="DetailEvent"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent">[docs]</a><span class="k">class</span> <span class="nc">DetailEvent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper around detailed event as returned by ComCat GeoJSON search results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">url</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate a DetailEvent object with a url pointing to detailed GeoJSON.</span>
+<span class="sd">        </span>
+<span class="sd">        See detailed documentation here:</span>
+
+<span class="sd">        https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson_detail.php</span>
+
+<span class="sd">        :param url:</span>
+<span class="sd">          String indicating a URL pointing to a detailed GeoJSON event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">htpe</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Could not connect to ComCat server - </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">with_traceback</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tpl</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%.3f</span><span class="s1">,</span><span class="si">%.3f</span><span class="s1">) </span><span class="si">%.1f</span><span class="s1"> km M</span><span class="si">%.1f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">tpl</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">location</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Earthquake location string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;place&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;ComCat URL.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin latitude.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin longitude.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin depth.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin ID.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_in_msec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
+        <span class="n">time_in_sec</span> <span class="o">=</span> <span class="n">time_in_msec</span><span class="o">//</span><span class="mi">1000</span>
+        <span class="n">msec</span> <span class="o">=</span> <span class="n">time_in_msec</span> <span class="o">-</span> <span class="p">(</span><span class="n">time_in_sec</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">time_in_sec</span><span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="n">msec</span><span class="p">)</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="n">dtime</span> <span class="o">+</span> <span class="n">dt</span>
+        <span class="k">return</span> <span class="n">dtime</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">magnitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authoritative origin magnitude.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;mag&#39;</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of summary event properties (retrievable from object with [] operator).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="DetailEvent.hasProduct"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.hasProduct">[docs]</a>    <span class="k">def</span> <span class="nf">hasProduct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">product</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a boolean indicating whether given product can be extracted from DetailEvent.</span>
+
+<span class="sd">        :param product:</span>
+<span class="sd">          Product to search for.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Boolean indicating whether that product exists or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">product</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="DetailEvent.hasProperty"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.hasProperty">[docs]</a>    <span class="k">def</span> <span class="nf">hasProperty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test to see whether a property with a given key is present in list of properties.</span>
+<span class="sd">        </span>
+<span class="sd">        :param key:</span>
+<span class="sd">          Property to search for.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Boolean indicating whether that key exists or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract DetailEvent property using the [] operator.</span>
+<span class="sd">        </span>
+<span class="sd">        :param key:</span>
+<span class="sd">          Property to extract.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Desired property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No property </span><span class="si">%s</span><span class="s1"> found for event </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+        
+    
+<div class="viewcode-block" id="DetailEvent.toDict"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.toDict">[docs]</a>    <span class="k">def</span> <span class="nf">toDict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">catalog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">get_all_magnitudes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">get_all_tensors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">get_all_focals</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return known origin, focal mechanism, and moment tensor information for a DetailEvent.</span>
+
+<span class="sd">        :param catalog:</span>
+<span class="sd">          Retrieve the primary event information (time,lat,lon...) from the catalog given.</span>
+<span class="sd">          If no source for this information exists, an AttributeError will be raised.</span>
+<span class="sd">        :param get_all_magnitudes:</span>
+<span class="sd">          Boolean indicating whether all known magnitudes for this event should be returned.</span>
+<span class="sd">          NOTE: The ComCat phase-data product&#39;s QuakeML file will be downloaded and parsed,</span>
+<span class="sd">          which takes extra time.</span>
+<span class="sd">        :param get_all_tensors:</span>
+<span class="sd">          Boolean indicating whether all known moment tensors for this event should be returned.</span>
+<span class="sd">        :param get_all_focals:</span>
+<span class="sd">          Boolean indicating whether all known focal mechanisms for this event should be returned.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          OrderedDict with the same fields as returned by SummaryEvent.toDict(), plus</span>
+<span class="sd">          additional magnitude/magnitude type fields, moment tensor and focal mechanism </span>
+<span class="sd">          data.  The number and name of the fields will vary by what data is available.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">catalog</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;magnitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">magnitude</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;magtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;magType&#39;</span><span class="p">]</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">phase_sources</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">origin_sources</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;phase-data&#39;</span><span class="p">):</span>
+                    <span class="n">phase_sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">source</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;phase-data&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;origin&#39;</span><span class="p">):</span>
+                    <span class="n">origin_sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span><span class="o">.</span><span class="n">source</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;origin&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="n">catalog</span> <span class="ow">in</span> <span class="n">phase_sources</span><span class="p">:</span>
+                    <span class="n">phasedata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;phase-data&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="n">catalog</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">catalog</span> <span class="ow">in</span> <span class="n">origin_sources</span><span class="p">:</span>
+                    <span class="n">phasedata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;origin&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="n">catalog</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;DetailEvent </span><span class="si">%s</span><span class="s1"> has no phase-data or origin products for source </span><span class="si">%s</span><span class="s1">&#39;</span>
+                    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">catalog</span><span class="p">))</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;eventsource&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;eventsourcecode&#39;</span><span class="p">]</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;eventtime&#39;</span><span class="p">])</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">location</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">])</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;magnitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;magnitude&#39;</span><span class="p">])</span>
+                <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;magtype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phasedata</span><span class="p">[</span><span class="s1">&#39;magnitude-type&#39;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">ae</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ae</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_all_tensors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">):</span>
+                <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">):</span>
+                <span class="n">tensors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="n">VersionOption</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">tensors</span><span class="p">:</span>
+                    <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_all_focals</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">):</span>
+                <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_focal_mechanism_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">):</span>
+                <span class="n">focals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="n">VersionOption</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">focal</span> <span class="ow">in</span> <span class="n">focals</span><span class="p">:</span>
+                    <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_focal_mechanism_info</span><span class="p">(</span><span class="n">focal</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">get_all_magnitudes</span><span class="p">:</span>
+            <span class="n">handle</span><span class="p">,</span><span class="n">tmpfile</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">phase_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;phase-data&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">phase_data</span><span class="o">.</span><span class="n">getContent</span><span class="p">(</span><span class="s1">&#39;quakeml.xml&#39;</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="n">tmpfile</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+                    <span class="n">catalog</span> <span class="o">=</span> <span class="n">read_events</span><span class="p">(</span><span class="n">tmpfile</span><span class="p">)</span>
+                    <span class="n">event</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">imag</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">get_all_magnitudes</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">magnitude</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">magnitudes</span><span class="p">:</span>
+                            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;magnitude</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">imag</span><span class="p">]</span> <span class="o">=</span> <span class="n">magnitude</span><span class="o">.</span><span class="n">mag</span>
+                            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;magtype</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">imag</span><span class="p">]</span> <span class="o">=</span> <span class="n">magnitude</span><span class="o">.</span><span class="n">magnitude_type</span>
+                            <span class="n">imag</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to retrieve quakeml.xml file from phase-data product (</span><span class="si">%s</span><span class="s1">).&#39;</span> <span class="o">%</span> <span class="n">content_url</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tmpfile</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">edict</span></div>
+
+<div class="viewcode-block" id="DetailEvent.getNumVersions"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.getNumVersions">[docs]</a>    <span class="k">def</span> <span class="nf">getNumVersions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">product_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Count the number of versions of a product (origin, shakemap, etc.) available for this event.</span>
+<span class="sd">        </span>
+<span class="sd">        :param product_name:</span>
+<span class="sd">          Name of product to query.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Number of versions of a given product.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="n">product_name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Event </span><span class="si">%s</span><span class="s1"> has no product of type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">product_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">])</span></div>
+    
+<div class="viewcode-block" id="DetailEvent.getProducts"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.getProducts">[docs]</a>    <span class="k">def</span> <span class="nf">getProducts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">product_name</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;preferred&#39;</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve a Product object from this DetailEvent.</span>
+
+<span class="sd">        :param product_name:</span>
+<span class="sd">          Name of product (origin, shakemap, etc.) to retrieve.</span>
+<span class="sd">        :param version:</span>
+<span class="sd">          An enum value from VersionOption (PREFERRED,FIRST,ALL).</span>
+<span class="sd">        :param source:</span>
+<span class="sd">          Any one of: </span>
+<span class="sd">            - &#39;preferred&#39; Get version(s) of products from preferred source.</span>
+<span class="sd">            - &#39;all&#39; Get version(s) of products from all sources.</span>
+<span class="sd">            - Any valid source network for this type of product (&#39;us&#39;,&#39;ak&#39;,etc.)</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          List of Product objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="n">product_name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Event </span><span class="si">%s</span><span class="s1"> has no product of type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">product_name</span><span class="p">))</span>
+                
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;preferredWeight&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">]]</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">]]</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">product</span><span class="p">[</span><span class="s1">&#39;updateTime&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">]]</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span><span class="n">weights</span><span class="p">,</span><span class="s1">&#39;source&#39;</span><span class="p">:</span><span class="n">sources</span><span class="p">,</span><span class="s1">&#39;time&#39;</span><span class="p">:</span><span class="n">times</span><span class="p">,</span><span class="s1">&#39;index&#39;</span><span class="p">:</span><span class="n">indices</span><span class="p">})</span>
+        <span class="c1">#we need to add a version number column here, ordinal sorted by update time, starting at 1</span>
+        <span class="c1">#for each unique source.</span>
+        <span class="c1">#first sort the dataframe by source and then time</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">psources</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pversion</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">psources</span><span class="p">:</span>
+                <span class="n">psources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">])</span>
+                <span class="n">pversion</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="s1">&#39;version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pversion</span>
+            <span class="n">pversion</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;preferred&#39;</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">weights</span><span class="p">))</span>
+            <span class="n">prefsource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">prefsource</span><span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">source</span><span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+
+        <span class="c1">#if we don&#39;t have any versions of products, raise an exception</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No products found for source &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">source</span><span class="p">)</span>
+
+        <span class="n">products</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">usources</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="c1">#dataframe includes all sources</span>
+            <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">usources</span><span class="p">:</span>
+                <span class="n">df_source</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">source</span><span class="p">]</span>
+                <span class="n">df_source</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">:</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                    <span class="n">pversion</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                    <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                    <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">FIRST</span><span class="p">:</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                    <span class="n">pversion</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                    <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                    <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">ALL</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                        <span class="n">idx</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                        <span class="n">pversion</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                        <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                        <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No VersionOption defined for </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">version</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#dataframe only includes one source</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                <span class="n">pversion</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">FIRST</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                <span class="n">pversion</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">ALL</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                    <span class="n">pversion</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                    <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                    <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No VersionOption defined for </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">version</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">products</span></div></div>
+        
+
+    
+<div class="viewcode-block" id="Product"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.Product">[docs]</a><span class="k">class</span> <span class="nc">Product</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class describing a Product from detailed GeoJSON feed.  Products contain properties and file contents.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">product_name</span><span class="p">,</span><span class="n">version</span><span class="p">,</span><span class="n">product</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a product class from the product found within the detailed event GeoJSON.</span>
+
+<span class="sd">        :param product_name:</span>
+<span class="sd">          Name of Product (origin, shakemap, etc.)</span>
+<span class="sd">        :param version:</span>
+<span class="sd">          Best guess as to ordinal version of the product.</span>
+<span class="sd">        :param product:</span>
+<span class="sd">          Product data to be copied from DetailEvent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_product_name</span> <span class="o">=</span> <span class="n">product_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_product</span> <span class="o">=</span> <span class="n">product</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+<div class="viewcode-block" id="Product.getContentsMatching"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.Product.getContentsMatching">[docs]</a>    <span class="k">def</span> <span class="nf">getContentsMatching</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">regexp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find all contents that match the input regex, ordered by shortest to longest.</span>
+
+<span class="sd">        :param regexp:</span>
+<span class="sd">          Regular expression which should match one of the content files in the Product.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          List of contents matching</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">contents</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="n">contents</span>
+            
+        <span class="k">for</span> <span class="n">contentkey</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">][</span><span class="n">contentkey</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">regexp</span><span class="o">+</span><span class="s1">&#39;$&#39;</span><span class="p">,</span><span class="n">fname</span><span class="p">):</span>
+                <span class="n">contents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">contents</span></div>
+        
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ncontents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">])</span>
+        <span class="n">tpl</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_product_name</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">update_time</span><span class="p">,</span><span class="n">ncontents</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;Product </span><span class="si">%s</span><span class="s1"> from </span><span class="si">%s</span><span class="s1"> updated </span><span class="si">%s</span><span class="s1"> containing </span><span class="si">%i</span><span class="s1"> content files.&#39;</span> <span class="o">%</span> <span class="n">tpl</span>
+
+<div class="viewcode-block" id="Product.getContentName"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.Product.getContentName">[docs]</a>    <span class="k">def</span> <span class="nf">getContentName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">regexp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the shortest filename matching input regular expression.</span>
+
+<span class="sd">        For example, if the shakemap product has contents called grid.xml and grid.xml.zip, </span>
+<span class="sd">        and the input regexp is grid.xml, then grid.xml will be matched.</span>
+
+<span class="sd">        :param regexp:</span>
+<span class="sd">          Regular expression to use to search for matching contents.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Shortest file name to match input regexp, or None if no matches found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content_name</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="o">*</span><span class="mi">1000</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">contentkey</span><span class="p">,</span><span class="n">content</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">regexp</span><span class="o">+</span><span class="s1">&#39;$&#39;</span><span class="p">,</span><span class="n">contentkey</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">content_name</span><span class="p">):</span>
+                <span class="n">content_name</span> <span class="o">=</span> <span class="n">fname</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">content_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Product.getContentURL"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.Product.getContentURL">[docs]</a>    <span class="k">def</span> <span class="nf">getContentURL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">regexp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the URL for the shortest filename matching input regular expression.</span>
+
+<span class="sd">        For example, if the shakemap product has contents called grid.xml and grid.xml.zip, </span>
+<span class="sd">        and the input regexp is grid.xml, then grid.xml will be matched.</span>
+
+<span class="sd">        :param regexp:</span>
+<span class="sd">          Regular expression to use to search for matching contents.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          URL for shortest file name to match input regexp, or None if no matches found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content_name</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="o">*</span><span class="mi">1000</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">content_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">contentkey</span><span class="p">,</span><span class="n">content</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">regexp</span><span class="o">+</span><span class="s1">&#39;$&#39;</span><span class="p">,</span><span class="n">contentkey</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">content_name</span><span class="p">):</span>
+                <span class="n">content_name</span> <span class="o">=</span> <span class="n">fname</span>
+                <span class="n">content_url</span> <span class="o">=</span> <span class="n">url</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">content_url</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+        
+<div class="viewcode-block" id="Product.getContent"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.Product.getContent">[docs]</a>    <span class="k">def</span> <span class="nf">getContent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">regexp</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find and download the shortest file name matching the input regular expression.</span>
+
+<span class="sd">        :param regexp:</span>
+<span class="sd">          Regular expression which should match one of the content files in the Product.</span>
+<span class="sd">        :param filename:</span>
+<span class="sd">          Filename to which content should be downloaded.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          The URL from which the content was downloaded.</span>
+<span class="sd">        :raises:</span>
+<span class="sd">          Exception if content could not be downloaded from ComCat after two tries.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content_name</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="o">*</span><span class="mi">1000</span>
+        <span class="n">content_url</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">contentkey</span><span class="p">,</span><span class="n">content</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">regexp</span><span class="o">+</span><span class="s1">&#39;$&#39;</span><span class="p">,</span><span class="n">contentkey</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">content_name</span><span class="p">):</span>
+                <span class="n">content_name</span> <span class="o">=</span> <span class="n">fname</span>
+                <span class="n">content_url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="k">if</span> <span class="n">content_url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Could not find any content matching input </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">regexp</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">HTTPError</span> <span class="k">as</span> <span class="n">htpe</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAITSECS</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Could not download </span><span class="si">%s</span><span class="s1"> from </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">content_name</span><span class="p">,</span><span class="n">url</span><span class="p">))</span>
+            
+        <span class="k">return</span> <span class="n">url</span></div>
+    
+<div class="viewcode-block" id="Product.hasProperty"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.Product.hasProperty">[docs]</a>    <span class="k">def</span> <span class="nf">hasProperty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine if this Product contains a given property.</span>
+
+<span class="sd">        :param key:</span>
+<span class="sd">          Property to search for.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Boolean indicating whether that key exists or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">preferred_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The weight assigned to this product by ComCat.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;preferredWeight&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The contributing source for this product.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The datetime for when this product was updated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_in_msec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;updateTime&#39;</span><span class="p">]</span>
+        <span class="n">time_in_sec</span> <span class="o">=</span> <span class="n">time_in_msec</span><span class="o">//</span><span class="mi">1000</span>
+        <span class="n">msec</span> <span class="o">=</span> <span class="n">time_in_msec</span> <span class="o">-</span> <span class="p">(</span><span class="n">time_in_sec</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">time_in_sec</span><span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="n">msec</span><span class="p">)</span>
+        <span class="n">dtime</span> <span class="o">=</span> <span class="n">dtime</span> <span class="o">+</span> <span class="n">dt</span>
+        <span class="k">return</span> <span class="n">dtime</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The best guess for the ordinal version number of this product.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of product properties (retrievable from object with [] operator).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">contents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of product properties (retrievable from object with getContent() method).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;contents&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract Product property using the [] operator.</span>
+<span class="sd">        </span>
+<span class="sd">        :param key:</span>
+<span class="sd">          Property to extract.</span>
+<span class="sd">        :returns:</span>
+<span class="sd">          Desired property.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No property </span><span class="si">%s</span><span class="s1"> found in </span><span class="si">%s</span><span class="s1"> product.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_product_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_product</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
