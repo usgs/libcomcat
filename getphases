@@ -7,26 +7,56 @@ import sys
 import json
 import argparse
 import os.path
-import warnings
+
 
 #third party imports
-from obspy.io.quakeml.core import Unpickler
 import pandas as pd
 import openpyxl
 
 #local imports
-from libcomcat.utils import maketime
+from libcomcat.utils import maketime,get_phase_dataframe
 from libcomcat.search import search,get_event_by_id
 
 TIMEOUT = 60 #how many seconds to wait to fetch a url?
+
+HDR_DOC = ['This file contains information about either a preferred',
+           'solution for a given earthquake, or a solution from ',
+           'a particular catalog/network.',
+           'The header information will consist of the following fields:',
+           '--------------------------------------------------------------',
+           'id: The ID for the event from the preferred or specific network.',
+           'time: The time of the event, always in UTC.',
+           'location: A string describing the earthquake location.',
+           'latitude: Earthquake latitude in decimal degrees.',
+           'longitude: Earthquake longitude in decimal degrees.',
+           'depth: Earthquake depth in kilometers.',
+           'magnitude: Earthquake magnitude',
+           'magtype: Magnitude type (mw,mww,mb,etc.)',
+           'url:  The ComCat URL where all of the data for this earthquake can be found.',
+           '*_mrr,mtt,mpp,mrt,mrp,mtp: Moment tensor components (if available) from preferred source (N m).',
+           '*_np1_strike,dip,rake: Two sets of nodal plane angles for focal mechanism.',
+           '--------------------------------------------------------------',
+           'The remaining rows/columns contain the phase data for the event,',
+           'with the following columns:',
+           '--------------------------------------------------------------',
+           'Channel: Network.Station.Channel.Location (NSCL) style station description.',
+           '         ("--" indicates missing information)',
+           'Distance: Distance (kilometers) from epicenter to station.',
+           'Azimuth: Azimuth (degrees) from epicenter to station.',
+           'Phase: Name of the phase (Pn,Pg, etc.)',
+           'Arrival Time: Pick arrival time (UTC).',
+           'Status: "manual" or "automatic".',
+           'Residual: Arrival time residual.',
+           'Weight: Arrival weight.',
+           '--------------------------------------------------------------']
 
 def get_parser():
     desc = '''Download phase data for matching events into CSV or Excel format.
 
     The resulting files will contain a "header" consisting of basic earthquake information
-    (Id,Time,Latitude,Longitude,Depth,Magnitude) at the top of the file. In the Excel
-    format, this information takes the first six rows and two columns. In CSV format, the
-    values are the first six lines of the file, prepended with a "#" (comment) character.
+    (Id,Time,Latitude,Longitude,Depth,Magnitude, etc.) at the top of the file. In the Excel
+    format, this information takes the first several rows and two columns. In CSV format, the
+    values are the first lines of the file, prepended with a "#" (comment) character.
 
     To download phase data to Excel format for a small rectangle in Oklahoma in 2017:
     %(prog)s ~/tmp/phase_data -b -97.573 -97.460 36.247 36.329 -s 2017-08-26 -e 2017-09-15 -f excel
@@ -59,143 +89,7 @@ def get_parser():
                         metavar='FORMAT',help='Output format.')
     return parser
 
-def stringify(waveform):
-    """Turn waveform object into NSCL-style station code
 
-    :param waveform:
-      Obspy Catalog Waveform object.
-    :returns:
-      NSCL- style string representation of waveform object.
-    """
-    fmt = '%s.%s.%s.%s'
-    tpl = (waveform.network_code,waveform.station_code,waveform.channel_code,waveform.location_code)
-    return fmt % tpl
-
-def get_amplitude(event,waveform_id):
-    """Find the amplitude object in a Catalog Event corresponding to input waveform id.
-    :param event:
-      Obspy Catalog Event object.
-    :param waveform_id:
-      Waveform ID string.
-    :returns:
-      Obspy Catalog amplitude object.
-    """
-    idlist = [amp.waveform_id for amp in event.amplitudes]
-    if waveform_id not in idlist:
-        return None
-    idx = idlist.index(waveform_id)
-    amplitude = event.amplitudes[idx]
-    return amplitude
-
-def get_magnitude(event,ampid):
-    """Find the magnitude object in a Catalog Event corresponding to input amplitude id.
-    :param event:
-      Obspy Catalog Event object.
-    :param ampid:
-      Amplitude ID string.
-    :returns:
-      Obspy Catalog magnitude object.
-    """
-    idlist = [mag.amplitude_id for mag in event.station_magnitudes]
-    if ampid not in idlist:
-        return None
-    idx = idlist.index(ampid)
-    magnitude = event.station_magnitudes[idx]
-    return magnitude
-
-def get_arrival(event,pickid):
-    """Find the arrival object in a Catalog Event corresponding to input pick id.
-    :param event:
-      Obspy Catalog Event object.
-    :param pickid:
-      Pick ID string.
-    :returns:
-      Obspy Catalog arrival object.
-    """
-    for origin in event.origins:
-        idlist = [arr.pick_id for arr in origin.arrivals]
-        if pickid not in idlist:
-            continue
-        idx = idlist.index(pickid)
-        arrival = origin.arrivals[idx]
-        return arrival
-    if pickid is None:
-        return None
-
-def get_phaserow(pick,catevent):
-    """Return a dictionary containing Phase data matching that found on ComCat event page.
-    Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin 
-    (Click on the Phases tab).
-
-    :param pick:
-      Obspy Catalog Pick object.
-    :param catevent:
-      Obspy Catalog Event object.
-    :returns:
-      Dictionary containing:
-        - Channel: NSCL-style channel string.
-        - Distance: Distance (km) from station to origin.
-        - Azimuth: Azimuth (deg.) from epicenter to station.
-        - Phase: Name of the phase (Pn,Pg, etc.)
-        - Arrival Time: Pick arrival time (UTC).
-        - Status: "manual" or "automatic".
-        - Residual: Arrival time residual.
-        - Weight: Arrival weight.
-    """
-    pick_id = pick.resource_id
-    waveform_id = pick.waveform_id
-    amplitude = get_amplitude(catevent,waveform_id)
-    if amplitude is None:
-      #print('could not find amplitude for pick %s' % stringify(waveform_id))
-      return None
-    magnitude = get_magnitude(catevent,amplitude.resource_id)
-    if magnitude is None:
-      #print('could not find magnitude for amplitude %s' % amplitude.resource_id)
-      return None
-    arrival = get_arrival(catevent,pick_id)
-    if arrival is None:
-      #print('could not find arrival for pick %s' % pick_id)
-      return None
-
-    #save info to row of dataframe
-    etime = datetime(pick.time.year,pick.time.month,pick.time.day,
-                     pick.time.hour,pick.time.minute,pick.time.second)
-    channel = stringify(waveform_id)
-    row = {'Channel':channel,
-           'Distance':arrival.distance,
-           'Azimuth':arrival.azimuth,
-           'Phase':arrival.phase,
-           'Arrival Time':etime,
-           'Status':pick.evaluation_mode,
-           'Residual':arrival.time_residual,
-           'Weight':arrival.time_weight}
-    return row
-
-def get_phase_dataframe(detail,catalog):
-    df = pd.DataFrame(columns=['Channel','Distance','Azimuth',
-                               'Phase','Arrival Time','Status',
-                               'Residual','Weight'])
-    if catalog is None:
-        catalog = 'preferred'
-    phasedata = detail.getProducts('phase-data',source=catalog)[0]
-    quakeurl = phasedata.getContentURL('quakeml.xml')
-    try:
-        fh = urlopen(quakeurl,timeout=TIMEOUT)
-        data = fh.read()
-        fh.close()
-    except Exception as msg:
-        return None
-    unpickler = Unpickler()
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore",category=UserWarning)
-        catalog = unpickler.loads(data)
-        catevent = catalog.events[0]
-        for pick in catevent.picks:
-            phaserow = get_phaserow(pick,catevent)
-            if phaserow is None:
-                continue
-            df = df.append(phaserow,ignore_index=True)
-    return df
 
 def main(args):
     if args.eventid:
@@ -272,11 +166,15 @@ def save_dataframe(df,directory,event,file_format,catalog=None):
         ext = 'xlsx'
         filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
         writer = pd.ExcelWriter(filename, engine='openpyxl')
-        df.to_excel(writer,index=False,startrow=len(edict),startcol=0)
+        df.to_excel(writer,index=False,startrow=len(edict)+len(HDR_DOC),startcol=0)
         workbook  = writer.book
         ws = workbook.active
         
         rowidx = 1
+        for docline in HDR_DOC:
+            cellidx = 'A%i' % rowidx
+            ws[cellidx] = '#'+docline
+            rowidx += 1
         for key,value in edict.items():
             keyidx = 'A%i' % rowidx
             validx = 'B%i' % rowidx
@@ -292,6 +190,8 @@ def save_dataframe(df,directory,event,file_format,catalog=None):
                     'longitude':'%.4f',
                     'magnitude':'%.1f',
                     'depth':'%.1f'}
+        for docline in HDR_DOC:
+            f.write('#%%%s\n' % docline)
         for key,value in edict.items():
             if key in typedict:
                 fmt = '#%s = '+typedict[key]+'\n'

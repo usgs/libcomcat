@@ -218,12 +218,20 @@
 <dl class="method">
 <dt id="libcomcat.classes.SummaryEvent.getDetailEvent">
 <code class="descname">getDetailEvent</code><span class="sig-paren">(</span><em>includedeleted=False</em>, <em>includesuperseded=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#SummaryEvent.getDetailEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.SummaryEvent.getDetailEvent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instantiate a DetailEvent object from the URL found in the summary.</p>
+<dd><p>Instantiate a DetailEvent object from the URL found in the summary.
+:param includedeleted:</p>
+<blockquote>
+<div>Boolean indicating wheather to return versions of products that have been deleted.
+Cannot be used with includesuperseded.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DetailEvent version of SummaryEvent.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>includesuperseded</strong> – Boolean indicating wheather to return versions of products that have been replaced by
+newer versions.
+Cannot be used with includedeleted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">DetailEvent version of SummaryEvent.</td>
 </tr>
 </tbody>
 </table>
@@ -361,18 +369,20 @@
 
 <dl class="method">
 <dt id="libcomcat.classes.DetailEvent.toDict">
-<code class="descname">toDict</code><span class="sig-paren">(</span><em>get_all_magnitudes=False</em>, <em>get_all_tensors=False</em>, <em>get_all_focal=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.toDict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return known origin, focal mechanism, and moment tensor information for an event.</p>
+<code class="descname">toDict</code><span class="sig-paren">(</span><em>catalog=None</em>, <em>get_all_magnitudes=False</em>, <em>get_all_tensors=False</em>, <em>get_all_focals=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.toDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return known origin, focal mechanism, and moment tensor information for a DetailEvent.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>catalog</strong> – Retrieve the primary event information (time,lat,lon…) from the catalog given.
+If no source for this information exists, an AttributeError will be raised.</li>
 <li><strong>get_all_magnitudes</strong> – Boolean indicating whether all known magnitudes for this event should be returned.
 NOTE: The ComCat phase-data product’s QuakeML file will be downloaded and parsed,
 which takes extra time.</li>
 <li><strong>get_all_tensors</strong> – Boolean indicating whether all known moment tensors for this event should be returned.</li>
-<li><strong>get_all_focal</strong> – Boolean indicating whether all known focal mechanisms for this event should be returned.</li>
+<li><strong>get_all_focals</strong> – Boolean indicating whether all known focal mechanisms for this event should be returned.</li>
 </ul>
 </td>
 </tr>
@@ -403,7 +413,7 @@ data.  The number and name of the fields will vary by what data is available.</p
 
 <dl class="method">
 <dt id="libcomcat.classes.DetailEvent.getProducts">
-<code class="descname">getProducts</code><span class="sig-paren">(</span><em>product_name</em>, <em>source='preferred'</em>, <em>version_option=&lt;VersionOption.LAST: 1&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.getProducts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.getProducts" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getProducts</code><span class="sig-paren">(</span><em>product_name</em>, <em>source='preferred'</em>, <em>version=&lt;VersionOption.LAST: 1&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.getProducts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.getProducts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve a Product object from this DetailEvent.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -411,7 +421,7 @@ data.  The number and name of the fields will vary by what data is available.</p
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>product_name</strong> – Name of product (origin, shakemap, etc.) to retrieve.</li>
-<li><strong>version_option</strong> – An enum value from VersionOption (PREFERRED,FIRST,ALL).</li>
+<li><strong>version</strong> – An enum value from VersionOption (PREFERRED,FIRST,ALL).</li>
 <li><strong>source</strong> – <dl class="docutils">
 <dt>Any one of:</dt>
 <dd><ul class="first last">

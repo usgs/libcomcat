@@ -267,7 +267,7 @@
 
     <span class="k">return</span> <span class="n">nevents</span></div>
 
-<div class="viewcode-block" id="get_event_by_id"><a class="viewcode-back" href="../../apidoc/libcomcat.search.html#libcomcat.search.get_event_by_id">[docs]</a><span class="k">def</span> <span class="nf">get_event_by_id</span><span class="p">(</span><span class="n">eventid</span><span class="p">,</span>
+<div class="viewcode-block" id="get_event_by_id"><a class="viewcode-back" href="../../apidoc/libcomcat.search.html#libcomcat.search.get_event_by_id">[docs]</a><span class="k">def</span> <span class="nf">get_event_by_id</span><span class="p">(</span><span class="n">eventid</span><span class="p">,</span><span class="n">catalog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">includedeleted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">includesuperseded</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Search the ComCat database for an event matching the input event id.</span>
@@ -307,6 +307,7 @@
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="n">newargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        
     <span class="n">event</span> <span class="o">=</span> <span class="n">_search</span><span class="p">(</span><span class="o">**</span><span class="n">newargs</span><span class="p">)</span> <span class="c1">#this should be a DetailEvent</span>
     <span class="k">return</span> <span class="n">event</span></div>
     
@@ -486,8 +487,6 @@
         <span class="n">starttime</span> <span class="o">=</span> <span class="n">HistoricTime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">endtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">endtime</span> <span class="o">=</span> <span class="n">HistoricTime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">minmag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">minmag</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="c1">#earthquake frequency table: minmag:earthquakes per day</span>
     <span class="n">freq_table</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="mi">3000</span><span class="o">/</span><span class="mi">7</span><span class="p">,</span>
                   <span class="mi">1</span><span class="p">:</span><span class="mi">3500</span><span class="o">/</span><span class="mi">14</span><span class="p">,</span>

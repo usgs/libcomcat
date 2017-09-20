@@ -126,8 +126,8 @@ values and associated source and type.</p>
 </p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">getcsv</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">b</span> <span class="n">lonmin</span> <span class="n">lonmax</span> <span class="n">latmin</span> <span class="n">latmax</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">lat</span> <span class="n">lon</span> <span class="n">rmax</span><span class="p">]</span>
               <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">STARTTIME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span> <span class="n">ENDTIME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">AFTER</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">m</span> <span class="n">minmag</span> <span class="n">maxmag</span><span class="p">]</span>
-              <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">CATALOG</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">CONTRIBUTOR</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">g</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">FORMAT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">]</span>
-              <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span>
+              <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">CATALOG</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">CONTRIBUTOR</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">g</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">FORMAT</span><span class="p">]</span>
+              <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PRODUCT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span>
               <span class="n">FILENAME</span>
 </pre></div>
 </div>
@@ -200,6 +200,14 @@ values and associated source and type.</p>
 <td><p class="first">Possible choices: csv, tab, excel</p>
 <p>Output format.</p>
 <p class="last">Default: “csv”</p>
+</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd>-p, --product-type</kbd></td>
+</tr>
+<tr><td>&#160;</td><td><dl class="first last docutils">
+<dt>Limit the search to only those events containing products of type PRODUCT.</dt>
+<dd>See the full list here: <a class="reference external" href="https://usgs.github.io/pdl/userguide/products/index.html">https://usgs.github.io/pdl/userguide/products/index.html</a></dd>
+</dl>
 </td></tr>
 <tr><td class="option-group">
 <kbd>-x, --count</kbd></td>

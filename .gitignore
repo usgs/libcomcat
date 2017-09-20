@@ -1,1 +1,9 @@
 *.pyc
+build
+*~
+.DS_Store
+.ipynb_checkpoints/
+.cache
+.coverage
+.coverage.xml
+htmlcov

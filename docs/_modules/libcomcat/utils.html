@@ -72,12 +72,17 @@
 <span></span><span class="c1">#stdlib imports</span>
 <span class="kn">from</span> <span class="nn">xml.dom</span> <span class="k">import</span> <span class="n">minidom</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">urllib</span> <span class="k">import</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="k">import</span> <span class="n">urlopen</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
 
 <span class="c1">#third party imports</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">obspy.io.quakeml.core</span> <span class="k">import</span> <span class="n">Unpickler</span>
 <span class="kn">from</span> <span class="nn">impactutils.time.ancient_time</span> <span class="k">import</span> <span class="n">HistoricTime</span>
+<span class="kn">from</span> <span class="nn">openpyxl</span> <span class="k">import</span> <span class="n">load_workbook</span>
 
 <span class="c1">#constants</span>
 <span class="n">CATALOG_SEARCH_TEMPLATE</span> <span class="o">=</span> <span class="s1">&#39;https://earthquake.usgs.gov/fdsnws/event/1/catalogs&#39;</span>
@@ -86,6 +91,53 @@
 <span class="n">TIMEFMT1</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S&#39;</span>
 <span class="n">TIMEFMT2</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span>
 <span class="n">DATEFMT</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span>
+
+<div class="viewcode-block" id="phase_reader"><a class="viewcode-back" href="../../apidoc/libcomcat.utils.html#libcomcat.utils.phase_reader">[docs]</a><span class="k">def</span> <span class="nf">phase_reader</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read a phase file CSV or Excel file into data structures.</span>
+<span class="sd">    </span>
+<span class="sd">    :param filename:</span>
+<span class="sd">      String file name of a CSV or Excel file created by getphases program.</span>
+<span class="sd">    :returns:</span>
+<span class="sd">      Tuple of:</span>
+<span class="sd">        header_dict - Dictionary containing header data from top of file.</span>
+<span class="sd">        dataframe - Pandas dataframe containing phase data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;Filename </span><span class="si">%s</span><span class="s1"> does not exist.&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">header_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;xlsx&#39;</span><span class="p">):</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="n">load_workbook</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">active</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">rowidx</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="k">while</span> <span class="n">key</span> <span class="o">!=</span> <span class="s1">&#39;Channel&#39;</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">ws</span><span class="p">[</span><span class="s1">&#39;A</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">rowidx</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">ws</span><span class="p">[</span><span class="s1">&#39;B</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">rowidx</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">header_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="n">rowidx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">skiprows</span><span class="o">=</span><span class="n">rowidx</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;csv&#39;</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;rt&#39;</span><span class="p">)</span>
+        <span class="n">tline</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="n">rowidx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">tline</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tline</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#%&#39;</span><span class="p">):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">tline</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">header_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="n">rowidx</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">tline</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">skiprows</span><span class="o">=</span><span class="n">rowidx</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">f</span><span class="p">,</span><span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Filenames with extension </span><span class="si">%s</span><span class="s1"> are not supported.&#39;</span> <span class="o">%</span> <span class="n">ext</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">header_dict</span><span class="p">,</span><span class="n">dataframe</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="makedict"><a class="viewcode-back" href="../../apidoc/libcomcat.utils.html#libcomcat.utils.makedict">[docs]</a><span class="k">def</span> <span class="nf">makedict</span><span class="p">(</span><span class="n">dictstring</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
@@ -118,7 +170,7 @@
 <span class="sd">    :returns:</span>
 <span class="sd">      List of catalogs available in ComCat (see the catalog parameter in search() method.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">CATALOG_SEARCH_TEMPLATE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">CATALOG_SEARCH_TEMPLATE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -135,7 +187,7 @@
 <span class="sd">    :returns:</span>
 <span class="sd">      List of contributors available in ComCat (see the contributor parameter in search() method.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">CONTRIBUTORS_SEARCH_TEMPLATE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">CONTRIBUTORS_SEARCH_TEMPLATE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">minidom</span><span class="o">.</span><span class="n">parseString</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -146,9 +198,138 @@
     <span class="n">root</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">conlist</span></div>
 
+<div class="viewcode-block" id="stringify"><a class="viewcode-back" href="../../apidoc/libcomcat.utils.html#libcomcat.utils.stringify">[docs]</a><span class="k">def</span> <span class="nf">stringify</span><span class="p">(</span><span class="n">waveform</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Turn waveform object into NSCL-style station code</span>
+
+<span class="sd">    :param waveform:</span>
+<span class="sd">      Obspy Catalog Waveform object.</span>
+<span class="sd">    :returns:</span>
+<span class="sd">      NSCL- style string representation of waveform object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">&#39;</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span>
+    <span class="k">if</span> <span class="n">waveform</span><span class="o">.</span><span class="n">network_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">network_code</span>
+    <span class="n">station</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span>
+    <span class="k">if</span> <span class="n">waveform</span><span class="o">.</span><span class="n">station_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">station</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">station_code</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span>
+    <span class="k">if</span> <span class="n">waveform</span><span class="o">.</span><span class="n">channel_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">channel</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">channel_code</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span>
+    <span class="k">if</span> <span class="n">waveform</span><span class="o">.</span><span class="n">location_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">location_code</span>
+    <span class="n">tpl</span> <span class="o">=</span> <span class="p">(</span><span class="n">network</span><span class="p">,</span><span class="n">station</span><span class="p">,</span><span class="n">channel</span><span class="p">,</span><span class="n">location</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">tpl</span></div>
+
+<div class="viewcode-block" id="get_arrival"><a class="viewcode-back" href="../../apidoc/libcomcat.utils.html#libcomcat.utils.get_arrival">[docs]</a><span class="k">def</span> <span class="nf">get_arrival</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="n">pickid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find the arrival object in a Catalog Event corresponding to input pick id.</span>
+<span class="sd">    :param event:</span>
+<span class="sd">      Obspy Catalog Event object.</span>
+<span class="sd">    :param pickid:</span>
+<span class="sd">      Pick ID string.</span>
+<span class="sd">    :returns:</span>
+<span class="sd">      Obspy Catalog arrival object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">origin</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">origins</span><span class="p">:</span>
+        <span class="n">idlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">arr</span><span class="o">.</span><span class="n">pick_id</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">origin</span><span class="o">.</span><span class="n">arrivals</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">pickid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">idlist</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">idlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">pickid</span><span class="p">)</span>
+        <span class="n">arrival</span> <span class="o">=</span> <span class="n">origin</span><span class="o">.</span><span class="n">arrivals</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">arrival</span>
+    <span class="k">if</span> <span class="n">pickid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<span class="k">def</span> <span class="nf">_get_phaserow</span><span class="p">(</span><span class="n">pick</span><span class="p">,</span><span class="n">catevent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a dictionary containing Phase data matching that found on ComCat event page.</span>
+<span class="sd">    Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin </span>
+<span class="sd">    (Click on the Phases tab).</span>
+
+<span class="sd">    :param pick:</span>
+<span class="sd">      Obspy Catalog Pick object.</span>
+<span class="sd">    :param catevent:</span>
+<span class="sd">      Obspy Catalog Event object.</span>
+<span class="sd">    :returns:</span>
+<span class="sd">      Dictionary containing:</span>
+<span class="sd">        - Channel: NSCL-style channel string.</span>
+<span class="sd">        - Distance: Distance (km) from station to origin.</span>
+<span class="sd">        - Azimuth: Azimuth (deg.) from epicenter to station.</span>
+<span class="sd">        - Phase: Name of the phase (Pn,Pg, etc.)</span>
+<span class="sd">        - Arrival Time: Pick arrival time (UTC).</span>
+<span class="sd">        - Status: &quot;manual&quot; or &quot;automatic&quot;.</span>
+<span class="sd">        - Residual: Arrival time residual.</span>
+<span class="sd">        - Weight: Arrival weight.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pick_id</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">resource_id</span>
+    <span class="n">waveform_id</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span>
+    <span class="n">arrival</span> <span class="o">=</span> <span class="n">get_arrival</span><span class="p">(</span><span class="n">catevent</span><span class="p">,</span><span class="n">pick_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arrival</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="c1">#print(&#39;could not find arrival for pick %s&#39; % pick_id)</span>
+      <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1">#save info to row of dataframe</span>
+    <span class="n">etime</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+                     <span class="n">pick</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">second</span><span class="p">)</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="n">stringify</span><span class="p">(</span><span class="n">waveform_id</span><span class="p">)</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Channel&#39;</span><span class="p">:</span><span class="n">channel</span><span class="p">,</span>
+           <span class="s1">&#39;Distance&#39;</span><span class="p">:</span><span class="n">arrival</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span>
+           <span class="s1">&#39;Azimuth&#39;</span><span class="p">:</span><span class="n">arrival</span><span class="o">.</span><span class="n">azimuth</span><span class="p">,</span>
+           <span class="s1">&#39;Phase&#39;</span><span class="p">:</span><span class="n">arrival</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span>
+           <span class="s1">&#39;Arrival Time&#39;</span><span class="p">:</span><span class="n">etime</span><span class="p">,</span>
+           <span class="s1">&#39;Status&#39;</span><span class="p">:</span><span class="n">pick</span><span class="o">.</span><span class="n">evaluation_mode</span><span class="p">,</span>
+           <span class="s1">&#39;Residual&#39;</span><span class="p">:</span><span class="n">arrival</span><span class="o">.</span><span class="n">time_residual</span><span class="p">,</span>
+           <span class="s1">&#39;Weight&#39;</span><span class="p">:</span><span class="n">arrival</span><span class="o">.</span><span class="n">time_weight</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">row</span>
+
+<div class="viewcode-block" id="get_phase_dataframe"><a class="viewcode-back" href="../../apidoc/libcomcat.utils.html#libcomcat.utils.get_phase_dataframe">[docs]</a><span class="k">def</span> <span class="nf">get_phase_dataframe</span><span class="p">(</span><span class="n">detail</span><span class="p">,</span><span class="n">catalog</span><span class="o">=</span><span class="s1">&#39;preferred&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a Pandas DataFrame consisting of Phase arrival data.</span>
+
+<span class="sd">    :param detail:</span>
+<span class="sd">      DetailEvent object.</span>
+<span class="sd">    :param catalog:</span>
+<span class="sd">      Source network (&#39;us&#39;,&#39;ak&#39;, etc. ,or &#39;preferred&#39;.)</span>
+<span class="sd">    :returns:</span>
+<span class="sd">      Pandas DataFrame containing columns:</span>
+<span class="sd">        - Channel: Network.Station.Channel.Location (NSCL) style station description.</span>
+<span class="sd">                   (&quot;--&quot; indicates missing information)</span>
+<span class="sd">        - Distance: Distance (kilometers) from epicenter to station.</span>
+<span class="sd">        - Azimuth: Azimuth (degrees) from epicenter to station.</span>
+<span class="sd">        - Phase: Name of the phase (Pn,Pg, etc.)</span>
+<span class="sd">        - Arrival Time: Pick arrival time (UTC).</span>
+<span class="sd">        - Status: &quot;manual&quot; or &quot;automatic&quot;.</span>
+<span class="sd">        - Residual: Arrival time residual.</span>
+<span class="sd">        - Weight: Arrival weight.</span>
+<span class="sd">    :raises:</span>
+<span class="sd">      AttributeError if input DetailEvent does not have a phase-data product for the input catalog.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">,</span><span class="s1">&#39;Distance&#39;</span><span class="p">,</span><span class="s1">&#39;Azimuth&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;Phase&#39;</span><span class="p">,</span><span class="s1">&#39;Arrival Time&#39;</span><span class="p">,</span><span class="s1">&#39;Status&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;Residual&#39;</span><span class="p">,</span><span class="s1">&#39;Weight&#39;</span><span class="p">])</span>
+
+    <span class="n">phasedata</span> <span class="o">=</span> <span class="n">detail</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;phase-data&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="n">catalog</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">quakeurl</span> <span class="o">=</span> <span class="n">phasedata</span><span class="o">.</span><span class="n">getContentURL</span><span class="p">(</span><span class="s1">&#39;quakeml.xml&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">quakeurl</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">unpickler</span> <span class="o">=</span> <span class="n">Unpickler</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span><span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+        <span class="n">catalog</span> <span class="o">=</span> <span class="n">unpickler</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">catevent</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">catevent</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+            <span class="n">phaserow</span> <span class="o">=</span> <span class="n">_get_phaserow</span><span class="p">(</span><span class="n">pick</span><span class="p">,</span><span class="n">catevent</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">phaserow</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">phaserow</span><span class="p">,</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
 <div class="viewcode-block" id="get_detail_data_frame"><a class="viewcode-back" href="../../apidoc/libcomcat.utils.html#libcomcat.utils.get_detail_data_frame">[docs]</a><span class="k">def</span> <span class="nf">get_detail_data_frame</span><span class="p">(</span><span class="n">events</span><span class="p">,</span><span class="n">get_all_magnitudes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                           <span class="n">get_all_tensors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                          <span class="n">get_all_focal</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                          <span class="n">get_all_focals</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Take the results of a search and extract the detailed event informat in a pandas DataFrame.</span>
 
 <span class="sd">    Usage:</span>
@@ -160,16 +341,17 @@
 <span class="sd">      Boolean indicating whether to return all magnitudes in results for each event.</span>
 <span class="sd">    :param get_all_tensors:</span>
 <span class="sd">      Boolean indicating whether to return all moment tensors in results for each event.</span>
-<span class="sd">    :param get_all_focal:</span>
+<span class="sd">    :param get_all_focals:</span>
 <span class="sd">      Boolean indicating whether to return all focal mechanisms in results for each event.</span>
 <span class="sd">    </span>
 <span class="sd">    :returns:  </span>
 <span class="sd">      Pandas DataFrame with one row per event, and all relevant information in columns.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1"> events downloaded.&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">))</span>
     <span class="n">ic</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">inc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)))</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">inc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)))</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Getting detailed event info - reporting every </span><span class="si">%i</span><span class="s1"> events.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">inc</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">detail</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">getDetailEvent</span><span class="p">()</span>
@@ -178,9 +360,9 @@
             <span class="k">continue</span>
         <span class="n">edict</span> <span class="o">=</span> <span class="n">detail</span><span class="o">.</span><span class="n">toDict</span><span class="p">(</span><span class="n">get_all_magnitudes</span><span class="o">=</span><span class="n">get_all_magnitudes</span><span class="p">,</span>
                               <span class="n">get_all_tensors</span><span class="o">=</span><span class="n">get_all_tensors</span><span class="p">,</span>
-                              <span class="n">get_all_focal</span><span class="o">=</span><span class="n">get_all_focal</span><span class="p">)</span>
+                              <span class="n">get_all_focals</span><span class="o">=</span><span class="n">get_all_focals</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edict</span><span class="p">,</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ic</span> <span class="o">%</span> <span class="n">inc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ic</span> <span class="o">%</span> <span class="n">inc</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Getting detailed information for </span><span class="si">%s</span><span class="s1">, </span><span class="si">%i</span><span class="s1"> of </span><span class="si">%i</span><span class="s1"> events.</span><span class="se">\n</span><span class="s1">&#39;</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">ic</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)))</span>
         <span class="n">ic</span> <span class="o">+=</span> <span class="mi">1</span>

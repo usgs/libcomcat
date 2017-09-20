@@ -77,6 +77,27 @@
   <div class="section" id="module-libcomcat.utils">
 <span id="libcomcat-utils"></span><h1>libcomcat.utils<a class="headerlink" href="#module-libcomcat.utils" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="libcomcat.utils.phase_reader">
+<code class="descclassname">libcomcat.utils.</code><code class="descname">phase_reader</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#phase_reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.phase_reader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a phase file CSV or Excel file into data structures.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> – String file name of a CSV or Excel file created by getphases program.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Tuple of:</dt>
+<dd>header_dict - Dictionary containing header data from top of file.
+dataframe - Pandas dataframe containing phase data.</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="libcomcat.utils.makedict">
 <code class="descclassname">libcomcat.utils.</code><code class="descname">makedict</code><span class="sig-paren">(</span><em>dictstring</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#makedict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.makedict" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -115,8 +136,85 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="libcomcat.utils.stringify">
+<code class="descclassname">libcomcat.utils.</code><code class="descname">stringify</code><span class="sig-paren">(</span><em>waveform</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#stringify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.stringify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn waveform object into NSCL-style station code</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>waveform</strong> – Obspy Catalog Waveform object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">NSCL- style string representation of waveform object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcomcat.utils.get_arrival">
+<code class="descclassname">libcomcat.utils.</code><code class="descname">get_arrival</code><span class="sig-paren">(</span><em>event</em>, <em>pickid</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#get_arrival"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.get_arrival" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the arrival object in a Catalog Event corresponding to input pick id.
+:param event:</p>
+<blockquote>
+<div>Obspy Catalog Event object.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pickid</strong> – Pick ID string.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Obspy Catalog arrival object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcomcat.utils.get_phase_dataframe">
+<code class="descclassname">libcomcat.utils.</code><code class="descname">get_phase_dataframe</code><span class="sig-paren">(</span><em>detail</em>, <em>catalog='preferred'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#get_phase_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.get_phase_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Pandas DataFrame consisting of Phase arrival data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>detail</strong> – DetailEvent object.</li>
+<li><strong>catalog</strong> – Source network (‘us’,’ak’, etc. ,or ‘preferred’.)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>Pandas DataFrame containing columns:</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>Channel: Network.Station.Channel.Location (NSCL) style station description.</dt>
+<dd>(“–” indicates missing information)</dd>
+</dl>
+</li>
+<li>Distance: Distance (kilometers) from epicenter to station.</li>
+<li>Azimuth: Azimuth (degrees) from epicenter to station.</li>
+<li>Phase: Name of the phase (Pn,Pg, etc.)</li>
+<li>Arrival Time: Pick arrival time (UTC).</li>
+<li>Status: “manual” or “automatic”.</li>
+<li>Residual: Arrival time residual.</li>
+<li>Weight: Arrival weight.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">AttributeError if input DetailEvent does not have a phase-data product for the input catalog.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="libcomcat.utils.get_detail_data_frame">
-<code class="descclassname">libcomcat.utils.</code><code class="descname">get_detail_data_frame</code><span class="sig-paren">(</span><em>events</em>, <em>get_all_magnitudes=False</em>, <em>get_all_tensors=False</em>, <em>get_all_focal=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#get_detail_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.get_detail_data_frame" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">libcomcat.utils.</code><code class="descname">get_detail_data_frame</code><span class="sig-paren">(</span><em>events</em>, <em>get_all_magnitudes=False</em>, <em>get_all_tensors=False</em>, <em>get_all_focals=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#get_detail_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.get_detail_data_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take the results of a search and extract the detailed event informat in a pandas DataFrame.</p>
 <dl class="docutils">
 <dt>Usage:</dt>
@@ -130,7 +228,7 @@
 <li><strong>events</strong> – List of SummaryEvent objects as returned by search() function.</li>
 <li><strong>get_all_magnitudes</strong> – Boolean indicating whether to return all magnitudes in results for each event.</li>
 <li><strong>get_all_tensors</strong> – Boolean indicating whether to return all moment tensors in results for each event.</li>
-<li><strong>get_all_focal</strong> – Boolean indicating whether to return all focal mechanisms in results for each event.</li>
+<li><strong>get_all_focals</strong> – Boolean indicating whether to return all focal mechanisms in results for each event.</li>
 </ul>
 </td>
 </tr>

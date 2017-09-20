@@ -1,5 +1,6 @@
 findid
 getcsv
+getphases
 getproduct
 libcomcat/__init__.py
 libcomcat/classes.py

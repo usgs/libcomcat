@@ -238,25 +238,6 @@ def get_event_by_id(eventid,catalog=None,
         newargs[key] = value
         
     event = _search(**newargs) #this should be a DetailEvent
-    #hack around inconsistent behavior in Comcat API
-    #when search with eventid parameter is specified, catalog parameter
-    #has no effect.
-    #so, let's do two searches:
-    #one using eventid parameter to get eq parameters
-    #second using those parameters to do a regular search.
-    if 'catalog' in newargs:
-        time = event.time
-        lat = event.latitude
-        lon = event.longitude
-        summary_events = _search(starttime = time - timedelta(seconds=1),
-                                 endtime = time + timedelta(seconds=1),
-                                 latitude = lat,
-                                 longitude = lon,
-                                 maxradiuskm = 0.1,
-                                 catalog=catalog)
-
-
-        event = summary_events[0].getDetailEvent()
     return event
     
 def search(starttime=None,
@@ -435,8 +416,6 @@ def _get_time_segments(starttime,endtime,minmag):
         starttime = HistoricTime.utcnow() - timedelta(days=30)
     if endtime is None:
         endtime = HistoricTime.utcnow()
-    if minmag is None:
-        minmag = 0.0
     #earthquake frequency table: minmag:earthquakes per day
     freq_table = {0:3000/7,
                   1:3500/14,

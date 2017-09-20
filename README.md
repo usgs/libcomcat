@@ -22,7 +22,7 @@ libcomcat uses Python 3.6, so you will need a conda virtual environment with tha
 version of Python installed.  To create a conda virtual environment called "libcomcat"
 with most of the necessary dependencies installed, do this:
 
-`conda create -n libcomcat python=3.6 numpy obspy pandas`
+`conda create -n libcomcat python=3.6 numpy obspy pandas xlrd xlwt openpyxl`
 
 Then to "activate" that environment, do:
 

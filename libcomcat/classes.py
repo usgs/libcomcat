@@ -32,13 +32,15 @@ class VersionOption(Enum):
 def _get_moment_tensor_info(tensor,get_angles=False):
     """Internal - gather up tensor components and focal mechanism angles.
     """
-    if tensor.hasProperty('beachball-source'):
-        msource = tensor['beachball-source']
+    msource = tensor['eventsource']+'_'+tensor['eventsourcecode']
+    if tensor.hasProperty('derived-magnitude-type'):
+        msource += '_'+tensor['derived-magnitude-type']
     elif tensor.hasProperty('beachball-type'):
-        msource = tensor['beachball-type']
-    else:
-        msource = 'unknown'
-        
+        btype = tensor['beachball-type']
+        if btype.find('/') > -1:
+            btype = btype.split('/')[-1]
+        msource += '_'+btype
+
     edict = OrderedDict()
     edict['%s_mrr' % msource] = float(tensor['tensor-mrr'])
     edict['%s_mtt' % msource] = float(tensor['tensor-mtt'])
@@ -64,7 +66,7 @@ def _get_moment_tensor_info(tensor,get_angles=False):
 def _get_focal_mechanism_info(focal):
     """Internal - gather up focal mechanism angles.
     """
-    msource = focal['eventsource']
+    msource = focal['eventsource']+'_'+focal['eventsourcecode']
     edict = OrderedDict()
     edict['%s_np1_strike' % msource] = focal['nodal-plane-1-strike']
     edict['%s_np1_dip' % msource] = focal['nodal-plane-1-dip']
@@ -206,10 +208,18 @@ class SummaryEvent(object):
     
     def getDetailEvent(self,includedeleted=False,includesuperseded=False):
         """Instantiate a DetailEvent object from the URL found in the summary.
-        
+        :param includedeleted:
+          Boolean indicating wheather to return versions of products that have been deleted.
+          Cannot be used with includesuperseded.
+        :param includesuperseded:
+          Boolean indicating wheather to return versions of products that have been replaced by
+          newer versions.
+          Cannot be used with includedeleted.
         :returns:
           DetailEvent version of SummaryEvent.
         """
+        if includesuperseded and includedeleted:
+            raise RuntimeError('includedeleted and includesuperseded cannot be used together.')
         if not includedeleted and not includesuperseded:
             durl = self._jdict['properties']['detail']
             return DetailEvent(durl)
@@ -374,8 +384,8 @@ class DetailEvent(object):
     def toDict(self,catalog=None,
                get_all_magnitudes=False,
                get_all_tensors=False,
-               get_all_focal=False):
-        """Return known origin, focal mechanism, and moment tensor information for an event.
+               get_all_focals=False):
+        """Return known origin, focal mechanism, and moment tensor information for a DetailEvent.
 
         :param catalog:
           Retrieve the primary event information (time,lat,lon...) from the catalog given.
@@ -386,7 +396,7 @@ class DetailEvent(object):
           which takes extra time.
         :param get_all_tensors:
           Boolean indicating whether all known moment tensors for this event should be returned.
-        :param get_all_focal:
+        :param get_all_focals:
           Boolean indicating whether all known focal mechanisms for this event should be returned.
         :returns:
           OrderedDict with the same fields as returned by SummaryEvent.toDict(), plus
@@ -407,7 +417,19 @@ class DetailEvent(object):
             edict['url'] = self.url
         else:
             try:
-                phasedata = self.getProducts('phase-data',source=catalog)[0]
+                phase_sources = []
+                origin_sources = []
+                if self.hasProduct('phase-data'):
+                    phase_sources = [p.source for p in self.getProducts('phase-data',source='all')]
+                if self.hasProduct('origin'):
+                    origin_sources = [o.source for o in self.getProducts('origin',source='all')]
+                if catalog in phase_sources:
+                    phasedata = self.getProducts('phase-data',source=catalog)[0]
+                elif catalog in origin_sources:
+                    phasedata = self.getProducts('origin',source=catalog)[0]
+                else:
+                    msg = 'DetailEvent %s has no phase-data or origin products for source %s'
+                    raise AttributeError(msg % (self.id,catalog))
                 edict['id'] = phasedata['eventsource']+phasedata['eventsourcecode']
                 edict['time'] = dateutil.parser.parse(phasedata['eventtime'])
                 edict['location'] = self.location
@@ -425,18 +447,16 @@ class DetailEvent(object):
                 edict.update(_get_moment_tensor_info(tensor,get_angles=True))
         else:
             if self.hasProduct('moment-tensor'):
-                num_tensors = self.getNumVersions('moment-tensor')
-                for idx in range(0,num_tensors):
-                    tensor = self.getProducts('moment-tensor',auth=False,index=idx)[0]
+                tensors = self.getProducts('moment-tensor',source='all',version=VersionOption.ALL)
+                for tensor in tensors:
                     edict.update(_get_moment_tensor_info(tensor,get_angles=True))
-        if not get_all_focal:
+        if not get_all_focals:
             if self.hasProduct('focal-mechanism'):
                 edict.update(_get_focal_mechanism_info(self.getProducts('focal-mechanism')[0]))
         else:
             if self.hasProduct('focal-mechanism'):
-                num_focal = self.getNumVersions('focal-mechanism')
-                for idx in range(0,num_focal):
-                    focal = self.getProducts('focal-mechanism',auth=False,index=idx)[0]
+                focals = self.getProducts('focal-mechanism',source='all',version=VersionOption.ALL)
+                for focal in focals:
                     edict.update(_get_focal_mechanism_info(focal))
 
         if get_all_magnitudes:
@@ -474,12 +494,12 @@ class DetailEvent(object):
             raise AttributeError('Event %s has no product of type %s' % (self.id,product_name))
         return len(self._jdict['properties']['products'][product_name])
     
-    def getProducts(self,product_name,source='preferred',version_option=VersionOption.LAST):
+    def getProducts(self,product_name,source='preferred',version=VersionOption.LAST):
         """Retrieve a Product object from this DetailEvent.
 
         :param product_name:
           Name of product (origin, shakemap, etc.) to retrieve.
-        :param version_option:
+        :param version:
           An enum value from VersionOption (PREFERRED,FIRST,ALL).
         :param source:
           Any one of: 
@@ -490,7 +510,7 @@ class DetailEvent(object):
           List of Product objects.
         """
         if not self.hasProduct(product_name):
-            raise AttributeError('Event %s has no product of type %s' % (self.id,product))
+            raise AttributeError('Event %s has no product of type %s' % (self.id,product_name))
                 
         weights = [product['preferredWeight'] for product in self._jdict['properties']['products'][product_name]]
         sources = [product['source'] for product in self._jdict['properties']['products'][product_name]]
@@ -503,13 +523,13 @@ class DetailEvent(object):
         df = df.sort_values(['source','time'])
         df['version'] = 0
         psources = []
-        version = 1
+        pversion = 1
         for idx,row in df.iterrows():
             if row['source'] not in psources:
                 psources.append(row['source'])
-                version = 1
-            df.loc[idx,'version'] = version
-            version += 1
+                pversion = 1
+            df.loc[idx,'version'] = pversion
+            pversion += 1
 
         if source == 'preferred':
             idx = weights.index(max(weights))
@@ -526,23 +546,49 @@ class DetailEvent(object):
         if not len(df):
             raise AttributeError('No products found for source "%s".' % source)
 
-        if version_option != VersionOption.ALL:
-            if version_option == VersionOption.LAST:
+        products = []
+        usources = set(sources)
+        if source == 'all': #dataframe includes all sources
+            for source in usources:
+                df_source = df[df['source'] == source]
+                df_source = df_source.sort_values('time')
+                if version == VersionOption.LAST:
+                    idx = df_source.iloc[-1]['index']
+                    pversion = df_source.iloc[-1]['version']
+                    product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
+                    products.append(product)
+                elif version == VersionOption.FIRST:
+                    idx = df_source.iloc[0]['index']
+                    pversion = df_source.iloc[0]['version']
+                    product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
+                    products.append(product)
+                elif version == VersionOption.ALL:
+                    for idx,row in df_source.iterrows():
+                        idx = row['index']
+                        pversion = row['version']
+                        product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
+                        products.append(product)
+                else:
+                    raise(AttributeError('No VersionOption defined for %s' % version))
+        else: #dataframe only includes one source
+            if version == VersionOption.LAST:
                 idx = df.iloc[-1]['index']
-                version = df.iloc[-1]['version']
-            elif version_option == VersionOption.FIRST:
-                idx = df.iloc[0]['index']
-                version = df.iloc[0]['version']
-            else:
-                raise(AttributeError('No VersionOption defined for %s' % version_option))
-            products = [Product(product_name,version,self._jdict['properties']['products'][product_name][idx])]
-        else: #version_option == VersionOption.ALL
-            products = []
-            for index,row in df.iterrows():
-                idx = row['index']
-                version = row['version']
-                product = Product(product_name,version,self._jdict['properties']['products'][product_name][idx])
+                pversion = df.iloc[-1]['version']
+                product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
                 products.append(product)
+            elif version == VersionOption.FIRST:
+                idx = df.iloc[0]['index']
+                pversion = df.iloc[0]['version']
+                product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
+                products.append(product)
+            elif version == VersionOption.ALL:
+                for idx,row in df.iterrows():
+                    idx = row['index']
+                    pversion = row['version']
+                    product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
+                    products.append(product)
+            else:
+                raise(AttributeError('No VersionOption defined for %s' % version))
 
         return products
         
@@ -693,9 +739,6 @@ class Product(object):
                 raise Exception('Could not download %s from %s.' % (content_name,url))
             
         return url
-
-        raise AttributeError('Could not find any content matching input %s' % regexp)
-        return url
     
     def hasProperty(self,key):
         """Determine if this Product contains a given property.
@@ -708,18 +751,6 @@ class Product(object):
         if key not in self._product['properties']:
             return False
         return True
-
-    def __getitem__(self,key):
-        """Extract Product property using the [] operator.
-        
-        :param key:
-          Property to extract.
-        :returns:
-          Desired property.
-        """
-        if key not in self._jdict['properties']:
-            raise AttributeError('No property %s found for event %s.' % (key,self.id))
-        return self._jdict['properties'][key]
 
     @property
     def preferred_weight(self):

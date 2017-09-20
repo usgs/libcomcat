@@ -85,9 +85,9 @@
 <p><p>Download phase data for matching events into CSV or Excel format.</p>
 <blockquote>
 <div><p>The resulting files will contain a “header” consisting of basic earthquake information
-(Id,Time,Latitude,Longitude,Depth,Magnitude) at the top of the file. In the Excel
-format, this information takes the first six rows and two columns. In CSV format, the
-values are the first six lines of the file, prepended with a “#” (comment) character.</p>
+(Id,Time,Latitude,Longitude,Depth,Magnitude, etc.) at the top of the file. In the Excel
+format, this information takes the first several rows and two columns. In CSV format, the
+values are the first lines of the file, prepended with a “#” (comment) character.</p>
 <p>To download phase data to Excel format for a small rectangle in Oklahoma in 2017:
 %(prog)s ~/tmp/phase_data -b -97.573 -97.460 36.247 36.329 -s 2017-08-26 -e 2017-09-15 -f excel</p>
 </div></blockquote>
