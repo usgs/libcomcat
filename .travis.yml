@@ -29,7 +29,6 @@ script:
     - export PYTHONPATH="."
     - echo `which py.test`
     - py.test --cov=libcomcat
-    - echo `sphinx-build --version`
 after_success:
     - pip install codecov codacy-coverage
     - codecov
