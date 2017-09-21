@@ -27,7 +27,7 @@ def _get_product_from_detail(detail,product,contents,folder,
     else:
         version_option = VersionOption.ALL
         
-    products = detail.getProducts(product,source=source,version_option=version_option)
+    products = detail.getProducts(product,source=source,version=version_option)
     
     ic = len(products)
     eventfolder = os.path.join(folder,detail.id)
