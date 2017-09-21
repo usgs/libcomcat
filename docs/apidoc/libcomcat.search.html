@@ -1,0 +1,341 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>libcomcat.search &#8212; libcomcat Documentation  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="libcomcat.utils" href="libcomcat.utils.html" />
+    <link rel="prev" title="libcomcat.classes" href="libcomcat.classes.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">libcomcat Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../programs/programs.html">libcomcat 0.5 Command Line Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="libcomcat.html">libcomcat 0.5 API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libcomcat.classes.html">libcomcat.classes</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">libcomcat.search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libcomcat.utils.html">libcomcat.utils</a></li>
+</ul>
+</li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-libcomcat.search">
+<span id="libcomcat-search"></span><h1>libcomcat.search<a class="headerlink" href="#module-libcomcat.search" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="libcomcat.search.count">
+<code class="descclassname">libcomcat.search.</code><code class="descname">count</code><span class="sig-paren">(</span><em>starttime=None</em>, <em>endtime=None</em>, <em>updatedafter=None</em>, <em>minlatitude=None</em>, <em>maxlatitude=None</em>, <em>minlongitude=None</em>, <em>maxlongitude=None</em>, <em>latitude=None</em>, <em>longitude=None</em>, <em>maxradiuskm=None</em>, <em>maxradius=None</em>, <em>catalog=None</em>, <em>contributor=None</em>, <em>limit=20000</em>, <em>maxdepth=1000</em>, <em>maxmagnitude=10.0</em>, <em>mindepth=-100</em>, <em>minmagnitude=0</em>, <em>offset=1</em>, <em>orderby='time-asc'</em>, <em>alertlevel=None</em>, <em>eventtype='earthquake'</em>, <em>maxcdi=None</em>, <em>maxgap=None</em>, <em>maxmmi=None</em>, <em>maxsig=None</em>, <em>mincdi=None</em>, <em>minfelt=None</em>, <em>mingap=None</em>, <em>minsig=None</em>, <em>producttype=None</em>, <em>productcode=None</em>, <em>reviewstatus=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/search.html#count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.search.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ask the ComCat database for the number of events matching input criteria.</p>
+<p>This count function is a wrapper around the ComCat Web API described here:</p>
+<p><a class="reference external" href="https://earthquake.usgs.gov/fdsnws/event/1/">https://earthquake.usgs.gov/fdsnws/event/1/</a> (see count section)</p>
+<p>Some of the search parameters described there are NOT implemented here, usually because they do not
+apply to GeoJSON search results, which we are getting here and parsing into Python data structures.</p>
+<p>This function returns a list of SummaryEvent objects, described elsewhere in this package.</p>
+<dl class="docutils">
+<dt>Usage:</dt>
+<dd>TODO</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>starttime</strong> – Python datetime - Limit to events on or after the specified start time.</li>
+<li><strong>endtime</strong> – Python datetime - Limit to events on or before the specified end time.</li>
+<li><strong>updatedafter</strong> – Python datetime - Limit to events updated after the specified time.</li>
+<li><strong>minlatitude</strong> – Limit to events with a latitude larger than the specified minimum.</li>
+<li><strong>maxlatitude</strong> – Limit to events with a latitude smaller than the specified maximum.</li>
+<li><strong>minlongitude</strong> – Limit to events with a longitude larger than the specified minimum.</li>
+<li><strong>maxlongitude</strong> – Limit to events with a longitude smaller than the specified maximum.</li>
+<li><strong>latitude</strong> – Specify the latitude to be used for a radius search.</li>
+<li><strong>longitude</strong> – Specify the longitude to be used for a radius search.</li>
+<li><strong>maxradiuskm</strong> – Limit to events within the specified maximum number of kilometers
+from the geographic point defined by the latitude and longitude parameters.</li>
+<li><strong>maxradius</strong> – Limit to events within the specified maximum number of degrees
+from the geographic point defined by the latitude and longitude parameters.</li>
+<li><strong>catalog</strong> – Limit to events from a specified catalog.</li>
+<li><strong>contributor</strong> – Limit to events contributed by a specified contributor.</li>
+<li><strong>limit</strong> – Limit the results to the specified number of events.
+NOTE, this will be throttled by this Python API to the supported Web API limit of 20,000.</li>
+<li><strong>maxdepth</strong> – Limit to events with depth less than the specified maximum.</li>
+<li><strong>maxmagnitude</strong> – Limit to events with a magnitude smaller than the specified maximum.</li>
+<li><strong>mindepth</strong> – Limit to events with depth more than the specified minimum.</li>
+<li><strong>minmagnitude</strong> – Limit to events with a magnitude larger than the specified minimum.</li>
+<li><strong>offset</strong> – Return results starting at the event count specified, starting at 1.</li>
+<li><strong>orderby</strong> – <dl class="docutils">
+<dt>Order the results. The allowed values are:</dt>
+<dd><ul class="first last">
+<li>time order by origin descending time</li>
+<li>time-asc order by origin ascending time</li>
+<li>magnitude order by descending magnitude</li>
+<li>magnitude-asc order by ascending magnitude</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><strong>alertlevel</strong> – Limit to events with a specific PAGER alert level. The allowed values are:
+- green Limit to events with PAGER alert level “green”.
+- yellow Limit to events with PAGER alert level “yellow”.
+- orange Limit to events with PAGER alert level “orange”.
+- red Limit to events with PAGER alert level “red”.</li>
+<li><strong>eventtype</strong> – Limit to events of a specific type. NOTE: “earthquake” will filter non-earthquake events.</li>
+<li><strong>maxcdi</strong> – Maximum value for Maximum Community Determined Intensity reported by DYFI.</li>
+<li><strong>maxgap</strong> – Limit to events with no more than this azimuthal gap.</li>
+<li><strong>maxmmi</strong> – Maximum value for Maximum Modified Mercalli Intensity reported by ShakeMap.</li>
+<li><strong>maxsig</strong> – Limit to events with no more than this significance.</li>
+<li><strong>mincdi</strong> – Minimum value for Maximum Community Determined Intensity reported by DYFI.</li>
+<li><strong>minfelt</strong> – Limit to events with this many DYFI responses.</li>
+<li><strong>mingap</strong> – Limit to events with no less than this azimuthal gap.</li>
+<li><strong>minsig</strong> – Limit to events with no less than this significance.</li>
+<li><strong>producttype</strong> – <dl class="docutils">
+<dt>Limit to events that have this type of product associated. Example producttypes:</dt>
+<dd><ul class="first last">
+<li>moment-tensor</li>
+<li>focal-mechanism</li>
+<li>shakemap</li>
+<li>losspager</li>
+<li>dyfi</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><strong>productcode</strong> – <p>Return the event that is associated with the productcode.
+The event will be returned even if the productcode is not
+the preferred code for the event. Example productcodes:</p>
+<blockquote>
+<div><ul>
+<li>nn00458749</li>
+<li>at00ndf1fr</li>
+</ul>
+</div></blockquote>
+</li>
+<li><strong>reviewstatus</strong> – <dl class="docutils">
+<dt>Limit to events with a specific review status. The different review statuses are:</dt>
+<dd><ul class="first last">
+<li>automatic Limit to events with review status “automatic”.</li>
+<li>reviewed Limit to events with review status “reviewed”.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of SummaryEvent() objects.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcomcat.search.get_event_by_id">
+<code class="descclassname">libcomcat.search.</code><code class="descname">get_event_by_id</code><span class="sig-paren">(</span><em>eventid</em>, <em>catalog=None</em>, <em>includedeleted=False</em>, <em>includesuperseded=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/search.html#get_event_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.search.get_event_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the ComCat database for an event matching the input event id.</p>
+<p>This search function is a wrapper around the ComCat Web API described here:</p>
+<p><a class="reference external" href="https://earthquake.usgs.gov/fdsnws/event/1/">https://earthquake.usgs.gov/fdsnws/event/1/</a></p>
+<p>Some of the search parameters described there are NOT implemented here, usually because they do not
+apply to GeoJSON search results, which we are getting here and parsing into Python data structures.</p>
+<p>This function returns a DetailEvent object, described elsewhere in this package.</p>
+<dl class="docutils">
+<dt>Usage:</dt>
+<dd>TODO</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>eventid</strong> – Select a specific event by ID; event identifiers are data center specific.</li>
+<li><strong>includesuperseded</strong> – Specify if superseded products should be included. This also includes all
+deleted products, and is mutually exclusive to the includedeleted parameter.</li>
+<li><strong>includedeleted</strong> – Specify if deleted products should be incuded.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DetailEvent object.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcomcat.search.search">
+<code class="descclassname">libcomcat.search.</code><code class="descname">search</code><span class="sig-paren">(</span><em>starttime=None</em>, <em>endtime=None</em>, <em>updatedafter=None</em>, <em>minlatitude=None</em>, <em>maxlatitude=None</em>, <em>minlongitude=None</em>, <em>maxlongitude=None</em>, <em>latitude=None</em>, <em>longitude=None</em>, <em>maxradiuskm=None</em>, <em>maxradius=None</em>, <em>catalog=None</em>, <em>contributor=None</em>, <em>limit=20000</em>, <em>maxdepth=1000</em>, <em>maxmagnitude=10.0</em>, <em>mindepth=-100</em>, <em>minmagnitude=0</em>, <em>offset=1</em>, <em>orderby='time-asc'</em>, <em>alertlevel=None</em>, <em>eventtype='earthquake'</em>, <em>maxcdi=None</em>, <em>maxgap=None</em>, <em>maxmmi=None</em>, <em>maxsig=None</em>, <em>mincdi=None</em>, <em>minfelt=None</em>, <em>mingap=None</em>, <em>minsig=None</em>, <em>producttype=None</em>, <em>productcode=None</em>, <em>reviewstatus=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/search.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.search.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the ComCat database for events matching input criteria.</p>
+<p>This search function is a wrapper around the ComCat Web API described here:</p>
+<p><a class="reference external" href="https://earthquake.usgs.gov/fdsnws/event/1/">https://earthquake.usgs.gov/fdsnws/event/1/</a></p>
+<p>Some of the search parameters described there are NOT implemented here, usually because they do not
+apply to GeoJSON search results, which we are getting here and parsing into Python data structures.</p>
+<p>This function returns a list of SummaryEvent objects, described elsewhere in this package.</p>
+<dl class="docutils">
+<dt>Usage:</dt>
+<dd>TODO</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>starttime</strong> – Python datetime - Limit to events on or after the specified start time.</li>
+<li><strong>endtime</strong> – Python datetime - Limit to events on or before the specified end time.</li>
+<li><strong>updatedafter</strong> – Python datetime - Limit to events updated after the specified time.</li>
+<li><strong>minlatitude</strong> – Limit to events with a latitude larger than the specified minimum.</li>
+<li><strong>maxlatitude</strong> – Limit to events with a latitude smaller than the specified maximum.</li>
+<li><strong>minlongitude</strong> – Limit to events with a longitude larger than the specified minimum.</li>
+<li><strong>maxlongitude</strong> – Limit to events with a longitude smaller than the specified maximum.</li>
+<li><strong>latitude</strong> – Specify the latitude to be used for a radius search.</li>
+<li><strong>longitude</strong> – Specify the longitude to be used for a radius search.</li>
+<li><strong>maxradiuskm</strong> – Limit to events within the specified maximum number of kilometers
+from the geographic point defined by the latitude and longitude parameters.</li>
+<li><strong>maxradius</strong> – Limit to events within the specified maximum number of degrees
+from the geographic point defined by the latitude and longitude parameters.</li>
+<li><strong>catalog</strong> – Limit to events from a specified catalog.</li>
+<li><strong>contributor</strong> – Limit to events contributed by a specified contributor.</li>
+<li><strong>limit</strong> – Limit the results to the specified number of events.
+NOTE, this will be throttled by this Python API to the supported Web API limit of 20,000.</li>
+<li><strong>maxdepth</strong> – Limit to events with depth less than the specified maximum.</li>
+<li><strong>maxmagnitude</strong> – Limit to events with a magnitude smaller than the specified maximum.</li>
+<li><strong>mindepth</strong> – Limit to events with depth more than the specified minimum.</li>
+<li><strong>minmagnitude</strong> – Limit to events with a magnitude larger than the specified minimum.</li>
+<li><strong>offset</strong> – Return results starting at the event count specified, starting at 1.</li>
+<li><strong>orderby</strong> – <dl class="docutils">
+<dt>Order the results. The allowed values are:</dt>
+<dd><ul class="first last">
+<li>time order by origin descending time</li>
+<li>time-asc order by origin ascending time</li>
+<li>magnitude order by descending magnitude</li>
+<li>magnitude-asc order by ascending magnitude</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><strong>alertlevel</strong> – Limit to events with a specific PAGER alert level. The allowed values are:
+- green Limit to events with PAGER alert level “green”.
+- yellow Limit to events with PAGER alert level “yellow”.
+- orange Limit to events with PAGER alert level “orange”.
+- red Limit to events with PAGER alert level “red”.</li>
+<li><strong>eventtype</strong> – Limit to events of a specific type. NOTE: “earthquake” will filter non-earthquake events.</li>
+<li><strong>maxcdi</strong> – Maximum value for Maximum Community Determined Intensity reported by DYFI.</li>
+<li><strong>maxgap</strong> – Limit to events with no more than this azimuthal gap.</li>
+<li><strong>maxmmi</strong> – Maximum value for Maximum Modified Mercalli Intensity reported by ShakeMap.</li>
+<li><strong>maxsig</strong> – Limit to events with no more than this significance.</li>
+<li><strong>mincdi</strong> – Minimum value for Maximum Community Determined Intensity reported by DYFI.</li>
+<li><strong>minfelt</strong> – Limit to events with this many DYFI responses.</li>
+<li><strong>mingap</strong> – Limit to events with no less than this azimuthal gap.</li>
+<li><strong>minsig</strong> – Limit to events with no less than this significance.</li>
+<li><strong>producttype</strong> – <dl class="docutils">
+<dt>Limit to events that have this type of product associated. Example producttypes:</dt>
+<dd><ul class="first last">
+<li>moment-tensor</li>
+<li>focal-mechanism</li>
+<li>shakemap</li>
+<li>losspager</li>
+<li>dyfi</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><strong>productcode</strong> – <p>Return the event that is associated with the productcode.
+The event will be returned even if the productcode is not
+the preferred code for the event. Example productcodes:</p>
+<blockquote>
+<div><ul>
+<li>nn00458749</li>
+<li>at00ndf1fr</li>
+</ul>
+</div></blockquote>
+</li>
+<li><strong>reviewstatus</strong> – <dl class="docutils">
+<dt>Limit to events with a specific review status. The different review statuses are:</dt>
+<dd><ul class="first last">
+<li>automatic Limit to events with review status “automatic”.</li>
+<li>reviewed Limit to events with review status “reviewed”.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of SummaryEvent() objects.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

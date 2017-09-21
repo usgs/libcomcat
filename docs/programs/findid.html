@@ -1,0 +1,180 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>findid &#8212; libcomcat Documentation  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="getphases" href="getphases.html" />
+    <link rel="prev" title="getproduct" href="getproduct.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">libcomcat Documentation</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="programs.html">libcomcat 0.5 Command Line Interface</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="getcsv.html">getcsv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getproduct.html">getproduct</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">findid</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Positional Arguments">Positional Arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getphases.html">getphases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc/libcomcat.html">libcomcat 0.5 API</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findid">
+<span id="id1"></span><h1>findid<a class="headerlink" href="#findid" title="Permalink to this headline">¶</a></h1>
+<p><p>Find the id(s) of the closest earthquake to input parameters.</p>
+<blockquote>
+<div><p>To print the authoritative id of the event closest in time and space 
+inside a 100 km, 16 second window to “2017-08-30 03:00:33 UTC 37.571   118.888”:</p>
+<p>%(prog)s  2017-08-30T03:00:33 37.571 -118.888</p>
+<p>To make a similar query but with the time shifted by 2 minutes, and a 
+custom time window of 3 minutes:</p>
+<p>%(prog)s  -w 180 2017-08-30T03:00:33 37.571 -118.888</p>
+<p>To print the authoritative id AND the url of the event closest in time and space to that point:</p>
+<p>%(prog)s  -u -w 180 2017-08-30T03:00:33 37.571 -118.888</p>
+<p>To print all of the ids associated with the event closest to above:</p>
+<p>%(prog)s -a 2015-03-29T23:48:31 -4.763 152.561</p>
+<p>To print the id(s), time/distance deltas, and azimuth from input to nearest event:</p>
+<p>%(prog)s -v 2015-03-29T23:48:31 -4.763 152.561</p>
+<dl class="docutils">
+<dt>Notes:</dt>
+<dd><ul class="first simple">
+<li>The time format at the command line must be of the form “YYYY-MM-DDTHH:MM:SS”.  The time format in an input csv file</li>
+</ul>
+<p class="last">can be either :YYYY-MM-DDTHH:MM:SS” OR “YYYY-MM-DD HH:MM:SS”.  This is because on the command line the argument parser 
+would be confused by the space between the date and the time, whereas in the csv file the input files are being split
+by commas.
+- Supplying the -a option with the -f option has no effect.</p>
+</dd>
+</dl>
+</div></blockquote>
+</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">findid</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">RADIUS</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">w</span> <span class="n">WINDOW</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">u</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="n">time</span> <span class="n">lat</span> <span class="n">lon</span>
+</pre></div>
+</div>
+<div class="section" id="Positional Arguments">
+<h2>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h2>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd>time</kbd></td>
+<td>Time of earthquake, formatted as YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS</td></tr>
+<tr><td class="option-group">
+<kbd>lat</kbd></td>
+<td>Latitude of earthquake</td></tr>
+<tr><td class="option-group">
+<kbd>lon</kbd></td>
+<td>Longitude of earthquake</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="Named Arguments">
+<h2>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h2>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd>-r, --radius</kbd></td>
+<td>Change search radius from default of 100 km.</td></tr>
+<tr><td class="option-group">
+<kbd>-w, --window</kbd></td>
+<td>Change time window of 16 seconds.</td></tr>
+<tr><td class="option-group">
+<kbd>-a, --all</kbd></td>
+<td><p class="first">Print all ids associated with event.</p>
+<p class="last">Default: False</p>
+</td></tr>
+<tr><td class="option-group">
+<kbd>-u, --url</kbd></td>
+<td><p class="first">Print URL associated with event.</p>
+<p class="last">Default: False</p>
+</td></tr>
+<tr><td class="option-group">
+<kbd>-v, --verbose</kbd></td>
+<td><p class="first">Print time/distance deltas, and azimuth from input parameters to event.</p>
+<p class="last">Default: False</p>
+</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
