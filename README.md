@@ -9,8 +9,10 @@ libcomcat is a project designed to provide a Python equivalent to the ANSS ComCa
 that provides various classes and functions wrapping around the ComCat API, and a number of command
 line programs that use those:
 
- * getproduct A script to download ComCat product contents (shakemap grids, origin quakeml, etc.)
- * getcsv A script to generate csv or tab separated text files with basic earthquake information.
+ * `getproduct` Download ComCat product contents (shakemap grids, origin quakeml, etc.)
+ * `getcsv` Generate csv or Excel files with basic earthquake information.
+ * `getphases` Generate csv or Excel files with phase information.
+ * `findid` Find the ID of an event closest to input time/lat/lon parameters.
 
 
 Installation and Dependencies
