@@ -1,29 +1,44 @@
 {
-  "name": "libcomcat",
-  "organization": "U.S. Geological Survey",
-  "description": "Python wrapper around ComCat web API",
-  "status": "Beta",
-  "homepage": "https://github.com/usgs/libcomcat",
-  "downloadURL": "https://github.com/usgs/libcomcat/archive/master.zip",
-
-  "openSourceProject": 1,
-  "license": "https://github.com/usgs/libcomcat/blob/master/LICENSE.md",
-  "vcs": "git",
-  "repository": "https://github.com/usgs/libcomcat.git",
-
-  "tags": [
-    "earthquake",
-    "search"
-  ],
-  "languages": [
-    "python",
-  ],
-
-  "contact": {
-    "name": "Mike Hearne",
-    "email": "mhearne@usgs.gov"
-  },
-  "updated": {
-    "metadataLastUpdated": "2017-09-13"
-  }
+  "version": "2.0.0",
+  "measurementType": {},
+  "agency": "U.S. Department of Interior",
+  "releases": [
+    {
+      "name": "libcomcat",
+      "description": "Python wrapper around ComCat web API",
+      "version": "2.0",
+      "status": "Beta",
+      "organization": "U.S. Geological Survey",
+      "vcs": "git",
+      "repositoryURL": "https://github.com/usgs/libcomcat",
+      "homepageURL": "https://github.com/usgs/libcomcat",
+      "downloadURL": "https://github.com/usgs/libcomcat/releases/tag/v1.0",
+      "disclaimerURL": "https://github.com/usgs/libcomcat/blob/master/DISCLAIMER.md",
+      "permissions": {
+        "licenses": [
+          {
+            "name": "Public Domain",
+            "URL": "https://github.com/usgs/libcomcat/blob/master/LICENSE.md"
+          }
+        ],
+        "usageType": "openSource",
+        "exemptionText": null
+      },
+      "laborHours": 1,
+      "languages": [ "Python" ],
+      "tags": [
+        "earthquake",
+        "catalog",
+        "search",
+        "download"
+      ],
+      "contact": {
+        "name": "Mike Hearne",
+        "email": "mhearne@usgs.gov"
+      },
+      "date": {
+        "metadataLastUpdated": "2017-09-21"
+      }
+    }
+  ]
 }

@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/usgs/libcomcat/branch/master/graph/badge.svg)](https://codecov.io/gh/usgs/libcomcat)
+
+
 Introduction
 ------------
 
