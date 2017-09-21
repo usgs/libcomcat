@@ -232,6 +232,8 @@ def get_phase_dataframe(detail,catalog='preferred'):
     :raises:
       AttributeError if input DetailEvent does not have a phase-data product for the input catalog.
     """
+    if catalog is None:
+        catalog = 'preferred'
     df = pd.DataFrame(columns=['Channel','Distance','Azimuth',
                                'Phase','Arrival Time','Status',
                                'Residual','Weight'])

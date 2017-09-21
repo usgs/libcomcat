@@ -182,7 +182,7 @@ def main(args):
             sys.stderr.write('Fetched %i events...creating table.\n' % (len(events)))
         df = get_detail_data_frame(events,get_all_magnitudes=args.getAllMags,
                                    get_all_tensors=args.getComponents,
-                                   get_all_focal=args.getAngles,verbose=args.verbose)
+                                   get_all_focals=args.getAngles,verbose=args.verbose)
     else:
         df = get_summary_data_frame(events)
 
