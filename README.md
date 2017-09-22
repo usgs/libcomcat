@@ -35,18 +35,18 @@ Then to "activate" that environment, do:
 
 Then do:
 
-`pip install pip install git+git://github.com/usgs/earthquake-impact-utils.git`
+`pip install git+git://github.com/usgs/earthquake-impact-utils.git`
 
-`pip install pip install git+git://github.com/usgs/libcomcat.git`
+`pip install git+git://github.com/usgs/libcomcat.git`
 
 Uninstalling and Updating
 -------------------------
 
 To uninstall:
 
-pip uninstall libcomcat
+`pip uninstall libcomcat`
 
 To update:
 
-pip install -U git+git://github.com/usgs/libcomcat.git
+`pip install -U git+git://github.com/usgs/libcomcat.git`
 
