@@ -27,7 +27,7 @@ libcomcat uses Python 3.6, so you will need a conda virtual environment with tha
 version of Python installed.  To create a conda virtual environment called "libcomcat"
 with most of the necessary dependencies installed, do this:
 
-`conda create -n libcomcat python=3.6 --channel conda-forge numpy obspy pandas xlrd xlwt openpyxl`
+`conda create -n libcomcat --channel conda-forge python=3.6 numpy obspy pandas xlrd xlwt openpyxl`
 
 Then to "activate" that environment, do:
 
@@ -35,18 +35,18 @@ Then to "activate" that environment, do:
 
 Then do:
 
-`pip install pip install git+git://github.com/usgs/earthquake-impact-utils.git`
+`pip install git+git://github.com/usgs/earthquake-impact-utils.git`
 
-`pip install pip install git+git://github.com/usgs/libcomcat.git`
+`pip install git+git://github.com/usgs/libcomcat.git`
 
 Uninstalling and Updating
 -------------------------
 
 To uninstall:
 
-pip uninstall libcomcat
+`pip uninstall libcomcat`
 
 To update:
 
-pip install -U git+git://github.com/usgs/libcomcat.git
+`pip install -U git+git://github.com/usgs/libcomcat.git`
 
