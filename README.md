@@ -50,3 +50,14 @@ To update:
 
 `pip install -U git+git://github.com/usgs/libcomcat.git`
 
+Documentation
+-------------
+
+API and command line documentation can be found here:
+
+http://usgs.github.io/libcomcat/
+
+Sample usage can be found in the notebook:
+
+https://github.com/usgs/libcomcat/blob/master/notebooks/libcomcat_examples.ipynb
+
