@@ -10,6 +10,7 @@ import os
 import warnings
 import re
 from enum import Enum
+import sys
 
 #third party imports
 from obspy.core.event import read_events
@@ -32,7 +33,8 @@ class VersionOption(Enum):
 def _get_moment_tensor_info(tensor,get_angles=False):
     """Internal - gather up tensor components and focal mechanism angles.
     """
-    msource = tensor['eventsource']+'_'+tensor['eventsourcecode']
+    msource = tensor['eventsource']
+    eventid = msource + tensor['eventsourcecode']
     if tensor.hasProperty('derived-magnitude-type'):
         msource += '_'+tensor['derived-magnitude-type']
     elif tensor.hasProperty('beachball-type'):
@@ -66,9 +68,14 @@ def _get_moment_tensor_info(tensor,get_angles=False):
 def _get_focal_mechanism_info(focal):
     """Internal - gather up focal mechanism angles.
     """
-    msource = focal['eventsource']+'_'+focal['eventsourcecode']
+    msource = focal['eventsource']
+    eventid = msource + focal['eventsourcecode']
     edict = OrderedDict()
-    edict['%s_np1_strike' % msource] = focal['nodal-plane-1-strike']
+    try:
+        edict['%s_np1_strike' % msource] = focal['nodal-plane-1-strike']
+    except Exception:
+        sys.stderr.write('No focal angles for %s in detailed geojson.\n' % eventid)
+        return edict
     edict['%s_np1_dip' % msource] = focal['nodal-plane-1-dip']
     if focal.hasProperty('nodal-plane-1-rake'):
         edict['%s_np1_rake' % msource] = focal['nodal-plane-1-rake']
