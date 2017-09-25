@@ -160,9 +160,9 @@ def test_detail():
     assert ncdict_allmags['magtype3'] == 'Ml'
 
     ncdict_alltensors = event.toDict(get_all_tensors=True)
-    assert ncdict_alltensors['us_b000s5tp_Mwb_mrr'] == 7.63e+16
+    assert ncdict_alltensors['us_Mwb_mrr'] == 7.63e+16
     ncdict_allfocals = event.toDict(get_all_focals=True)
-    assert ncdict_allfocals['nc_72282711_np1_strike'] == '345.0'
+    assert ncdict_allfocals['nc_np1_strike'] == '345.0'
     
     assert event.getNumVersions('shakemap') > 0
     assert isinstance(event.getProducts('shakemap')[0],Product)
