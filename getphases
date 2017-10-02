@@ -164,7 +164,7 @@ def save_dataframe(df,directory,event,file_format,catalog=None):
     edict = event.toDict(catalog=catalog)
     if file_format == 'excel':
         ext = 'xlsx'
-        filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
+        filename = os.path.join(directory,'%s_phases.%s' % (edict['id'],ext))
         writer = pd.ExcelWriter(filename, engine='openpyxl')
         df.to_excel(writer,index=False,startrow=len(edict)+len(HDR_DOC),startcol=0)
         workbook  = writer.book
@@ -184,7 +184,7 @@ def save_dataframe(df,directory,event,file_format,catalog=None):
         workbook.save(filename)
     else:
         ext = 'csv'
-        filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
+        filename = os.path.join(directory,'%s_phases.%s' % (edict['id'],ext))
         f = open(filename,'wt')
         typedict = {'latitude':'%.4f',
                     'longitude':'%.4f',
