@@ -111,6 +111,11 @@ def get_parser():
     parser.add_argument('-a','--get-focal-angles', dest='getAngles', choices=['none','preferred','all'],
                         default='none',
                         help='Extract preferred or all focal-mechanism angles (strike,dip,rake) where available.')
+
+    supphelp = """Extract moment tensor supplemental information (duration, derived origin, 
+percent double couple) when available."""
+    parser.add_argument('--get-moment-supplement', dest='getMomentSupplement', action='store_true',
+                        help=supphelp)
     
     parser.add_argument('-g','--get-all-magnitudes', dest='getAllMags', action='store_true',
                         help='Extract all magnitudes (with sources),authoritative listed first.')
@@ -209,6 +214,7 @@ def main(args):
         df = get_detail_data_frame(events,get_all_magnitudes=args.getAllMags,
                                    get_tensors=args.getComponents,
                                    get_focals=args.getAngles,
+                                   get_moment_supplement=args.getMomentSupplement,
                                    verbose=args.verbose)
     else:
         df = get_summary_data_frame(events)
