@@ -159,9 +159,9 @@ def test_detail():
     ncdict_allmags = event.toDict(get_all_magnitudes=True)
     assert ncdict_allmags['magtype3'] == 'Ml'
 
-    ncdict_alltensors = event.toDict(get_all_tensors=True)
+    ncdict_alltensors = event.toDict(get_tensors='all')
     assert ncdict_alltensors['us_Mwb_mrr'] == 7.63e+16
-    ncdict_allfocals = event.toDict(get_all_focals=True)
+    ncdict_allfocals = event.toDict(get_focals='all')
     assert ncdict_allfocals['nc_np1_strike'] == '345.0'
     
     assert event.getNumVersions('shakemap') > 0

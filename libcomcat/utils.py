@@ -198,8 +198,7 @@ def _get_phaserow(pick,catevent):
       return None
 
     #save info to row of dataframe
-    etime = datetime(pick.time.year,pick.time.month,pick.time.day,
-                     pick.time.hour,pick.time.minute,pick.time.second,pick.time.microsecond)
+    etime = pick.time.datetime
     channel = stringify(waveform_id)
     row = {'Channel':channel,
            'Distance':arrival.distance,
@@ -259,8 +258,9 @@ def get_phase_dataframe(detail,catalog='preferred'):
     return df
 
 def get_detail_data_frame(events,get_all_magnitudes=False,
-                          get_all_tensors=False,
-                          get_all_focals=False,verbose=False):
+                          get_tensors='preferred',
+                          get_focals='preferred',
+                          verbose=False):
     """Take the results of a search and extract the detailed event informat in a pandas DataFrame.
 
     Usage:
@@ -270,10 +270,10 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
       List of SummaryEvent objects as returned by search() function.
     :param get_all_magnitudes:
       Boolean indicating whether to return all magnitudes in results for each event.
-    :param get_all_tensors:
-      Boolean indicating whether to return all moment tensors in results for each event.
-    :param get_all_focals:
-      Boolean indicating whether to return all focal mechanisms in results for each event.
+    :param get_tensors:
+      String option of 'none', 'preferred', or 'all'.
+    :param get_focals:
+      String option of 'none', 'preferred', or 'all'.
     
     :returns:  
       Pandas DataFrame with one row per event, and all relevant information in columns.
@@ -290,8 +290,8 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
             print('Failed to get detailed version of event %s' % event.id)
             continue
         edict = detail.toDict(get_all_magnitudes=get_all_magnitudes,
-                              get_all_tensors=get_all_tensors,
-                              get_all_focals=get_all_focals)
+                              get_tensors=get_tensors,
+                              get_focals=get_focals)
         df = df.append(edict,ignore_index=True)
         if ic % inc == 0 and verbose:
             msg = 'Getting detailed information for %s, %i of %i events.\n'

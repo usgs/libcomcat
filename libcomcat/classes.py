@@ -29,6 +29,7 @@ class VersionOption(Enum):
     LAST = 1
     FIRST = 2
     ALL = 3
+    PREFERRED = 4
 
 def _get_moment_tensor_info(tensor,get_angles=False):
     """Internal - gather up tensor components and focal mechanism angles.
@@ -390,8 +391,8 @@ class DetailEvent(object):
     
     def toDict(self,catalog=None,
                get_all_magnitudes=False,
-               get_all_tensors=False,
-               get_all_focals=False):
+               get_tensors='preferred',
+               get_focals='preferred'):
         """Return known origin, focal mechanism, and moment tensor information for a DetailEvent.
 
         :param catalog:
@@ -401,14 +402,15 @@ class DetailEvent(object):
           Boolean indicating whether all known magnitudes for this event should be returned.
           NOTE: The ComCat phase-data product's QuakeML file will be downloaded and parsed,
           which takes extra time.
-        :param get_all_tensors:
-          Boolean indicating whether all known moment tensors for this event should be returned.
-        :param get_all_focals:
-          Boolean indicating whether all known focal mechanisms for this event should be returned.
+        :param get_tensors:
+          String option of 'none', 'preferred', or 'all'.
+        :param get_focals:
+          String option of 'none', 'preferred', or 'all'.
         :returns:
-          OrderedDict with the same fields as returned by SummaryEvent.toDict(), plus
-          additional magnitude/magnitude type fields, moment tensor and focal mechanism 
-          data.  The number and name of the fields will vary by what data is available.
+          OrderedDict with the same fields as returned by SummaryEvent.toDict(), *preferred* 
+          moment tensor and focal mechanism data.  If all magnitudes are requested, then those
+          will be returned as well.  Generally speaking, the number and name of the fields will 
+          vary by what data is available.
         """
         edict = OrderedDict()
 
@@ -448,23 +450,27 @@ class DetailEvent(object):
             except AttributeError as ae:
                 raise ae
 
-        if not get_all_tensors:
-            if self.hasProduct('moment-tensor'):
-                tensor = self.getProducts('moment-tensor')[0]
-                edict.update(_get_moment_tensor_info(tensor,get_angles=True))
-        else:
+        if get_tensors == 'all':
             if self.hasProduct('moment-tensor'):
                 tensors = self.getProducts('moment-tensor',source='all',version=VersionOption.ALL)
                 for tensor in tensors:
                     edict.update(_get_moment_tensor_info(tensor,get_angles=True))
-        if not get_all_focals:
-            if self.hasProduct('focal-mechanism'):
-                edict.update(_get_focal_mechanism_info(self.getProducts('focal-mechanism')[0]))
-        else:
+                    
+        if get_tensors == 'preferred':
+            if self.hasProduct('moment-tensor'):
+                tensor = self.getProducts('moment-tensor')[0]
+                edict.update(_get_moment_tensor_info(tensor,get_angles=True))
+                    
+        if get_focals == 'all':
             if self.hasProduct('focal-mechanism'):
                 focals = self.getProducts('focal-mechanism',source='all',version=VersionOption.ALL)
                 for focal in focals:
                     edict.update(_get_focal_mechanism_info(focal))
+
+        if get_focals == 'preferred':
+            if self.hasProduct('focal-mechanism'):
+                focal = self.getProducts('focal-mechanism')[0]
+                edict.update(_get_focal_mechanism_info(focal))
 
         if get_all_magnitudes:
             handle,tmpfile = tempfile.mkstemp()
@@ -501,7 +507,7 @@ class DetailEvent(object):
             raise AttributeError('Event %s has no product of type %s' % (self.id,product_name))
         return len(self._jdict['properties']['products'][product_name])
     
-    def getProducts(self,product_name,source='preferred',version=VersionOption.LAST):
+    def getProducts(self,product_name,source='preferred',version=VersionOption.PREFERRED):
         """Retrieve a Product object from this DetailEvent.
 
         :param product_name:
@@ -559,7 +565,13 @@ class DetailEvent(object):
             for source in usources:
                 df_source = df[df['source'] == source]
                 df_source = df_source.sort_values('time')
-                if version == VersionOption.LAST:
+                if version == VersionOption.PREFERRED:
+                    df_source = df_source.sort_values(['weight','time'])
+                    idx = df_source.iloc[-1]['index']
+                    pversion = df_source.iloc[-1]['version']
+                    product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
+                    products.append(product)    
+                elif version == VersionOption.LAST:
                     idx = df_source.iloc[-1]['index']
                     pversion = df_source.iloc[-1]['version']
                     product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
@@ -578,7 +590,13 @@ class DetailEvent(object):
                 else:
                     raise(AttributeError('No VersionOption defined for %s' % version))
         else: #dataframe only includes one source
-            if version == VersionOption.LAST:
+            if version == VersionOption.PREFERRED:
+                df = df.sort_values(['weight','time'])
+                idx = df.iloc[-1]['index']
+                pversion = df.iloc[-1]['version']
+                product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
+                products.append(product)    
+            elif version == VersionOption.LAST:
                 idx = df.iloc[-1]['index']
                 pversion = df.iloc[-1]['version']
                 product = Product(product_name,pversion,self._jdict['properties']['products'][product_name][idx])
