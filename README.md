@@ -5,7 +5,7 @@ Introduction
 ------------
 
 libcomcat is a project designed to provide a Python equivalent to the ANSS ComCat search 
-<a href="http://comcat.cr.usgs.gov/fdsnws/event/1/">API</a>.  This includes a Python library
+<a href="https://earthquake.usgs.gov/fdsnws/event/1/">API</a>.  This includes a Python library
 that provides various classes and functions wrapping around the ComCat API, and a number of command
 line programs that use those:
 
@@ -57,7 +57,9 @@ API and command line documentation can be found here:
 
 http://usgs.github.io/libcomcat/
 
-Sample usage can be found in the notebook:
+Sample API usage can be found in the notebook:
 
 https://github.com/usgs/libcomcat/blob/master/notebooks/libcomcat_examples.ipynb
+
+
 

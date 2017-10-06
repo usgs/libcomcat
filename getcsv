@@ -14,9 +14,21 @@ def get_parser():
 
     %(prog)s nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv
 
-    To expand the results to include all moment tensors:
+    To expand the results to include preferred moment tensors:
 
-    %(prog)s nz.xlsx -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+    %(prog)s nz.xlsx -o preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+
+    To expand the results to include ALL moment tensors:
+
+    %(prog)s nz.xlsx -o all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+
+    To expand the results to include preferred focal mechanisms:
+
+    %(prog)s nz.xlsx -a preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+
+    To expand the results to include ALL focal mechanisms:
+
+    %(prog)s nz.xlsx -a all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
 
     To include all magnitudes (including source and type) for that same search, add the -g flag:
 
@@ -45,6 +57,15 @@ def get_parser():
     you simply specify longitudes as you would if you were not crossing that
     meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
     discrepancy.
+
+    When specifying the -a or -o flags, whether "preferred" or "all", 
+    a new column will be added for each different source and algorithm
+    used to create the moment tensor or focal mechanism.  For example, 
+    columns containing NEIC W-phase moment tensor solution information should be 
+    prepended by "us_Mww" (network_method) to distinguish them from, say "nc_mwr"
+    (Northern California regional moment tensor).  If "all" is chosen, then there
+    will be many such columns of information, each prepended with the network 
+    and method, WHERE SUCH METHOD IS AVAILABLE IN THE DATABASE.
     
     The ComCat API has a returned event limit of 20,000.  
     Queries that exceed this ComCat limit ARE supported by this
@@ -83,10 +104,14 @@ def get_parser():
                         help='Source catalog from which products derive (atlas, centennial, etc.)')
     parser.add_argument('-n','--contributor', dest='contributor', 
                         help='Source contributor (who loaded product) (us, nc, etc.)')
-    parser.add_argument('-o','--get-moment-components', dest='getComponents', action='store_true',
-                        help='Also extract moment-tensor components (including type and derived hypocenter) where available.')
-    parser.add_argument('-a','--get-focal-angles', dest='getAngles', action='store_true',
-                        help='Also extract focal-mechanism angles (strike,dip,rake) where available.')
+    
+    parser.add_argument('-o','--get-moment-components', dest='getComponents', choices=['none','preferred','all'],
+                        default='none',
+                        help='Extract preferred or all moment-tensor components (including type and derived hypocenter) where available.')
+    parser.add_argument('-a','--get-focal-angles', dest='getAngles', choices=['none','preferred','all'],
+                        default='none',
+                        help='Extract preferred or all focal-mechanism angles (strike,dip,rake) where available.')
+    
     parser.add_argument('-g','--get-all-magnitudes', dest='getAllMags', action='store_true',
                         help='Extract all magnitudes (with sources),authoritative listed first.')
     parser.add_argument('-f','--format', dest='format', choices=['csv','tab','excel'], default='csv',
@@ -177,12 +202,14 @@ def main(args):
         print('No events found matching your search criteria. Exiting.')
         sys.exit(0)
     
-    if args.getAngles or args.getAllMags or args.getComponents:
+    if args.getAngles != 'none' or args.getAllMags or args.getComponents != 'none':
         if args.verbose:
             sys.stderr.write('Fetched %i events...creating table.\n' % (len(events)))
+        
         df = get_detail_data_frame(events,get_all_magnitudes=args.getAllMags,
-                                   get_all_tensors=args.getComponents,
-                                   get_all_focals=args.getAngles,verbose=args.verbose)
+                                   get_tensors=args.getComponents,
+                                   get_focals=args.getAngles,
+                                   verbose=args.verbose)
     else:
         df = get_summary_data_frame(events)
 

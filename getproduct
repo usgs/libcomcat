@@ -24,8 +24,10 @@ def _get_product_from_detail(detail,product,contents,folder,
         version_option = VersionOption.FIRST
     elif version == 'last':
         version_option = VersionOption.LAST
-    else:
+    elif version == 'all':
         version_option = VersionOption.ALL
+    else:
+        version_option = VersionOption.PREFERRED
         
     products = detail.getProducts(product,source=source,version=version_option)
     
@@ -120,8 +122,9 @@ def get_parser():
     parser.add_argument('-l','--list-url', dest='list_only', action='store_true',
                         help='Only list urls for contents in events that match criteria.')
     
-    parser.add_argument('--get-version', dest='version', choices=['first','last','all'],
-                        help='Get contents for first, last or all versions of event.',default='last')
+    parser.add_argument('--get-version', dest='version', choices=['first','last','all','preferred'],
+                        help='Get contents for first, last, preferred or all versions of product.',
+                        default='preferred')
     parser.add_argument('--get-source', dest='source', default='preferred',
                         help='Get contents for the "preferred" source, "all" sources, or a specific source ("us").')
     return parser

@@ -60,6 +60,9 @@ def get_parser():
 
     To download phase data to Excel format for a small rectangle in Oklahoma in 2017:
     %(prog)s ~/tmp/phase_data -b -97.573 -97.460 36.247 36.329 -s 2017-08-26 -e 2017-09-15 -f excel
+
+    To download phase data for the 2017 7.1 Mexico City event:
+    %(prog)s ~/tmp/phase_data -i us2000ar20 -f excel
     '''
     parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
     #positional arguments
