@@ -5,7 +5,7 @@ PYVER=3.6
 
 DEPARRAY=(obspy=1.0.3 ipython=6.1.0 jupyter=1.0.0 pandas=0.20.3 \
           xlrd=1.0.0 xlwt=1.2.0 openpyxl=2.5.0a2 pytest=3.1.2 \
-          pytest-cov=2.5.1 sphinx=1.6.3)
+          pytest-cov=2.5.1 sphinx=1.6.3  xlsxwriter=0.9.8)
 
 #if we're already in an environment called pager, switch out of it so we can remove it
 source activate root

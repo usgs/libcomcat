@@ -199,7 +199,7 @@ def _get_phaserow(pick,catevent):
 
     #save info to row of dataframe
     etime = datetime(pick.time.year,pick.time.month,pick.time.day,
-                     pick.time.hour,pick.time.minute,pick.time.second)
+                     pick.time.hour,pick.time.minute,pick.time.second,pick.time.microsecond)
     channel = stringify(waveform_id)
     row = {'Channel':channel,
            'Distance':arrival.distance,

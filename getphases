@@ -165,23 +165,26 @@ def save_dataframe(df,directory,event,file_format,catalog=None):
     if file_format == 'excel':
         ext = 'xlsx'
         filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
-        writer = pd.ExcelWriter(filename, engine='openpyxl')
+        writer = pd.ExcelWriter(filename,engine='xlsxwriter',datetime_format='yyyy-mm-dd hh:mm:ss.000')
         df.to_excel(writer,index=False,startrow=len(edict)+len(HDR_DOC),startcol=0)
         workbook  = writer.book
-        ws = workbook.active
+        ws = writer.sheets['Sheet1']
         
         rowidx = 1
         for docline in HDR_DOC:
             cellidx = 'A%i' % rowidx
-            ws[cellidx] = '#'+docline
+            #ws[cellidx] = '#'+docline
+            ws.write(cellidx,'#'+docline)
             rowidx += 1
         for key,value in edict.items():
             keyidx = 'A%i' % rowidx
             validx = 'B%i' % rowidx
-            ws[keyidx] = key
-            ws[validx] = value
+            #ws[keyidx] = key
+            #ws[validx] = value
+            ws.write(keyidx,key)
+            ws.write(validx,value)
             rowidx += 1
-        workbook.save(filename)
+        workbook.close()
     else:
         ext = 'csv'
         filename = os.path.join(directory,'%s_phases.%s' % (event.id,ext))
