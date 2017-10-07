@@ -31,7 +31,7 @@ class VersionOption(Enum):
     ALL = 3
     PREFERRED = 4
 
-def _get_moment_tensor_info(tensor,get_angles=False):
+def _get_moment_tensor_info(tensor,get_angles=False,get_moment_supplement=False):
     """Internal - gather up tensor components and focal mechanism angles.
     """
     msource = tensor['eventsource']
@@ -44,6 +44,8 @@ def _get_moment_tensor_info(tensor,get_angles=False):
             btype = btype.split('/')[-1]
         msource += '_'+btype
 
+    
+        
     edict = OrderedDict()
     edict['%s_mrr' % msource] = float(tensor['tensor-mrr'])
     edict['%s_mtt' % msource] = float(tensor['tensor-mtt'])
@@ -64,6 +66,17 @@ def _get_moment_tensor_info(tensor,get_angles=False):
             edict['%s_np2_rake' % msource] = tensor['nodal-plane-2-rake']
         else:
             edict['%s_np2_rake' % msource] = tensor['nodal-plane-2-slip']
+
+    if get_moment_supplement:
+        if tensor.hasProperty('derived-latitude'):
+            edict['%s_derived_latitude' % msource] = float(tensor['derived-latitude'])
+            edict['%s_derived_longitude' % msource] = float(tensor['derived-longitude'])
+            edict['%s_derived_depth' % msource] = float(tensor['derived-depth'])
+        if tensor.hasProperty('percent-double-couple'):
+            edict['%s_percent_double_couple' % msource] = float(tensor['percent-double-couple'])
+        if tensor.hasProperty('sourcetime-duration'):
+            edict['%s_sourcetime_duration' % msource] = float(tensor['sourcetime-duration'])
+            
     return edict
 
 def _get_focal_mechanism_info(focal):
@@ -392,6 +405,7 @@ class DetailEvent(object):
     def toDict(self,catalog=None,
                get_all_magnitudes=False,
                get_tensors='preferred',
+               get_moment_supplement=False,
                get_focals='preferred'):
         """Return known origin, focal mechanism, and moment tensor information for a DetailEvent.
 
@@ -404,6 +418,9 @@ class DetailEvent(object):
           which takes extra time.
         :param get_tensors:
           String option of 'none', 'preferred', or 'all'.
+        :param get_moment_supplement:
+          Boolean indicating whether derived origin and double-couple/source time information
+          should be extracted (when available.)
         :param get_focals:
           String option of 'none', 'preferred', or 'all'.
         :returns:
@@ -454,12 +471,14 @@ class DetailEvent(object):
             if self.hasProduct('moment-tensor'):
                 tensors = self.getProducts('moment-tensor',source='all',version=VersionOption.ALL)
                 for tensor in tensors:
-                    edict.update(_get_moment_tensor_info(tensor,get_angles=True))
+                    edict.update(_get_moment_tensor_info(tensor,get_angles=True,
+                                                         get_moment_supplement=get_moment_supplement))
                     
         if get_tensors == 'preferred':
             if self.hasProduct('moment-tensor'):
                 tensor = self.getProducts('moment-tensor')[0]
-                edict.update(_get_moment_tensor_info(tensor,get_angles=True))
+                edict.update(_get_moment_tensor_info(tensor,get_angles=True,
+                                                     get_moment_supplement=get_moment_supplement))
                     
         if get_focals == 'all':
             if self.hasProduct('focal-mechanism'):

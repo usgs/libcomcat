@@ -96,8 +96,11 @@ def test_detail_product_versions():
 
     
         
-    
-        
+def test_moment_supplement():
+    eventid = 'us2000ar20' #2017 M7.1 Mexico City
+    detail = get_event_by_id(eventid)
+    edict = detail.toDict(get_moment_supplement=True,get_tensors='preferred')
+    assert edict['us_Mww_percent_double_couple'] == 0.9992
     
 def test_detail():
     eventid = 'ci3144585' #northridge
@@ -163,7 +166,7 @@ def test_detail():
     assert ncdict_alltensors['us_Mwb_mrr'] == 7.63e+16
     ncdict_allfocals = event.toDict(get_focals='all')
     assert ncdict_allfocals['nc_np1_strike'] == '345.0'
-    
+
     assert event.getNumVersions('shakemap') > 0
     assert isinstance(event.getProducts('shakemap')[0],Product)
     assert event.latitude == 38.2151667
@@ -257,6 +260,7 @@ def test_product():
         os.remove(tfilename)
 
 if __name__ == '__main__':
+    test_moment_supplement()
     test_detail_product_versions()
     test_summary()
     test_detail()

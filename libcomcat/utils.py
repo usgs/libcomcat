@@ -260,6 +260,7 @@ def get_phase_dataframe(detail,catalog='preferred'):
 def get_detail_data_frame(events,get_all_magnitudes=False,
                           get_tensors='preferred',
                           get_focals='preferred',
+                          get_moment_supplement=False,
                           verbose=False):
     """Take the results of a search and extract the detailed event informat in a pandas DataFrame.
 
@@ -274,7 +275,9 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
       String option of 'none', 'preferred', or 'all'.
     :param get_focals:
       String option of 'none', 'preferred', or 'all'.
-    
+    :param get_moment_supplement:
+      Boolean indicating whether derived origin and double-couple/source time information
+      should be extracted (when available.)
     :returns:  
       Pandas DataFrame with one row per event, and all relevant information in columns.
     """
@@ -291,6 +294,7 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
             continue
         edict = detail.toDict(get_all_magnitudes=get_all_magnitudes,
                               get_tensors=get_tensors,
+                              get_moment_supplement=get_moment_supplement,
                               get_focals=get_focals)
         df = df.append(edict,ignore_index=True)
         if ic % inc == 0 and verbose:
