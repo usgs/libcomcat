@@ -87,8 +87,14 @@
 <div><p>To download basic event information (time,lat,lon,depth,magnitude) and
 moment tensor components for a box around New Zealand during 2013:</p>
 <p>%(prog)s nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv</p>
-<p>To expand the results to include all moment tensors:</p>
-<p>%(prog)s nz.xlsx -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel</p>
+<p>To expand the results to include preferred moment tensors:</p>
+<p>%(prog)s nz.xlsx -o preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel</p>
+<p>To expand the results to include ALL moment tensors:</p>
+<p>%(prog)s nz.xlsx -o all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel</p>
+<p>To expand the results to include preferred focal mechanisms:</p>
+<p>%(prog)s nz.xlsx -a preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel</p>
+<p>To expand the results to include ALL focal mechanisms:</p>
+<p>%(prog)s nz.xlsx -a all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel</p>
 <p>To include all magnitudes (including source and type) for that same search, add the -g flag:</p>
 <p>%(prog)s nz.csv -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -g -f csv</p>
 <p>To print the number of events that would be returned from the above query,
@@ -108,6 +114,14 @@ components, for example), will have the string “nan” instead.</p>
 you simply specify longitudes as you would if you were not crossing that
 meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
 discrepancy.</p>
+<p>When specifying the -a or -o flags, whether “preferred” or “all”, 
+a new column will be added for each different source and algorithm
+used to create the moment tensor or focal mechanism.  For example, 
+columns containing NEIC W-phase moment tensor solution information should be 
+prepended by “us_Mww” (network_method) to distinguish them from, say “nc_mwr”
+(Northern California regional moment tensor).  If “all” is chosen, then there
+will be many such columns of information, each prepended with the network 
+and method, WHERE SUCH METHOD IS AVAILABLE IN THE DATABASE.</p>
 <p>The ComCat API has a returned event limit of 20,000.  
 Queries that exceed this ComCat limit ARE supported by this
 software, by breaking up one large request into a number of
@@ -126,8 +140,9 @@ values and associated source and type.</p>
 </p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">getcsv</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">b</span> <span class="n">lonmin</span> <span class="n">lonmax</span> <span class="n">latmin</span> <span class="n">latmax</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">lat</span> <span class="n">lon</span> <span class="n">rmax</span><span class="p">]</span>
               <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">STARTTIME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span> <span class="n">ENDTIME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">AFTER</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">m</span> <span class="n">minmag</span> <span class="n">maxmag</span><span class="p">]</span>
-              <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">CATALOG</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">CONTRIBUTOR</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">g</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">FORMAT</span><span class="p">]</span>
-              <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PRODUCT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span>
+              <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">CATALOG</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">CONTRIBUTOR</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">none</span><span class="p">,</span><span class="n">preferred</span><span class="p">,</span><span class="nb">all</span><span class="p">}]</span>
+              <span class="p">[</span><span class="o">-</span><span class="n">a</span> <span class="p">{</span><span class="n">none</span><span class="p">,</span><span class="n">preferred</span><span class="p">,</span><span class="nb">all</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">get</span><span class="o">-</span><span class="n">moment</span><span class="o">-</span><span class="n">supplement</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">g</span><span class="p">]</span>
+              <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">FORMAT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PRODUCT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span>
               <span class="n">FILENAME</span>
 </pre></div>
 </div>
@@ -180,13 +195,22 @@ values and associated source and type.</p>
 <tr><td class="option-group" colspan="2">
 <kbd>-o, --get-moment-components</kbd></td>
 </tr>
-<tr><td>&#160;</td><td><p class="first">Also extract moment-tensor components (including type and derived hypocenter) where available.</p>
-<p class="last">Default: False</p>
+<tr><td>&#160;</td><td><p class="first">Possible choices: none, preferred, all</p>
+<p>Extract preferred or all moment-tensor components (including type and derived hypocenter) where available.</p>
+<p class="last">Default: “none”</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd>-a, --get-focal-angles</kbd></td>
 </tr>
-<tr><td>&#160;</td><td><p class="first">Also extract focal-mechanism angles (strike,dip,rake) where available.</p>
+<tr><td>&#160;</td><td><p class="first">Possible choices: none, preferred, all</p>
+<p>Extract preferred or all focal-mechanism angles (strike,dip,rake) where available.</p>
+<p class="last">Default: “none”</p>
+</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd>--get-moment-supplement</kbd></td>
+</tr>
+<tr><td>&#160;</td><td><p class="first">Extract moment tensor supplemental information (duration, derived origin,
+percent double couple) when available.</p>
 <p class="last">Default: False</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">

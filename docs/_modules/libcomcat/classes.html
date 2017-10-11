@@ -81,6 +81,7 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="c1">#third party imports</span>
 <span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="k">import</span> <span class="n">read_events</span>
@@ -98,12 +99,14 @@
 <div class="viewcode-block" id="VersionOption"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.VersionOption">[docs]</a><span class="k">class</span> <span class="nc">VersionOption</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">LAST</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">FIRST</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">ALL</span> <span class="o">=</span> <span class="mi">3</span></div>
+    <span class="n">ALL</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">PREFERRED</span> <span class="o">=</span> <span class="mi">4</span></div>
 
-<span class="k">def</span> <span class="nf">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">get_moment_supplement</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Internal - gather up tensor components and focal mechanism angles.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">msource</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;eventsource&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;eventsourcecode&#39;</span><span class="p">]</span>
+    <span class="n">msource</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;eventsource&#39;</span><span class="p">]</span>
+    <span class="n">eventid</span> <span class="o">=</span> <span class="n">msource</span> <span class="o">+</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;eventsourcecode&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;derived-magnitude-type&#39;</span><span class="p">):</span>
         <span class="n">msource</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;derived-magnitude-type&#39;</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;beachball-type&#39;</span><span class="p">):</span>
@@ -112,6 +115,8 @@
             <span class="n">btype</span> <span class="o">=</span> <span class="n">btype</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">msource</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">btype</span>
 
+    
+        
     <span class="n">edict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
     <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mrr&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mrr&#39;</span><span class="p">])</span>
     <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_mtt&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;tensor-mtt&#39;</span><span class="p">])</span>
@@ -132,14 +137,30 @@
             <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-rake&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np2_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;nodal-plane-2-slip&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">get_moment_supplement</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;derived-latitude&#39;</span><span class="p">):</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_derived_latitude&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;derived-latitude&#39;</span><span class="p">])</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_derived_longitude&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;derived-longitude&#39;</span><span class="p">])</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_derived_depth&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;derived-depth&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;percent-double-couple&#39;</span><span class="p">):</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_percent_double_couple&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;percent-double-couple&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;sourcetime-duration&#39;</span><span class="p">):</span>
+            <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_sourcetime_duration&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="s1">&#39;sourcetime-duration&#39;</span><span class="p">])</span>
+            
     <span class="k">return</span> <span class="n">edict</span>
 
 <span class="k">def</span> <span class="nf">_get_focal_mechanism_info</span><span class="p">(</span><span class="n">focal</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Internal - gather up focal mechanism angles.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">msource</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;eventsource&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">focal</span><span class="p">[</span><span class="s1">&#39;eventsourcecode&#39;</span><span class="p">]</span>
+    <span class="n">msource</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;eventsource&#39;</span><span class="p">]</span>
+    <span class="n">eventid</span> <span class="o">=</span> <span class="n">msource</span> <span class="o">+</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;eventsourcecode&#39;</span><span class="p">]</span>
     <span class="n">edict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
-    <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_strike&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-strike&#39;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_strike&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-strike&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;No focal angles for </span><span class="si">%s</span><span class="s1"> in detailed geojson.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">eventid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">edict</span>
     <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_dip&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-dip&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">focal</span><span class="o">.</span><span class="n">hasProperty</span><span class="p">(</span><span class="s1">&#39;nodal-plane-1-rake&#39;</span><span class="p">):</span>
         <span class="n">edict</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_np1_rake&#39;</span> <span class="o">%</span> <span class="n">msource</span><span class="p">]</span> <span class="o">=</span> <span class="n">focal</span><span class="p">[</span><span class="s1">&#39;nodal-plane-1-rake&#39;</span><span class="p">]</span>
@@ -454,8 +475,9 @@
     
 <div class="viewcode-block" id="DetailEvent.toDict"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.toDict">[docs]</a>    <span class="k">def</span> <span class="nf">toDict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">catalog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                <span class="n">get_all_magnitudes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-               <span class="n">get_all_tensors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-               <span class="n">get_all_focals</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+               <span class="n">get_tensors</span><span class="o">=</span><span class="s1">&#39;preferred&#39;</span><span class="p">,</span>
+               <span class="n">get_moment_supplement</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">get_focals</span><span class="o">=</span><span class="s1">&#39;preferred&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return known origin, focal mechanism, and moment tensor information for a DetailEvent.</span>
 
 <span class="sd">        :param catalog:</span>
@@ -465,14 +487,18 @@
 <span class="sd">          Boolean indicating whether all known magnitudes for this event should be returned.</span>
 <span class="sd">          NOTE: The ComCat phase-data product&#39;s QuakeML file will be downloaded and parsed,</span>
 <span class="sd">          which takes extra time.</span>
-<span class="sd">        :param get_all_tensors:</span>
-<span class="sd">          Boolean indicating whether all known moment tensors for this event should be returned.</span>
-<span class="sd">        :param get_all_focals:</span>
-<span class="sd">          Boolean indicating whether all known focal mechanisms for this event should be returned.</span>
+<span class="sd">        :param get_tensors:</span>
+<span class="sd">          String option of &#39;none&#39;, &#39;preferred&#39;, or &#39;all&#39;.</span>
+<span class="sd">        :param get_moment_supplement:</span>
+<span class="sd">          Boolean indicating whether derived origin and double-couple/source time information</span>
+<span class="sd">          should be extracted (when available.)</span>
+<span class="sd">        :param get_focals:</span>
+<span class="sd">          String option of &#39;none&#39;, &#39;preferred&#39;, or &#39;all&#39;.</span>
 <span class="sd">        :returns:</span>
-<span class="sd">          OrderedDict with the same fields as returned by SummaryEvent.toDict(), plus</span>
-<span class="sd">          additional magnitude/magnitude type fields, moment tensor and focal mechanism </span>
-<span class="sd">          data.  The number and name of the fields will vary by what data is available.</span>
+<span class="sd">          OrderedDict with the same fields as returned by SummaryEvent.toDict(), *preferred* </span>
+<span class="sd">          moment tensor and focal mechanism data.  If all magnitudes are requested, then those</span>
+<span class="sd">          will be returned as well.  Generally speaking, the number and name of the fields will </span>
+<span class="sd">          vary by what data is available.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">edict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
 
@@ -512,23 +538,29 @@
             <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">ae</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ae</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_all_tensors</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">):</span>
-                <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">get_tensors</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">):</span>
                 <span class="n">tensors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="n">VersionOption</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">tensors</span><span class="p">:</span>
-                    <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_all_focals</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">):</span>
-                <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_focal_mechanism_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
-        <span class="k">else</span><span class="p">:</span>
+                    <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                         <span class="n">get_moment_supplement</span><span class="o">=</span><span class="n">get_moment_supplement</span><span class="p">))</span>
+                    
+        <span class="k">if</span> <span class="n">get_tensors</span> <span class="o">==</span> <span class="s1">&#39;preferred&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">):</span>
+                <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;moment-tensor&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_moment_tensor_info</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span><span class="n">get_angles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                     <span class="n">get_moment_supplement</span><span class="o">=</span><span class="n">get_moment_supplement</span><span class="p">))</span>
+                    
+        <span class="k">if</span> <span class="n">get_focals</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">):</span>
                 <span class="n">focals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="n">VersionOption</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">focal</span> <span class="ow">in</span> <span class="n">focals</span><span class="p">:</span>
                     <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_focal_mechanism_info</span><span class="p">(</span><span class="n">focal</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">get_focals</span> <span class="o">==</span> <span class="s1">&#39;preferred&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hasProduct</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">):</span>
+                <span class="n">focal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProducts</span><span class="p">(</span><span class="s1">&#39;focal-mechanism&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">edict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_get_focal_mechanism_info</span><span class="p">(</span><span class="n">focal</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">get_all_magnitudes</span><span class="p">:</span>
             <span class="n">handle</span><span class="p">,</span><span class="n">tmpfile</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">()</span>
@@ -565,7 +597,7 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Event </span><span class="si">%s</span><span class="s1"> has no product of type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">product_name</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">])</span></div>
     
-<div class="viewcode-block" id="DetailEvent.getProducts"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.getProducts">[docs]</a>    <span class="k">def</span> <span class="nf">getProducts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">product_name</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;preferred&#39;</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">):</span>
+<div class="viewcode-block" id="DetailEvent.getProducts"><a class="viewcode-back" href="../../apidoc/libcomcat.classes.html#libcomcat.classes.DetailEvent.getProducts">[docs]</a>    <span class="k">def</span> <span class="nf">getProducts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">product_name</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;preferred&#39;</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="n">VersionOption</span><span class="o">.</span><span class="n">PREFERRED</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Retrieve a Product object from this DetailEvent.</span>
 
 <span class="sd">        :param product_name:</span>
@@ -623,7 +655,13 @@
             <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">usources</span><span class="p">:</span>
                 <span class="n">df_source</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">source</span><span class="p">]</span>
                 <span class="n">df_source</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">PREFERRED</span><span class="p">:</span>
+                    <span class="n">df_source</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                    <span class="n">pversion</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                    <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                    <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>    
+                <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">:</span>
                     <span class="n">idx</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
                     <span class="n">pversion</span> <span class="o">=</span> <span class="n">df_source</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
                     <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
@@ -642,7 +680,13 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No VersionOption defined for </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">version</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span> <span class="c1">#dataframe only includes one source</span>
-            <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">PREFERRED</span><span class="p">:</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
+                <span class="n">pversion</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+                <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+                <span class="n">products</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>    
+            <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="n">VersionOption</span><span class="o">.</span><span class="n">LAST</span><span class="p">:</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span>
                 <span class="n">pversion</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
                 <span class="n">product</span> <span class="o">=</span> <span class="n">Product</span><span class="p">(</span><span class="n">product_name</span><span class="p">,</span><span class="n">pversion</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_jdict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;products&#39;</span><span class="p">][</span><span class="n">product_name</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
