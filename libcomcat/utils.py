@@ -21,7 +21,7 @@ TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
 
-def phase_reader(filename):
+def read_phases(filename):
     """Read a phase file CSV or Excel file into data structures.
     
     :param filename:
@@ -281,7 +281,7 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
     :returns:  
       Pandas DataFrame with one row per event, and all relevant information in columns.
     """
-    df = pd.DataFrame()
+    elist = []
     ic = 0
     inc = min(100,np.power(10,np.floor(np.log10(len(events)))-1))
     if verbose:
@@ -296,11 +296,12 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
                               get_tensors=get_tensors,
                               get_moment_supplement=get_moment_supplement,
                               get_focals=get_focals)
-        df = df.append(edict,ignore_index=True)
+        elist.append(edict)
         if ic % inc == 0 and verbose:
             msg = 'Getting detailed information for %s, %i of %i events.\n'
             sys.stderr.write(msg % (event.id,ic,len(events)))
         ic += 1
+    df = pd.DataFrame(elist)
     first_columns = ['id','time','latitude','longitude','depth','magnitude']
     all_columns = df.columns
     rem_columns = [col for col in all_columns if col not in first_columns]
@@ -326,8 +327,8 @@ def get_summary_data_frame(events):
        - depth (float) Authoritative event depth.
        - magnitude (float) Authoritative event magnitude.
     """
-    df = pd.DataFrame(columns=events[0].toDict().keys())
+    elist = []
     for event in events:
-        edict = event.toDict()
-        df = df.append(edict,ignore_index=True)
+        elist.append(event.toDict())
+    df = pd.DataFrame(elist)
     return df

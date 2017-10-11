@@ -206,6 +206,8 @@ def main(args):
     if not len(events):
         print('No events found matching your search criteria. Exiting.')
         sys.exit(0)
+
+    
     
     if args.getAngles != 'none' or args.getAllMags or args.getComponents != 'none':
         if args.verbose:
@@ -217,6 +219,8 @@ def main(args):
                                    get_moment_supplement=args.getMomentSupplement,
                                    verbose=args.verbose)
     else:
+        if args.verbose:
+            sys.stderr.write('Fetched %i events...creating summary table.\n' % (len(events)))
         df = get_summary_data_frame(events)
 
     #order the columns so that at least the initial parameters come the way we want them...
@@ -227,9 +231,9 @@ def main(args):
     df = df[first_columns+col_list]
 
     if args.verbose:
-        sys.stderr.write('Created table...saving to %s.\n' % args.filename)
+        sys.stderr.write('Created table...saving %i records to %s.\n' % (len(df),args.filename))
     if args.format == 'csv':
-        df.to_csv(args.filename,index=False)
+        df.to_csv(args.filename,index=False,chunksize=1000)
     elif args.format == 'tab':
         df.to_csv(args.filename,sep='\t',index=False)
     else:
