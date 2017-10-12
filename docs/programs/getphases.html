@@ -90,6 +90,8 @@ format, this information takes the first several rows and two columns. In CSV fo
 values are the first lines of the file, prepended with a “#” (comment) character.</p>
 <p>To download phase data to Excel format for a small rectangle in Oklahoma in 2017:
 %(prog)s ~/tmp/phase_data -b -97.573 -97.460 36.247 36.329 -s 2017-08-26 -e 2017-09-15 -f excel</p>
+<p>To download phase data for the 2017 7.1 Mexico City event:
+%(prog)s ~/tmp/phase_data -i us2000ar20 -f excel</p>
 </div></blockquote>
 </p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">getphases</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">b</span> <span class="n">lonmin</span> <span class="n">lonmax</span> <span class="n">latmin</span> <span class="n">latmax</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">lat</span> <span class="n">lon</span> <span class="n">rmax</span><span class="p">]</span>

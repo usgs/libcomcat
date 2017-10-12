@@ -77,8 +77,8 @@
   <div class="section" id="module-libcomcat.utils">
 <span id="libcomcat-utils"></span><h1>libcomcat.utils<a class="headerlink" href="#module-libcomcat.utils" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="libcomcat.utils.phase_reader">
-<code class="descclassname">libcomcat.utils.</code><code class="descname">phase_reader</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#phase_reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.phase_reader" title="Permalink to this definition">¶</a></dt>
+<dt id="libcomcat.utils.read_phases">
+<code class="descclassname">libcomcat.utils.</code><code class="descname">read_phases</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#read_phases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.read_phases" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a phase file CSV or Excel file into data structures.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -214,7 +214,7 @@ dataframe - Pandas dataframe containing phase data.</dd>
 
 <dl class="function">
 <dt id="libcomcat.utils.get_detail_data_frame">
-<code class="descclassname">libcomcat.utils.</code><code class="descname">get_detail_data_frame</code><span class="sig-paren">(</span><em>events</em>, <em>get_all_magnitudes=False</em>, <em>get_all_tensors=False</em>, <em>get_all_focals=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#get_detail_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.get_detail_data_frame" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">libcomcat.utils.</code><code class="descname">get_detail_data_frame</code><span class="sig-paren">(</span><em>events</em>, <em>get_all_magnitudes=False</em>, <em>get_tensors='preferred'</em>, <em>get_focals='preferred'</em>, <em>get_moment_supplement=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/utils.html#get_detail_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.utils.get_detail_data_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take the results of a search and extract the detailed event informat in a pandas DataFrame.</p>
 <dl class="docutils">
 <dt>Usage:</dt>
@@ -227,8 +227,10 @@ dataframe - Pandas dataframe containing phase data.</dd>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>events</strong> – List of SummaryEvent objects as returned by search() function.</li>
 <li><strong>get_all_magnitudes</strong> – Boolean indicating whether to return all magnitudes in results for each event.</li>
-<li><strong>get_all_tensors</strong> – Boolean indicating whether to return all moment tensors in results for each event.</li>
-<li><strong>get_all_focals</strong> – Boolean indicating whether to return all focal mechanisms in results for each event.</li>
+<li><strong>get_tensors</strong> – String option of ‘none’, ‘preferred’, or ‘all’.</li>
+<li><strong>get_focals</strong> – String option of ‘none’, ‘preferred’, or ‘all’.</li>
+<li><strong>get_moment_supplement</strong> – Boolean indicating whether derived origin and double-couple/source time information
+should be extracted (when available.)</li>
 </ul>
 </td>
 </tr>

@@ -102,7 +102,8 @@ search like this:
                   <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">lat</span> <span class="n">lon</span> <span class="n">rmax</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">STARTTIME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span> <span class="n">ENDTIME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span> <span class="n">AFTER</span><span class="p">]</span>
                   <span class="p">[</span><span class="o">-</span><span class="n">m</span> <span class="n">minmag</span> <span class="n">maxmag</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">CATALOG</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">CONTRIBUTOR</span><span class="p">]</span>
                   <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="n">EVENTID</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PRODUCTPROPERTIES</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">EVENTPROPERTIES</span><span class="p">]</span>
-                  <span class="p">[</span><span class="o">-</span><span class="n">l</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">get</span><span class="o">-</span><span class="n">version</span> <span class="p">{</span><span class="n">first</span><span class="p">,</span><span class="n">last</span><span class="p">,</span><span class="nb">all</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">get</span><span class="o">-</span><span class="n">source</span> <span class="n">SOURCE</span><span class="p">]</span>
+                  <span class="p">[</span><span class="o">-</span><span class="n">l</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">get</span><span class="o">-</span><span class="n">version</span> <span class="p">{</span><span class="n">first</span><span class="p">,</span><span class="n">last</span><span class="p">,</span><span class="nb">all</span><span class="p">,</span><span class="n">preferred</span><span class="p">}]</span>
+                  <span class="p">[</span><span class="o">--</span><span class="n">get</span><span class="o">-</span><span class="n">source</span> <span class="n">SOURCE</span><span class="p">]</span>
                   <span class="n">PRODUCT</span> <span class="p">[</span><span class="n">CONTENTLIST</span> <span class="p">[</span><span class="n">CONTENTLIST</span> <span class="o">...</span><span class="p">]]</span>
 </pre></div>
 </div>
@@ -178,9 +179,9 @@ search like this:
 </td></tr>
 <tr><td class="option-group">
 <kbd>--get-version</kbd></td>
-<td><p class="first">Possible choices: first, last, all</p>
-<p>Get contents for first, last or all versions of event.</p>
-<p class="last">Default: “last”</p>
+<td><p class="first">Possible choices: first, last, all, preferred</p>
+<p>Get contents for first, last, preferred or all versions of product.</p>
+<p class="last">Default: “preferred”</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--get-source</kbd></td>

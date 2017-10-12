@@ -97,6 +97,11 @@
 <code class="descname">ALL</code><em class="property"> = 3</em><a class="headerlink" href="#libcomcat.classes.VersionOption.ALL" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt id="libcomcat.classes.VersionOption.PREFERRED">
+<code class="descname">PREFERRED</code><em class="property"> = 4</em><a class="headerlink" href="#libcomcat.classes.VersionOption.PREFERRED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -369,7 +374,7 @@ Cannot be used with includedeleted.</td>
 
 <dl class="method">
 <dt id="libcomcat.classes.DetailEvent.toDict">
-<code class="descname">toDict</code><span class="sig-paren">(</span><em>catalog=None</em>, <em>get_all_magnitudes=False</em>, <em>get_all_tensors=False</em>, <em>get_all_focals=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.toDict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toDict</code><span class="sig-paren">(</span><em>catalog=None</em>, <em>get_all_magnitudes=False</em>, <em>get_tensors='preferred'</em>, <em>get_moment_supplement=False</em>, <em>get_focals='preferred'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.toDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.toDict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return known origin, focal mechanism, and moment tensor information for a DetailEvent.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -381,14 +386,17 @@ If no source for this information exists, an AttributeError will be raised.</li>
 <li><strong>get_all_magnitudes</strong> – Boolean indicating whether all known magnitudes for this event should be returned.
 NOTE: The ComCat phase-data product’s QuakeML file will be downloaded and parsed,
 which takes extra time.</li>
-<li><strong>get_all_tensors</strong> – Boolean indicating whether all known moment tensors for this event should be returned.</li>
-<li><strong>get_all_focals</strong> – Boolean indicating whether all known focal mechanisms for this event should be returned.</li>
+<li><strong>get_tensors</strong> – String option of ‘none’, ‘preferred’, or ‘all’.</li>
+<li><strong>get_moment_supplement</strong> – Boolean indicating whether derived origin and double-couple/source time information
+should be extracted (when available.)</li>
+<li><strong>get_focals</strong> – String option of ‘none’, ‘preferred’, or ‘all’.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">OrderedDict with the same fields as returned by SummaryEvent.toDict(), plus
-additional magnitude/magnitude type fields, moment tensor and focal mechanism
-data.  The number and name of the fields will vary by what data is available.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">OrderedDict with the same fields as returned by SummaryEvent.toDict(), <em>preferred</em>
+moment tensor and focal mechanism data.  If all magnitudes are requested, then those
+will be returned as well.  Generally speaking, the number and name of the fields will
+vary by what data is available.</p>
 </td>
 </tr>
 </tbody>
@@ -413,7 +421,7 @@ data.  The number and name of the fields will vary by what data is available.</p
 
 <dl class="method">
 <dt id="libcomcat.classes.DetailEvent.getProducts">
-<code class="descname">getProducts</code><span class="sig-paren">(</span><em>product_name</em>, <em>source='preferred'</em>, <em>version=&lt;VersionOption.LAST: 1&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.getProducts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.getProducts" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getProducts</code><span class="sig-paren">(</span><em>product_name</em>, <em>source='preferred'</em>, <em>version=&lt;VersionOption.PREFERRED: 4&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/libcomcat/classes.html#DetailEvent.getProducts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libcomcat.classes.DetailEvent.getProducts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve a Product object from this DetailEvent.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

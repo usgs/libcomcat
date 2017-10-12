@@ -12,7 +12,7 @@ from libcomcat.utils import (get_summary_data_frame,
                              maketime,
                              get_catalogs,
                              get_phase_dataframe,
-                             phase_reader,
+                             read_phases,
                              get_contributors)
 from libcomcat.search import search,get_event_by_id
 import pandas as pd
@@ -21,23 +21,23 @@ def test_reader():
     homedir = os.path.dirname(os.path.abspath(__file__))  # where is this script?
     datadir = os.path.abspath(os.path.join(homedir,'..','data'))
     datafile = os.path.join(datadir,'us2000ahv0_phases.xlsx')
-    hdr,dataframe = phase_reader(datafile)
+    hdr,dataframe = read_phases(datafile)
     assert hdr['id'] == 'us2000ahv0'
     assert dataframe.iloc[0]['Channel'] == 'GI.HUEH.HHZ.--'
 
     datafile = os.path.join(datadir,'us2000ahv0_phases.csv')
-    hdr,dataframe = phase_reader(datafile)
+    hdr,dataframe = read_phases(datafile)
     assert hdr['id'] == 'us2000ahv0'
     assert dataframe.iloc[0]['Channel'] == 'GI.HUEH.HHZ.--'
 
     try:
-        phase_reader('foo')
+        read_phases('foo')
     except FileNotFoundError as fnfe:
         pass
 
     try:
         fname = os.path.abspath(__file__)
-        phase_reader(fname)
+        read_phases(fname)
     except Exception as e:
         assert str(e).find('Filenames with extension') > -1
         
