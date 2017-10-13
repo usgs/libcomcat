@@ -172,7 +172,7 @@ def save_dataframe(df,directory,event,file_format,catalog=None):
         df.to_excel(writer,index=False,startrow=len(edict)+len(HDR_DOC),startcol=0)
         workbook  = writer.book
         ws = writer.sheets['Sheet1']
-        
+        date_format = workbook.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss.000'})
         rowidx = 1
         for docline in HDR_DOC:
             cellidx = 'A%i' % rowidx
@@ -185,7 +185,10 @@ def save_dataframe(df,directory,event,file_format,catalog=None):
             #ws[keyidx] = key
             #ws[validx] = value
             ws.write(keyidx,key)
-            ws.write(validx,value)
+            if key == 'time':
+                ws.write_datetime(validx,value,date_format)
+            else:
+                ws.write(validx,value)
             rowidx += 1
         workbook.close()
     else:
