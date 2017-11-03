@@ -299,7 +299,7 @@ class DetailEvent(object):
                 fh.close()
                 self._jdict = json.loads(data)
             except Exception as msg:
-                raise Exception('Could not connect to ComCat server - %s.' % url).with_traceback(e.__traceback__)
+                raise Exception('Could not connect to ComCat server - %s.' % url).with_traceback(msg2.__traceback__)
     
     def __repr__(self):
         tpl = (self.id,str(self.time),self.latitude,self.longitude,self.depth,self.magnitude)
