@@ -44,10 +44,10 @@ def _get_product_from_detail(detail,product,contents,folder,
         prodsource = product.source
         for content in contents:
             matching_contents = product.getContentsMatching(content)
-            content_name = matching_contents[0]
             if not len(matching_contents):
                 sys.stderr.write('No %s for %s %s product.\n' % (content,detail.id,product))
                 continue
+            content_name = matching_contents[0]
             if not list_only:
                 sversion = fmt % iversion
                 fname = '%s_%s_%s_%s' % (eventid,prodsource,sversion,content_name)
