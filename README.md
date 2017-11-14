@@ -67,6 +67,7 @@ For consumers of phase data:
 If you work in Python, you can use the read_phases() function that comes with libcomcat.
 
 > from libcomcat.utils import read_phases
+
 > event,phases = read_phases('us2000b3dm_phases.csv')
 
 This function reads either CSV or Excel.
