@@ -4,6 +4,7 @@
 import argparse
 import os.path
 import sys
+from datetime import datetime,timedelta
 
 #local imports
 from libcomcat.search import search,get_event_by_id
@@ -61,7 +62,7 @@ def _get_product_from_detail(detail,product,contents,folder,
             else:
                 url = product.getContentURL(content_name)
                 print(url)
-            iversion += 1
+        iversion += 1
             
         ic -= 1
     return True
@@ -106,7 +107,7 @@ def get_parser():
     parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
                         help='End time for search (defaults to current date/time). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-a','--after', dest='after', type=maketime,
-                        help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
+                        help='Limit to events modified after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
                         help='Min/max magnitude to restrict search.')
     parser.add_argument('-c','--catalog', dest='catalog', 
@@ -145,7 +146,19 @@ def main(args):
     longitude = None
     radiuskm = None
     lonmin = latmin = lonmax = latmax = None
-    starttime = endtime = None
+
+    if args.startTime is None:
+        starttime = datetime.utcnow() - timedelta(days=30)
+        print('You did not specify a search start time, defaulting to %s' % str(starttime))
+    else:
+        starttime = args.startTime
+
+    if args.endTime is None:
+        endtime = datetime.utcnow()
+        print('You did not specify a search end time, defaulting to %s' % str(endtime))
+    else:
+        endtime = args.endTime
+        
     if args.radius:
         latitude = args.radius[0]
         longitude = args.radius[1]
@@ -163,8 +176,8 @@ def main(args):
         minmag  = args.magRange[0]
         maxmag  = args.magRange[1]
 
-    events = search(starttime=args.startTime,
-                    endtime=args.endTime,
+    events = search(starttime=starttime,
+                    endtime=endtime,
                     updatedafter=args.after,
                     minlatitude=latmin,
                     maxlatitude=latmax,
