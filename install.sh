@@ -1,35 +1,75 @@
 #!/bin/bash
 
 VENV=comcat
-PYVER=3.6
 
-DEPARRAY=(obspy=1.0.3 ipython=6.1.0 jupyter=1.0.0 pandas=0.20.3 \
-          xlrd=1.0.0 xlwt=1.2.0 openpyxl=2.5.0a2 pytest=3.1.2 \
-          pytest-cov=2.5.1 sphinx=1.6.3  xlsxwriter=0.9.8)
+# Is the reset flag set?
+reset=0
+while getopts r FLAG; do
+  case $FLAG in
+    r)
+        reset=1
+        echo "Letting conda sort out dependencies..."
+      ;;
+  esac
+done
 
-#if we're already in an environment called pager, switch out of it so we can remove it
-source activate root
-    
-#remove any previous virtual environments called libcomcat
-CWD=`pwd`
-cd $HOME;
-conda remove --name $VENV --all -y
-cd $CWD
-    
-#create a new virtual environment called $VENV with the below list of dependencies installed into it
-conda create --name $VENV --yes --channel conda-forge python=$PYVER ${DEPARRAY[*]} -y
+# Is conda installed?
+conda=$(which conda)
+if [ ! "$conda" ] ; then
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+        -O miniconda.sh;
+    bash miniconda.sh -f -b -p $HOME/miniconda
+    export PATH="$HOME/miniconda/bin:$PATH"
+fi
 
-#activate the new environment
+# Choose an environment file based on platform
+unamestr=`uname`
+if [ "$unamestr" == 'Linux' ]; then
+    env_file=environment_linux.yml
+elif [ "$unamestr" == 'FreeBSD' ] || [ "$unamestr" == 'Darwin' ]; then
+    env_file=environment_osx.yml
+fi
+
+# If the user has specified the -r (reset) flag, then create an
+# environment based on only the named dependencies, without
+# any versions of packages specified.
+if [ $reset == 1 ]; then
+    echo "Ignoring platform, letting conda sort out dependencies..."
+    env_file=environment.yml
+fi
+
+echo "Environment file: $env_file"
+
+# Turn off whatever other virtual environment user might be in
+source deactivate
+
+# Download dependencies not in conda or pypi
+curl --max-time 60 --retry 3 -L \
+    https://github.com/usgs/earthquake-impact-utils/archive/0.7.zip -o impact-utils.zip
+
+
+# Create a conda virtual environment
+echo "Creating the $VENV virtual environment:"
+conda env create -f $env_file --force
+
+# Bail out at this point if the conda create command fails.
+# Clean up zip files we've downloaded
+if [ $? -ne 0 ]; then
+    echo "Failed to create conda environment.  Resolve any conflicts, then try again."
+    echo "Cleaning up zip files..."
+    rm impact-utils.zip
+    exit
+fi
+
+# Activate the new environment
+echo "Activating the $VENV virtual environment"
 source activate $VENV
 
-#download neicmap, install it using pip locally
-echo "Installing impactutils..."
-curl --retry 3 -L https://github.com/usgs/earthquake-impact-utils/archive/master.zip -o impact.zip
-pip install impact.zip
-rm impact.zip
+# Clean up downloaded packages
+rm impact-utils.zip
 
 # This package
-echo "Installing libcomcat..."
+echo "Installing ${VENV}..."
 pip install -e .
 
 #tell the user they have to activate this environment
