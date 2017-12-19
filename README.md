@@ -27,6 +27,7 @@ work with other Python 3.x versions. It will *not* work with Python
 2.7!  For Anaconda (3.x) users, try the following:
 
 - `conda install obspy`
+- `pip install git+git://github.com/usgs/earthquake-impact-utils.git`
 - `pip install git+git://github.com/usgs/libcomcat.git`
 
 If you have Anaconda installed but your default environment is Python
