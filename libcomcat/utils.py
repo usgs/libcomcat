@@ -1,4 +1,4 @@
-#stdlib imports
+# stdlib imports
 from xml.dom import minidom
 import sys
 from urllib.request import urlopen
@@ -6,14 +6,14 @@ import warnings
 from datetime import datetime
 import os.path
 
-#third party imports
+# third party imports
 import numpy as np
 import pandas as pd
 from obspy.io.quakeml.core import Unpickler
 from impactutils.time.ancient_time import HistoricTime
 from openpyxl import load_workbook
 
-#constants
+# constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
 CONTRIBUTORS_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/contributors'
 TIMEOUT = 60
@@ -21,9 +21,10 @@ TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
 
+
 def read_phases(filename):
     """Read a phase file CSV or Excel file into data structures.
-    
+
     :param filename:
       String file name of a CSV or Excel file created by getphases program.
     :returns:
@@ -39,7 +40,7 @@ def read_phases(filename):
         ws = wb.active
         key = ''
         rowidx = 1
-        
+
         while key != 'Channel':
             key = ws['A%i' % rowidx].value
             if not key.startswith('#'):
@@ -47,50 +48,53 @@ def read_phases(filename):
                 header_dict[key] = value
             rowidx += 1
         wb.close()
-        dataframe = pd.read_excel(filename,skiprows=rowidx-2)
+        dataframe = pd.read_excel(filename, skiprows=rowidx - 2)
     elif filename.endswith('csv'):
-        f = open(filename,'rt')
+        f = open(filename, 'rt')
         tline = f.readline()
         rowidx = 0
         while tline.startswith('#'):
             if not tline.startswith('#%'):
-                line = tline.replace('#','').strip()
-                key,value = line.split('=')
+                line = tline.replace('#', '').strip()
+                key, value = line.split('=')
                 key = key.strip()
                 value = value.strip()
                 header_dict[key] = value
             rowidx += 1
             tline = f.readline()
         f.close()
-        dataframe = pd.read_csv(filename,skiprows=rowidx)
+        dataframe = pd.read_csv(filename, skiprows=rowidx)
     else:
-        f,ext = os.path.splitext(filename)
+        f, ext = os.path.splitext(filename)
         raise Exception('Filenames with extension %s are not supported.' % ext)
-    return (header_dict,dataframe)
+    return (header_dict, dataframe)
+
 
 def makedict(dictstring):
     try:
         parts = dictstring.split(':')
         key = parts[0]
         value = parts[1]
-        return {key:value}
+        return {key: value}
     except:
-        raise Exception('Could not create a single key dictionary out of %s' % dictstring)
+        raise Exception(
+            'Could not create a single key dictionary out of %s' % dictstring)
+
 
 def maketime(timestring):
     outtime = None
     try:
-        outtime = HistoricTime.strptime(timestring,TIMEFMT1)
+        outtime = HistoricTime.strptime(timestring, TIMEFMT1)
     except:
         try:
-            outtime = HistoricTime.strptime(timestring,TIMEFMT2)
+            outtime = HistoricTime.strptime(timestring, TIMEFMT2)
         except:
             try:
-                outtime = HistoricTime.strptime(timestring,DATEFMT)
+                outtime = HistoricTime.strptime(timestring, DATEFMT)
             except:
-                raise Exception('Could not parse time or date from %s' % timestring)
+                raise Exception(
+                    'Could not parse time or date from %s' % timestring)
     return outtime
-
 
 
 def get_catalogs():
@@ -99,7 +103,7 @@ def get_catalogs():
     :returns:
       List of catalogs available in ComCat (see the catalog parameter in search() method.)
     """
-    fh = urlopen(CATALOG_SEARCH_TEMPLATE,timeout=TIMEOUT)
+    fh = urlopen(CATALOG_SEARCH_TEMPLATE, timeout=TIMEOUT)
     data = fh.read().decode('utf8')
     fh.close()
     root = minidom.parseString(data)
@@ -110,13 +114,14 @@ def get_catalogs():
     root.unlink()
     return catlist
 
+
 def get_contributors():
     """Get the list of contributors available in ComCat.
 
     :returns:
       List of contributors available in ComCat (see the contributor parameter in search() method.)
     """
-    fh = urlopen(CONTRIBUTORS_SEARCH_TEMPLATE,timeout=TIMEOUT)
+    fh = urlopen(CONTRIBUTORS_SEARCH_TEMPLATE, timeout=TIMEOUT)
     data = fh.read().decode('utf8')
     fh.close()
     root = minidom.parseString(data)
@@ -126,6 +131,7 @@ def get_contributors():
         conlist.append(contributor.firstChild.data)
     root.unlink()
     return conlist
+
 
 def stringify(waveform):
     """Turn waveform object into NSCL-style station code
@@ -148,10 +154,11 @@ def stringify(waveform):
     location = '--'
     if waveform.location_code is not None:
         location = waveform.location_code
-    tpl = (network,station,channel,location)
+    tpl = (network, station, channel, location)
     return fmt % tpl
 
-def get_arrival(event,pickid):
+
+def get_arrival(event, pickid):
     """Find the arrival object in a Catalog Event corresponding to input pick id.
     :param event:
       Obspy Catalog Event object.
@@ -170,7 +177,8 @@ def get_arrival(event,pickid):
     if pickid is None:
         return None
 
-def _get_phaserow(pick,catevent):
+
+def _get_phaserow(pick, catevent):
     """Return a dictionary containing Phase data matching that found on ComCat event page.
     Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin 
     (Click on the Phases tab).
@@ -192,25 +200,26 @@ def _get_phaserow(pick,catevent):
     """
     pick_id = pick.resource_id
     waveform_id = pick.waveform_id
-    arrival = get_arrival(catevent,pick_id)
+    arrival = get_arrival(catevent, pick_id)
     if arrival is None:
-      #print('could not find arrival for pick %s' % pick_id)
-      return None
+        #print('could not find arrival for pick %s' % pick_id)
+        return None
 
-    #save info to row of dataframe
+    # save info to row of dataframe
     etime = pick.time.datetime
     channel = stringify(waveform_id)
-    row = {'Channel':channel,
-           'Distance':arrival.distance,
-           'Azimuth':arrival.azimuth,
-           'Phase':arrival.phase,
-           'Arrival Time':etime,
-           'Status':pick.evaluation_mode,
-           'Residual':arrival.time_residual,
-           'Weight':arrival.time_weight}
+    row = {'Channel': channel,
+           'Distance': arrival.distance,
+           'Azimuth': arrival.azimuth,
+           'Phase': arrival.phase,
+           'Arrival Time': etime,
+           'Status': pick.evaluation_mode,
+           'Residual': arrival.time_residual,
+           'Weight': arrival.time_weight}
     return row
 
-def get_phase_dataframe(detail,catalog='preferred'):
+
+def get_phase_dataframe(detail, catalog='preferred'):
     """Return a Pandas DataFrame consisting of Phase arrival data.
 
     :param detail:
@@ -233,31 +242,32 @@ def get_phase_dataframe(detail,catalog='preferred'):
     """
     if catalog is None:
         catalog = 'preferred'
-    df = pd.DataFrame(columns=['Channel','Distance','Azimuth',
-                               'Phase','Arrival Time','Status',
-                               'Residual','Weight'])
+    df = pd.DataFrame(columns=['Channel', 'Distance', 'Azimuth',
+                               'Phase', 'Arrival Time', 'Status',
+                               'Residual', 'Weight'])
 
-    phasedata = detail.getProducts('phase-data',source=catalog)[0]
+    phasedata = detail.getProducts('phase-data', source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
     try:
-        fh = urlopen(quakeurl,timeout=TIMEOUT)
+        fh = urlopen(quakeurl, timeout=TIMEOUT)
         data = fh.read()
         fh.close()
     except Exception as msg:
         return None
     unpickler = Unpickler()
     with warnings.catch_warnings():
-        warnings.filterwarnings("ignore",category=UserWarning)
+        warnings.filterwarnings("ignore", category=UserWarning)
         catalog = unpickler.loads(data)
         catevent = catalog.events[0]
         for pick in catevent.picks:
-            phaserow = _get_phaserow(pick,catevent)
+            phaserow = _get_phaserow(pick, catevent)
             if phaserow is None:
                 continue
-            df = df.append(phaserow,ignore_index=True)
+            df = df.append(phaserow, ignore_index=True)
     return df
 
-def get_detail_data_frame(events,get_all_magnitudes=False,
+
+def get_detail_data_frame(events, get_all_magnitudes=False,
                           get_tensors='preferred',
                           get_focals='preferred',
                           get_moment_supplement=False,
@@ -266,7 +276,7 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
 
     Usage:
       TODO
-    
+
     :param events:
       List of SummaryEvent objects as returned by search() function.
     :param get_all_magnitudes:
@@ -283,9 +293,10 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
     """
     elist = []
     ic = 0
-    inc = min(100,np.power(10,np.floor(np.log10(len(events)))-1))
+    inc = min(100, np.power(10, np.floor(np.log10(len(events))) - 1))
     if verbose:
-        sys.stderr.write('Getting detailed event info - reporting every %i events.\n' % inc)
+        sys.stderr.write(
+            'Getting detailed event info - reporting every %i events.\n' % inc)
     for event in events:
         try:
             detail = event.getDetailEvent()
@@ -299,25 +310,27 @@ def get_detail_data_frame(events,get_all_magnitudes=False,
         elist.append(edict)
         if ic % inc == 0 and verbose:
             msg = 'Getting detailed information for %s, %i of %i events.\n'
-            sys.stderr.write(msg % (event.id,ic,len(events)))
+            sys.stderr.write(msg % (event.id, ic, len(events)))
         ic += 1
     df = pd.DataFrame(elist)
-    first_columns = ['id','time','latitude','longitude','depth','magnitude']
+    first_columns = ['id', 'time', 'latitude',
+                     'longitude', 'depth', 'magnitude']
     all_columns = df.columns
     rem_columns = [col for col in all_columns if col not in first_columns]
     new_columns = first_columns + rem_columns
     df = df[new_columns]
     return df
-        
+
+
 def get_summary_data_frame(events):
     """Take the results of a search and extract the summary event informat in a pandas DataFrame.
 
     Usage:
       TODO
-    
+
     :param events:
       List of SummaryEvent objects as returned by search() function.
-    
+
     :returns:  
       Pandas DataFrame with one row per event, and columns:
        - id (string) Authoritative ComCat event ID.

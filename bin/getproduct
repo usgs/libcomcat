@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 
-#stdlib imports
+# stdlib imports
 import argparse
 import os.path
 import sys
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 
-#local imports
-from libcomcat.search import search,get_event_by_id
-from libcomcat.utils import maketime,makedict
+# local imports
+from libcomcat.search import search, get_event_by_id
+from libcomcat.utils import maketime, makedict
 from libcomcat.classes import VersionOption
 
-#third party imports
+# third party imports
 import numpy as np
 import pandas as pd
 
-def _get_product_from_detail(detail,product,contents,folder,
-                             version,source,list_only=False):
+
+def _get_product_from_detail(detail, product, contents, folder,
+                             version, source, list_only=False):
     if not detail.hasProduct(product):
         return False
 
@@ -29,16 +30,17 @@ def _get_product_from_detail(detail,product,contents,folder,
         version_option = VersionOption.ALL
     else:
         version_option = VersionOption.PREFERRED
-        
-    products = detail.getProducts(product,source=source,version=version_option)
-    
+
+    products = detail.getProducts(
+        product, source=source, version=version_option)
+
     ic = len(products)
-    eventfolder = os.path.join(folder,detail.id)
+    eventfolder = os.path.join(folder, detail.id)
     if not os.path.isdir(eventfolder):
         os.makedirs(eventfolder)
-    
+
     nzeros = int(np.ceil(np.log10(len(products))))
-    fmt = '%%0%ii' % (nzeros+1)
+    fmt = '%%0%ii' % (nzeros + 1)
     eventid = detail.id
     for product in products:
         iversion = product.version
@@ -46,26 +48,31 @@ def _get_product_from_detail(detail,product,contents,folder,
         for content in contents:
             matching_contents = product.getContentsMatching(content)
             if not len(matching_contents):
-                sys.stderr.write('No %s for %s %s product.\n' % (content,detail.id,product))
+                sys.stderr.write('No %s for %s %s product.\n' %
+                                 (content, detail.id, product))
                 continue
             content_name = matching_contents[0]
             if not list_only:
                 sversion = fmt % iversion
-                fname = '%s_%s_%s_%s' % (eventid,prodsource,sversion,content_name)
-                filename = os.path.join(eventfolder,fname)
+                fname = '%s_%s_%s_%s' % (
+                    eventid, prodsource, sversion, content_name)
+                filename = os.path.join(eventfolder, fname)
                 try:
-                    product.getContent(content_name,filename=filename)
+                    product.getContent(content_name, filename=filename)
                 except Exception as e:
-                    print('Could not download %s from event %s.  Continuing...' % (content_name,detail.id))
+                    print('Could not download %s from event %s.  Continuing...' % (
+                        content_name, detail.id))
                     continue
-                sys.stderr.write('Downloaded %s %s to %s\n' % (eventid,content,filename))
+                sys.stderr.write('Downloaded %s %s to %s\n' %
+                                 (eventid, content, filename))
             else:
                 url = product.getContentURL(content_name)
                 print(url)
         iversion += 1
-            
+
         ic -= 1
     return True
+
 
 def get_parser():
     desc = '''Download product content files from USGS ComCat.
@@ -88,56 +95,58 @@ def get_parser():
     To retrieve the moment rate function files, do this:
     %(prog)s finite-fault .mr -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
     '''
-    parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
-    #positional arguments
-    parser.add_argument('product', metavar='PRODUCT', 
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    # positional arguments
+    parser.add_argument('product', metavar='PRODUCT',
                         help='The name of the desired product (shakemap, dyfi, etc.)')
     parser.add_argument('contents', metavar='CONTENTLIST', nargs='*',
                         help='The names of the product contents (grid.xml, stationlist.txt, etc.) ')
-    #optional arguments
-    parser.add_argument('-o','--output-folder', dest='outputFolder', default=os.getcwd(),
+    # optional arguments
+    parser.add_argument('-o', '--output-folder', dest='outputFolder', default=os.getcwd(),
                         help='Folder where output files should be written (must exist).')
-    parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
+    parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
-    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
-                        nargs=3,help='Search radius in KM (use instead of bounding box)')
-    parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
+    parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
+                        nargs=3, help='Search radius in KM (use instead of bounding box)')
+    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
                         help='Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
+    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
                         help='End time for search (defaults to current date/time). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-a','--after', dest='after', type=maketime,
+    parser.add_argument('-a', '--after', dest='after', type=maketime,
                         help='Limit to events modified after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
+    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
                         help='Min/max magnitude to restrict search.')
-    parser.add_argument('-c','--catalog', dest='catalog', 
+    parser.add_argument('-c', '--catalog', dest='catalog',
                         help='Source catalog from which products derive (atlas, centennial, etc.)')
-    parser.add_argument('-n','--contributor', dest='contributor', 
+    parser.add_argument('-n', '--contributor', dest='contributor',
                         help='Source contributor (who loaded product) (us, nc, etc.)')
-    parser.add_argument('-i','--event-id', dest='eventid', 
+    parser.add_argument('-i', '--event-id', dest='eventid',
                         help='Event ID from which to download product contents.')
-    parser.add_argument('-p','--product-property', dest='productProperties', type=makedict,
+    parser.add_argument('-p', '--product-property', dest='productProperties', type=makedict,
                         help='Product property (reviewstatus:approved).')
-    parser.add_argument('-t','--event-property', dest='eventProperties', 
-                        help='Event property (alert:yellow, status:REVIEWED, etc.).',type=makedict)
-    parser.add_argument('-l','--list-url', dest='list_only', action='store_true',
+    parser.add_argument('-t', '--event-property', dest='eventProperties',
+                        help='Event property (alert:yellow, status:REVIEWED, etc.).', type=makedict)
+    parser.add_argument('-l', '--list-url', dest='list_only', action='store_true',
                         help='Only list urls for contents in events that match criteria.')
-    
-    parser.add_argument('--get-version', dest='version', choices=['first','last','all','preferred'],
+
+    parser.add_argument('--get-version', dest='version', choices=['first', 'last', 'all', 'preferred'],
                         help='Get contents for first, last, preferred or all versions of product.',
                         default='preferred')
     parser.add_argument('--get-source', dest='source', default='preferred',
                         help='Get contents for the "preferred" source, "all" sources, or a specific source ("us").')
     return parser
 
+
 def main(args):
     if args.eventid:
-        detail = get_event_by_id(args.eventid,includesuperseded=True)
-        _get_product_from_detail(detail,args.product,args.contents,
-                                     args.outputFolder,args.version,
-                                     args.source,list_only=args.list_only)
+        detail = get_event_by_id(args.eventid, includesuperseded=True)
+        _get_product_from_detail(detail, args.product, args.contents,
+                                 args.outputFolder, args.version,
+                                 args.source, list_only=args.list_only)
         sys.exit(0)
-        
+
     if args.bounds and args.radius:
         print('Please specify either a bounding box OR radius search.')
         sys.exit(1)
@@ -149,32 +158,34 @@ def main(args):
 
     if args.startTime is None:
         starttime = datetime.utcnow() - timedelta(days=30)
-        print('You did not specify a search start time, defaulting to %s' % str(starttime))
+        print('You did not specify a search start time, defaulting to %s' %
+              str(starttime))
     else:
         starttime = args.startTime
 
     if args.endTime is None:
         endtime = datetime.utcnow()
-        print('You did not specify a search end time, defaulting to %s' % str(endtime))
+        print('You did not specify a search end time, defaulting to %s' %
+              str(endtime))
     else:
         endtime = args.endTime
-        
+
     if args.radius:
         latitude = args.radius[0]
         longitude = args.radius[1]
         radiuskm = args.radius[2]
-        
+
     if args.bounds:
-        lonmin,lonmax,latmin,latmax = args.bounds
-        #fix longitude bounds when crossing dateline
+        lonmin, lonmax, latmin, latmax = args.bounds
+        # fix longitude bounds when crossing dateline
         if lonmin > lonmax and lonmax >= -180:
             lonmin -= 360
 
     minmag = 0.0
     maxmag = 9.9
     if args.magRange:
-        minmag  = args.magRange[0]
-        maxmag  = args.magRange[1]
+        minmag = args.magRange[0]
+        maxmag = args.magRange[1]
 
     events = search(starttime=starttime,
                     endtime=endtime,
@@ -195,24 +206,26 @@ def main(args):
     if not len(events):
         print('No events found matching your search criteria. Exiting.')
         sys.exit(0)
-    
+
     for event in events:
         if not event.hasProduct(args.product):
             continue
         try:
             detail = event.getDetailEvent(includesuperseded=True)
         except Exception as e:
-            print('Failed to retrieve detail event for event %s... continuing.' % event.id)
+            print(
+                'Failed to retrieve detail event for event %s... continuing.' % event.id)
             continue
-        _get_product_from_detail(detail,args.product,
-                                 args.contents,args.outputFolder,
-                                 args.version,args.source,list_only=args.list_only)
+        _get_product_from_detail(detail, args.product,
+                                 args.contents, args.outputFolder,
+                                 args.version, args.source, list_only=args.list_only)
 
     sys.exit(0)
-        
+
+
 if __name__ == '__main__':
     parser = get_parser()
-    
+
     pargs = parser.parse_args()
 
     main(pargs)

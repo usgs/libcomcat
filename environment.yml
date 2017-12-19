@@ -1,0 +1,33 @@
+name: comcat
+channels:
+- conda-forge
+- defaults
+- digitalglobe
+- ioos
+dependencies:
+- beautifulsoup4
+- cartopy
+- decorator
+- fiona
+- h5py
+- ipython
+- jupyter
+- matplotlib<2.0
+- numpy
+- obspy
+- pandas
+- paramiko
+- pycrypto
+- pytest
+- pytest-cov
+- pytest-mpl
+- python=3.5
+- seaborn
+- shapely
+- xlrd
+- xlwt
+- openpyxl
+- xlsxwriter
+- pip:
+  - ./impact-utils.zip
+

@@ -1,29 +1,30 @@
-#stdlib imports
-from datetime import datetime,timedelta
+# stdlib imports
+from datetime import datetime, timedelta
 from urllib import request
 from urllib.error import HTTPError
-from urllib.parse import urlparse,urlencode
+from urllib.parse import urlparse, urlencode
 import json
 import calendar
 import sys
 import time
 
-#third party imports
+# third party imports
 from impactutils.time.ancient_time import HistoricTime
 import numpy as np
 
-#local imports
-from libcomcat.classes import SummaryEvent,DetailEvent
+# local imports
+from libcomcat.classes import SummaryEvent, DetailEvent
 
-#constants
-#url template for counting events
+# constants
+# url template for counting events
 CATALOG_COUNT_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson'
 SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson'
-TIMEOUT = 60 #how long do we wait for a url to return?
+TIMEOUT = 60  # how long do we wait for a url to return?
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
-WEEKSECS = 86400*7 #number of seconds in a week
-WAITSECS = 3 #number of seconds to wait after failing download before trying again
-SEARCH_LIMIT = 20000 #maximum number of events ComCat will return in one search
+WEEKSECS = 86400 * 7  # number of seconds in a week
+WAITSECS = 3  # number of seconds to wait after failing download before trying again
+SEARCH_LIMIT = 20000  # maximum number of events ComCat will return in one search
+
 
 def count(starttime=None,
           endtime=None,
@@ -62,7 +63,7 @@ def count(starttime=None,
     """Ask the ComCat database for the number of events matching input criteria.
 
     This count function is a wrapper around the ComCat Web API described here:
-    
+
     https://earthquake.usgs.gov/fdsnws/event/1/ (see count section)
 
     Some of the search parameters described there are NOT implemented here, usually because they do not 
@@ -72,7 +73,7 @@ def count(starttime=None,
 
     Usage:
       TODO
-    
+
     :param starttime:
       Python datetime - Limit to events on or after the specified start time. 
     :param endtime:
@@ -164,10 +165,10 @@ def count(starttime=None,
     :returns:
       List of SummaryEvent() objects.
     """
-    #getting the inputargs must be the first line of the method!
+    # getting the inputargs must be the first line of the method!
     inputargs = locals().copy()
     newargs = {}
-    for key,value in inputargs.items():
+    for key, value in inputargs.items():
         if value is True:
             newargs[key] = 'true'
             continue
@@ -180,29 +181,31 @@ def count(starttime=None,
     if newargs['limit'] > 20000:
         newargs['limit'] = 20000
     nevents = 0
-    segments = _get_time_segments(starttime,endtime,newargs['minmagnitude'])
+    segments = _get_time_segments(starttime, endtime, newargs['minmagnitude'])
     iseg = 1
 
-    #remove the verbose element from the arguments
+    # remove the verbose element from the arguments
     del newargs['verbose']
-    
-    for stime,etime in segments:
+
+    for stime, etime in segments:
         newargs['starttime'] = stime
         newargs['endtime'] = etime
         if verbose:
-            sys.stderr.write('Searching time segment %i: %s to %s\n' % (iseg,stime,etime))
+            sys.stderr.write(
+                'Searching time segment %i: %s to %s\n' % (iseg, stime, etime))
         iseg += 1
         nevents += _count(**newargs)
 
     return nevents
 
-def get_event_by_id(eventid,catalog=None,
+
+def get_event_by_id(eventid, catalog=None,
                     includedeleted=False,
                     includesuperseded=False):
     """Search the ComCat database for an event matching the input event id.
 
     This search function is a wrapper around the ComCat Web API described here:
-    
+
     https://earthquake.usgs.gov/fdsnws/event/1/
 
     Some of the search parameters described there are NOT implemented here, usually because they do not 
@@ -212,7 +215,7 @@ def get_event_by_id(eventid,catalog=None,
 
     Usage:
       TODO
-    
+
     :param eventid:
       Select a specific event by ID; event identifiers are data center specific.
     :param includesuperseded:
@@ -223,10 +226,10 @@ def get_event_by_id(eventid,catalog=None,
     :returns:
       DetailEvent object.
     """
-    #getting the inputargs must be the first line of the method!
+    # getting the inputargs must be the first line of the method!
     inputargs = locals().copy()
     newargs = {}
-    for key,value in inputargs.items():
+    for key, value in inputargs.items():
         if value is True:
             newargs[key] = 'true'
             continue
@@ -236,10 +239,11 @@ def get_event_by_id(eventid,catalog=None,
         if value is None:
             continue
         newargs[key] = value
-        
-    event = _search(**newargs) #this should be a DetailEvent
+
+    event = _search(**newargs)  # this should be a DetailEvent
     return event
-    
+
+
 def search(starttime=None,
            endtime=None,
            updatedafter=None,
@@ -277,7 +281,7 @@ def search(starttime=None,
     """Search the ComCat database for events matching input criteria.
 
     This search function is a wrapper around the ComCat Web API described here:
-    
+
     https://earthquake.usgs.gov/fdsnws/event/1/
 
     Some of the search parameters described there are NOT implemented here, usually because they do not 
@@ -287,7 +291,7 @@ def search(starttime=None,
 
     Usage:
       TODO
-    
+
     :param starttime:
       Python datetime - Limit to events on or after the specified start time. 
     :param endtime:
@@ -379,10 +383,10 @@ def search(starttime=None,
     :returns:
       List of SummaryEvent() objects.
     """
-    #getting the inputargs must be the first line of the method!
+    # getting the inputargs must be the first line of the method!
     inputargs = locals().copy()
     newargs = {}
-    for key,value in inputargs.items():
+    for key, value in inputargs.items():
         if value is True:
             newargs[key] = 'true'
             continue
@@ -395,53 +399,56 @@ def search(starttime=None,
     if newargs['limit'] > 20000:
         newargs['limit'] = 20000
 
-    #remove the verbose element from the arguments
+    # remove the verbose element from the arguments
     del newargs['verbose']
-    
-    segments = _get_time_segments(starttime,endtime,newargs['minmagnitude'])
+
+    segments = _get_time_segments(starttime, endtime, newargs['minmagnitude'])
     events = []
     iseg = 1
-    for stime,etime in segments:
+    for stime, etime in segments:
         newargs['starttime'] = stime
         newargs['endtime'] = etime
         if verbose:
-            sys.stderr.write('Searching time segment %i: %s to %s\n' % (iseg,stime,etime))
+            sys.stderr.write(
+                'Searching time segment %i: %s to %s\n' % (iseg, stime, etime))
         iseg += 1
         events += _search(**newargs)
 
     return events
 
-def _get_time_segments(starttime,endtime,minmag):
+
+def _get_time_segments(starttime, endtime, minmag):
     if starttime is None:
         starttime = HistoricTime.utcnow() - timedelta(days=30)
     if endtime is None:
         endtime = HistoricTime.utcnow()
-    #earthquake frequency table: minmag:earthquakes per day
-    freq_table = {0:3000/7,
-                  1:3500/14,
-                  2:3000/18,
-                  3:4000/59,
-                  4:9000/151,
-                  5:3000/365,
-                  6:210/365,
-                  7:20/365,
-                  8:5/365,
-                  9:0.05/365}
-    
+    # earthquake frequency table: minmag:earthquakes per day
+    freq_table = {0: 3000 / 7,
+                  1: 3500 / 14,
+                  2: 3000 / 18,
+                  3: 4000 / 59,
+                  4: 9000 / 151,
+                  5: 3000 / 365,
+                  6: 210 / 365,
+                  7: 20 / 365,
+                  8: 5 / 365,
+                  9: 0.05 / 365}
+
     floormag = int(np.floor(minmag))
-    ndays = (endtime-starttime).days + 1
+    ndays = (endtime - starttime).days + 1
     freq = freq_table[floormag]
-    nsegments = int(np.ceil((freq * ndays)/SEARCH_LIMIT))
-    days_per_segment = int(np.ceil(ndays/nsegments))
+    nsegments = int(np.ceil((freq * ndays) / SEARCH_LIMIT))
+    days_per_segment = int(np.ceil(ndays / nsegments))
     segments = []
     startseg = starttime
     endseg = starttime
     while startseg <= endtime:
-        endseg = min(endtime,startseg + timedelta(days_per_segment))
-        segments.append((startseg,endseg))
-        startseg += timedelta(days=days_per_segment,microseconds=1)
+        endseg = min(endtime, startseg + timedelta(days_per_segment))
+        segments.append((startseg, endseg))
+        startseg += timedelta(days=days_per_segment, microseconds=1)
     return segments
-        
+
+
 def _search(**newargs):
     if 'starttime' in newargs:
         newargs['starttime'] = newargs['starttime'].strftime(TIMEFMT)
@@ -449,16 +456,16 @@ def _search(**newargs):
         newargs['endtime'] = newargs['endtime'].strftime(TIMEFMT)
     if 'updatedafter' in newargs:
         newargs['updatedafter'] = newargs['updatedafter'].strftime(TIMEFMT)
-        
+
     paramstr = urlencode(newargs)
-    url = SEARCH_TEMPLATE+'&'+paramstr
+    url = SEARCH_TEMPLATE + '&' + paramstr
     events = []
-    #handle the case when they're asking for an event id
+    # handle the case when they're asking for an event id
     if 'eventid' in newargs:
         return DetailEvent(url)
-    
+
     try:
-        fh = request.urlopen(url,timeout=TIMEOUT)
+        fh = request.urlopen(url, timeout=TIMEOUT)
         data = fh.read().decode('utf8')
         fh.close()
         jdict = json.loads(data)
@@ -469,7 +476,7 @@ def _search(**newargs):
         if htpe.code == 503:
             try:
                 time.sleep(WAITSECS)
-                fh = request.urlopen(url,timeout=TIMEOUT)
+                fh = request.urlopen(url, timeout=TIMEOUT)
                 data = fh.read().decode('utf8')
                 fh.close()
                 jdict = json.loads(data)
@@ -477,11 +484,14 @@ def _search(**newargs):
                 for feature in jdict['features']:
                     events.append(SummaryEvent(feature))
             except Exception as msg:
-                raise Exception('Error downloading data from url %s.  "%s".' % (url,msg))
+                raise Exception(
+                    'Error downloading data from url %s.  "%s".' % (url, msg))
     except Exception as msg:
-        raise Exception('Error downloading data from url %s.  "%s".' % (url,msg))
-            
+        raise Exception(
+            'Error downloading data from url %s.  "%s".' % (url, msg))
+
     return events
+
 
 def _count(**newargs):
     if 'starttime' in newargs:
@@ -490,12 +500,12 @@ def _count(**newargs):
         newargs['endtime'] = newargs['endtime'].strftime(TIMEFMT)
     if 'updatedafter' in newargs:
         newargs['updatedafter'] = newargs['updatedafter'].strftime(TIMEFMT)
-        
+
     paramstr = urlencode(newargs)
-    url = CATALOG_COUNT_TEMPLATE+'&'+paramstr
+    url = CATALOG_COUNT_TEMPLATE + '&' + paramstr
     nevents = 0
     try:
-        fh = request.urlopen(url,timeout=TIMEOUT)
+        fh = request.urlopen(url, timeout=TIMEOUT)
         data = fh.read().decode('utf8')
         fh.close()
         jdict = json.loads(data)
@@ -504,14 +514,16 @@ def _count(**newargs):
         if htpe.code == 503:
             try:
                 time.sleep(WAITSECS)
-                fh = request.urlopen(url,timeout=TIMEOUT)
+                fh = request.urlopen(url, timeout=TIMEOUT)
                 data = fh.read().decode('utf8')
                 fh.close()
                 jdict = json.loads(data)
                 nevents = jdict['count']
             except Exception as msg:
-                raise Exception('Error downloading data from url %s.  "%s".' % (url,msg))
+                raise Exception(
+                    'Error downloading data from url %s.  "%s".' % (url, msg))
     except Exception as msg:
-        raise Exception('Error downloading data from url %s.  "%s".' % (url,msg))
-            
+        raise Exception(
+            'Error downloading data from url %s.  "%s".' % (url, msg))
+
     return nevents

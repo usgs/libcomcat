@@ -2,9 +2,10 @@
 import argparse
 import sys
 
-from libcomcat.search import search,count
-from libcomcat.utils import get_detail_data_frame,get_summary_data_frame,maketime
+from libcomcat.search import search, count
+from libcomcat.utils import get_detail_data_frame, get_summary_data_frame, maketime
 from impactutils.time.ancient_time import HistoricTime
+
 
 def get_parser():
     desc = '''Download basic earthquake information in line format (csv, tab, etc.).
@@ -82,33 +83,34 @@ def get_parser():
     requires parsing an XML file for each event and extracting the magnitude
     values and associated source and type.
     '''
-    parser = argparse.ArgumentParser(description=desc,formatter_class=argparse.RawDescriptionHelpFormatter)
-    #positional arguments
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    # positional arguments
     parser.add_argument('filename',
-                        metavar='FILENAME',help='Output filename.')
-    #optional arguments
-    parser.add_argument('-b','--bounds', metavar=('lonmin','lonmax','latmin','latmax'),
+                        metavar='FILENAME', help='Output filename.')
+    # optional arguments
+    parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
-    parser.add_argument('-r','--radius', dest='radius', metavar=('lat','lon','rmax'),type=float,
-                        nargs=3,help='Search radius in KM (use instead of bounding box)')
-    parser.add_argument('-s','--start-time', dest='startTime', type=maketime,
+    parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
+                        nargs=3, help='Search radius in KM (use instead of bounding box)')
+    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
                         help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
-    parser.add_argument('-e','--end-time', dest='endTime', type=maketime,
+    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
                         help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
-    parser.add_argument('-t','--time-after', dest='after', type=maketime,
+    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
                         help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-m','--mag-range', metavar=('minmag','maxmag'),dest='magRange', type=float,nargs=2,
+    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
                         help='Min/max (authoritative) magnitude to restrict search.')
-    parser.add_argument('-c','--catalog', dest='catalog', 
+    parser.add_argument('-c', '--catalog', dest='catalog',
                         help='Source catalog from which products derive (atlas, centennial, etc.)')
-    parser.add_argument('-n','--contributor', dest='contributor', 
+    parser.add_argument('-n', '--contributor', dest='contributor',
                         help='Source contributor (who loaded product) (us, nc, etc.)')
-    
-    parser.add_argument('-o','--get-moment-components', dest='getComponents', choices=['none','preferred','all'],
+
+    parser.add_argument('-o', '--get-moment-components', dest='getComponents', choices=['none', 'preferred', 'all'],
                         default='none',
                         help='Extract preferred or all moment-tensor components (including type and derived hypocenter) where available.')
-    parser.add_argument('-a','--get-focal-angles', dest='getAngles', choices=['none','preferred','all'],
+    parser.add_argument('-a', '--get-focal-angles', dest='getAngles', choices=['none', 'preferred', 'all'],
                         default='none',
                         help='Extract preferred or all focal-mechanism angles (strike,dip,rake) where available.')
 
@@ -116,24 +118,25 @@ def get_parser():
 percent double couple) when available."""
     parser.add_argument('--get-moment-supplement', dest='getMomentSupplement', action='store_true',
                         help=supphelp)
-    
-    parser.add_argument('-g','--get-all-magnitudes', dest='getAllMags', action='store_true',
+
+    parser.add_argument('-g', '--get-all-magnitudes', dest='getAllMags', action='store_true',
                         help='Extract all magnitudes (with sources),authoritative listed first.')
-    parser.add_argument('-f','--format', dest='format', choices=['csv','tab','excel'], default='csv',
-                        metavar='FORMAT',help='Output format.')
+    parser.add_argument('-f', '--format', dest='format', choices=['csv', 'tab', 'excel'], default='csv',
+                        metavar='FORMAT', help='Output format.')
 
     prodhelp = '''Limit the search to only those events containing products of type PRODUCT. 
                   See the full list here: https://usgs.github.io/pdl/userguide/products/index.html
 '''
-    parser.add_argument('-p','--product-type',dest='limitByProductType', metavar='PRODUCT',
+    parser.add_argument('-p', '--product-type', dest='limitByProductType', metavar='PRODUCT',
                         help=prodhelp)
-    parser.add_argument('-x','--count', dest='getCount', action='store_true',
+    parser.add_argument('-x', '--count', dest='getCount', action='store_true',
                         help='Just return the number of events in search and maximum allowed.')
-    parser.add_argument('-v','--verbose', dest='verbose', action='store_true',
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                         help='Print progress')
-    parser.add_argument('-d','--debug', dest='debug', action='store_true',
+    parser.add_argument('-d', '--debug', dest='debug', action='store_true',
                         help='Check the USGS development server (only valid inside USGS network).')
     return parser
+
 
 def main(args):
     latitude = None
@@ -144,23 +147,21 @@ def main(args):
         latitude = args.radius[0]
         longitude = args.radius[1]
         radiuskm = args.radius[2]
-        
+
     if args.bounds:
-        lonmin,lonmax,latmin,latmax = args.bounds
-        #fix longitude bounds when crossing dateline
+        lonmin, lonmax, latmin, latmax = args.bounds
+        # fix longitude bounds when crossing dateline
         if lonmin > lonmax and lonmax >= -180:
             lonmin -= 360
     else:
-        lonmin,lonmax,latmin,latmax = None,None,None,None
+        lonmin, lonmax, latmin, latmax = None, None, None, None
 
-    
-        
     minmag = 0.0
     maxmag = 9.9
     if args.magRange:
-        minmag  = args.magRange[0]
-        maxmag  = args.magRange[1]
-    
+        minmag = args.magRange[0]
+        maxmag = args.magRange[1]
+
     if args.getCount:
         nevents = count(starttime=args.startTime,
                         endtime=args.endTime,
@@ -180,12 +181,11 @@ def main(args):
                         verbose=args.verbose)
         print('There are %i events matching input criteria.' % nevents)
         sys.exit(0)
-        
+
     if args.bounds and args.radius:
         print('Please specify either a bounding box OR radius search.')
         sys.exit(1)
 
-    
     events = search(starttime=args.startTime,
                     endtime=args.endTime,
                     updatedafter=args.after,
@@ -207,39 +207,41 @@ def main(args):
         print('No events found matching your search criteria. Exiting.')
         sys.exit(0)
 
-    
-    
     if args.getAngles != 'none' or args.getAllMags or args.getComponents != 'none':
         if args.verbose:
-            sys.stderr.write('Fetched %i events...creating table.\n' % (len(events)))
-        
-        df = get_detail_data_frame(events,get_all_magnitudes=args.getAllMags,
+            sys.stderr.write(
+                'Fetched %i events...creating table.\n' % (len(events)))
+
+        df = get_detail_data_frame(events, get_all_magnitudes=args.getAllMags,
                                    get_tensors=args.getComponents,
                                    get_focals=args.getAngles,
                                    get_moment_supplement=args.getMomentSupplement,
                                    verbose=args.verbose)
     else:
         if args.verbose:
-            sys.stderr.write('Fetched %i events...creating summary table.\n' % (len(events)))
+            sys.stderr.write(
+                'Fetched %i events...creating summary table.\n' % (len(events)))
         df = get_summary_data_frame(events)
 
-    #order the columns so that at least the initial parameters come the way we want them...
+    # order the columns so that at least the initial parameters come the way we want them...
     first_columns = list(events[0].toDict().keys())
     col_list = list(df.columns)
     for column in first_columns:
         col_list.remove(column)
-    df = df[first_columns+col_list]
+    df = df[first_columns + col_list]
 
     if args.verbose:
-        sys.stderr.write('Created table...saving %i records to %s.\n' % (len(df),args.filename))
+        sys.stderr.write('Created table...saving %i records to %s.\n' %
+                         (len(df), args.filename))
     if args.format == 'csv':
-        df.to_csv(args.filename,index=False,chunksize=1000)
+        df.to_csv(args.filename, index=False, chunksize=1000)
     elif args.format == 'tab':
-        df.to_csv(args.filename,sep='\t',index=False)
+        df.to_csv(args.filename, sep='\t', index=False)
     else:
-        df.to_excel(args.filename,index=False)
-    print('%i records saved to %s.' % (len(df),args.filename))
+        df.to_excel(args.filename, index=False)
+    print('%i records saved to %s.' % (len(df), args.filename))
     sys.exit(0)
+
 
 if __name__ == '__main__':
     parser = get_parser()
