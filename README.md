@@ -42,7 +42,7 @@ application to house libcomcat.
 To create a conda virtual environment called "libcomcat" with
 most of the necessary dependencies installed, do this:
 
- - `conda create -n comcat --channel conda-forge python=3.5 dateutil numpy openpyxl pandas xlrd xlsxwriter xlwt`
+ - `conda create -n comcat --channel conda-forge python=3.5 obspy numpy openpyxl pandas xlrd xlsxwriter xlwt`
  - `source activate comcat`
  - `pip install git+git://github.com/usgs/earthquake-impact-utils.git`
  - `pip install git+git://github.com/usgs/libcomcat.git`
