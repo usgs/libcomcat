@@ -17,10 +17,14 @@ line programs that use those:
 
 # Installation and Dependencies
 
+## Mac and Linux Users
+
 We recommend using either the Anaconda (https://docs.anaconda.com/anaconda/) or
 Miniconda (https://conda.io/miniconda.html) Python distributions.  These both use the
 conda packaging tool, which makes installation of dependencies much simpler. To install
 either of those packages, see the instructions on the web pages for each.
+
+### Installing
 
 libcomcat has been tested most often with Python 3.5, but *should*
 work with other Python 3.x versions. It will *not* work with Python
@@ -43,7 +47,51 @@ most of the necessary dependencies installed, do this:
  - `pip install git+git://github.com/usgs/earthquake-impact-utils.git`
  - `pip install git+git://github.com/usgs/libcomcat.git`
 
-# Uninstalling and Updating
+### Uninstalling and Updating
+
+To uninstall:
+
+`pip uninstall libcomcat`
+
+To update:
+
+`pip install -U git+git://github.com/usgs/libcomcat.git`
+
+## Windows Users
+
+We recommend using Anaconda (https://docs.anaconda.com/anaconda/)
+Python distribution. In addition to a command line interface (Anaconda
+prompt), this software provides other useful tools (Jupyter notebooks,
+the Spyder code editor, etc.) The *Anaconda Navigator*
+(https://docs.anaconda.com/anaconda/navigator/) provides a very nice
+interface to some of these tools.
+
+### Installing
+
+To install libcomcat in your root environment, open up the *Anaconda
+Prompt* and type the following commands:
+
+ - `conda config --add channels conda-forge`
+ - `conda install obspy`
+ - `pip install https://github.com/usgs/libcomcat/archive/master.zip`
+ - `pip install https://github.com/usgs/earthquake-impact-utils/archive/master.zip`
+
+To run (for example) the command line program *getcsv*, which is
+described in the documentation, do the following:
+
+ `where getcsv`
+
+This will print out the full path to the getcsv program in your root environment, something like "C:\Users\username\AppData\Anaconda3\getcsv".  Copy this path using Ctrl-C and paste it into another command:
+
+`python C:\Users\username\AppData\Anaconda3\getcsv --help`
+
+to see the help for the *getcsv* command.  The author is not a Windows
+user, and recognizes that this seems like an unwieldy way to run a
+script.  Anyone who regularly does Python scripting in a Windows
+environment who has advice to make this usage more like Linux or Mac
+(i.e., `getcsv --help`), please submit an issue in this repository.
+
+### Uninstalling and Updating
 
 To uninstall:
 
@@ -63,8 +111,8 @@ Sample API usage can be found in the notebook:
 
 https://github.com/usgs/libcomcat/blob/master/notebooks/libcomcat_examples.ipynb
 
-For consumers of phase data:
----------------------------
+
+# Phase Data:
 
 If you work in Python, you can use the read_phases() function that comes with libcomcat.
 
