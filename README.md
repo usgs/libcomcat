@@ -13,6 +13,7 @@ line programs that use those:
  * `getcsv` Generate csv or Excel files with basic earthquake information.
  * `getphases` Generate csv or Excel files with phase information.
  * `findid` Find the ID of an event closest to input time/lat/lon parameters.
+ * `getmags` Download all available magnitudes from all sources.
 
 
 # Installation and Dependencies

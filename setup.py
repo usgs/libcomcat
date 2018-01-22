@@ -10,5 +10,6 @@ setup(name='libcomcat',
       scripts = ['bin/getproduct',
                  'bin/getcsv',
                  'bin/findid',
+                 'bin/getmags',
                  'bin/getphases'],
 )

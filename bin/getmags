@@ -1,0 +1,235 @@
+#!/usr/bin/env python
+import argparse
+import sys
+
+from libcomcat.search import search, count
+from libcomcat.utils import get_detail_data_frame, get_summary_data_frame, maketime
+from impactutils.time.ancient_time import HistoricTime
+from obspy.clients.fdsn import Client
+import pandas as pd
+
+def get_mag_src(mag):
+    """Try to find the best magnitude source from a Magnitude object.
+
+    Note: This can be difficult, as there is a great deal of variance
+    in how magnitude information is submitted in QuakeML within ComCat.
+    
+    Args:
+        mag (obspy Magnitude): Magnitude object from obspy.
+    Returns:
+        str: String indicating the most likely source of the magnitude solution.
+
+    """
+    if mag.creation_info is not None and mag.creation_info.agency_id is not None:
+        magsrc = mag.creation_info.agency_id.lower()
+    else:
+        has_gcmt = mag.resource_id.id.lower().find('gcmt') > -1
+        has_at = mag.resource_id.id.lower().find('at') > -1
+        has_pt = mag.resource_id.id.lower().find('pt') > -1
+        has_ak = (mag.resource_id.id.lower().find('ak') > -1 or
+                  mag.resource_id.id.lower().find('alaska') > -1)
+        has_pr = mag.resource_id.id.lower().find('pr') > -1
+        has_dup = mag.resource_id.id.lower().find('duputel') > -1
+        has_us = mag.resource_id.id.lower().find('us') > -1
+        if has_gcmt:
+            magsrc = 'gcmt'
+        elif has_dup:
+            magsrc = 'duputel'
+        elif has_at:
+            magsrc = 'at'
+        elif has_pt:
+            magsrc = 'pt'
+        elif has_ak:
+            magsrc = 'ak'
+        elif has_pr:
+            magsrc = 'pr'
+        elif has_us:
+            magsrc = 'us'
+        else:
+            magsrc = 'unknown'
+
+    return magsrc
+
+def get_parser():
+    desc = '''Download epicenter and all contributed magnitudes in line format (csv, tab, etc.).
+
+    %(prog)s nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv
+
+    To download events with fractional days, use the ISO 8601 combined date
+    time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s): %(prog)s -s
+    2015-01-01T00:00:00 -e 2015-01-01T01:15:00
+
+    NOTES: 
+
+    Any start or end time where only date is specified (YYYY-mm-dd) will
+    be translated to the beginning of that day.  Thus, a start time of
+    "2015-01-01" becomes "2015-01-01T:00:00:00" and an end time of "2015-01-02"
+    becomes ""2015-01-02T:00:00:00".
+    
+    Events which do not have a value for a given magnitude will be empty.
+
+    Note that when specifying a search box that crosses the -180/180 meridian,
+    you simply specify longitudes as you would if you were not crossing that
+    meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
+    discrepancy.
+   
+    The ComCat API has a returned event limit of 20,000.  Queries
+    that exceed this ComCat limit ARE supported by this software,
+    by breaking up one large request into a number of smaller
+    ones.  However, large queries can take a very long time to
+    download. This delay is caused by the fact that when this
+    program has to retrieve ALL magnitudes for an event, it must
+    open a URL for EACH event and parse potentially multiple XML
+    files.
+
+    '''
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+    # positional arguments
+    parser.add_argument('filename',
+                        metavar='FILENAME', help='Output filename.')
+    # optional arguments
+    parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
+                        dest='bounds', type=float, nargs=4,
+                        help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
+    parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
+                        nargs=3, help='Search radius in KM (use instead of bounding box)')
+    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
+                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
+                        help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
+                        help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
+    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
+                        help='Min/max (authoritative) magnitude to restrict search.')
+    parser.add_argument('-x', '--count', dest='getCount', action='store_true',
+                        help='Just return the number of events in search and maximum allowed.')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
+                        help='Print progress')
+    parser.add_argument('-f', '--format', dest='format', choices=['csv', 'tab', 'excel'], default='csv',
+                        metavar='FORMAT', help='Output format.')
+    return parser
+
+
+def main(args):
+    latitude = None
+    longitude = None
+    radiuskm = None
+    lonmin = latmin = lonmax = latmax = None
+    if args.radius:
+        latitude = args.radius[0]
+        longitude = args.radius[1]
+        radiuskm = args.radius[2]
+
+    if args.bounds:
+        lonmin, lonmax, latmin, latmax = args.bounds
+        # fix longitude bounds when crossing dateline
+        if lonmin > lonmax and lonmax >= -180:
+            lonmin -= 360
+    else:
+        lonmin, lonmax, latmin, latmax = None, None, None, None
+
+    minmag = 0.0
+    maxmag = 9.9
+    if args.magRange:
+        minmag = args.magRange[0]
+        maxmag = args.magRange[1]
+
+    if args.getCount:
+        nevents = count(starttime=args.startTime,
+                        endtime=args.endTime,
+                        updatedafter=args.after,
+                        minlatitude=latmin,
+                        maxlatitude=latmax,
+                        minlongitude=lonmin,
+                        maxlongitude=lonmax,
+                        latitude=latitude,
+                        longitude=longitude,
+                        maxradiuskm=radiuskm,
+                        maxmagnitude=maxmag,
+                        minmagnitude=minmag,
+                        verbose=args.verbose)
+        print('There are %i events matching input criteria.' % nevents)
+        sys.exit(0)
+
+    if args.bounds and args.radius:
+        print('Please specify either a bounding box OR radius search.')
+        sys.exit(1)
+
+    events = search(starttime=args.startTime,
+                    endtime=args.endTime,
+                    updatedafter=args.after,
+                    minlatitude=latmin,
+                    maxlatitude=latmax,
+                    minlongitude=lonmin,
+                    maxlongitude=lonmax,
+                    latitude=latitude,
+                    longitude=longitude,
+                    maxradiuskm=radiuskm,
+                    maxmagnitude=maxmag,
+                    minmagnitude=minmag,
+                    verbose=args.verbose)
+
+    if not len(events):
+        print('No events found matching your search criteria. Exiting.')
+        sys.exit(0)
+
+    # create a dataframe with these columns - we'll add more later
+    df = pd.DataFrame(columns=['id','time','lat','lon','depth',
+                               'location','url','hypo_src'])
+    client = Client('USGS')
+    ievent = 1
+    
+    for event in events:
+        id_list = event['ids'].split(',')[1:-1]
+        source = event.id.replace(event['code'],'')
+        row = pd.Series(data={'id':event.id,
+                              'time':event.time,
+                              'lat':event.latitude,
+                              'lon':event.longitude,
+                              'depth':event.depth,
+                              'location':event.location,
+                              'url':event.url,
+                              'hypo_src':source})
+
+        imag = 1
+
+        if args.verbose:
+            tpl = (event.id,ievent,len(events),len(id_list))
+            print('Parsing event %s (%i of %i) - %i origins' % tpl)
+        ievent += 1
+
+        for eid in id_list:
+            try:
+                obsevent = client.get_events(eventid=eid).events[0]
+            except Exception as e:
+                print('Failed to download data for event %s.  Skipping.' % eid)
+                continue
+            for mag in obsevent.magnitudes:
+                magvalue = mag.mag
+                magtype = mag.magnitude_type
+                magsrc = get_mag_src(mag)
+                if magsrc == 'unknown' and args.verbose:
+                    print('Unable to determine magnitude source from %s' % eid)
+                colname = '%s-%s' % (magsrc,magtype)
+                if colname in row:
+                    # print('Duplicate column %s for event %s - skipping' % (colname,event.id))
+                    continue
+                row[colname] = magvalue
+                imag += 1
+        df = df.append(row,ignore_index=True)
+            
+        
+    if args.format == 'excel':
+        df.to_excel(args.filename)
+    else:
+        df.to_csv(args.filename)
+    print('%i records saved to %s.' % (len(df), args.filename))
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    parser = get_parser()
+    pargs = parser.parse_args()
+
+    main(pargs)
