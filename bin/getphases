@@ -172,7 +172,7 @@ def save_dataframe(df, directory, event, file_format, catalog=None):
     edict = event.toDict(catalog=catalog)
     if file_format == 'excel':
         ext = 'xlsx'
-        filename = os.path.join(directory, '%s_phases.%s' % (event.id, ext))
+        filename = os.path.join(directory, '%s_phases.%s' % (edict['id'], ext))
         writer = pd.ExcelWriter(
             filename, engine='xlsxwriter', datetime_format='yyyy-mm-dd hh:mm:ss.000')
         df.to_excel(writer, index=False, startrow=len(
@@ -194,6 +194,12 @@ def save_dataframe(df, directory, event, file_format, catalog=None):
             #ws[validx] = value
             ws.write(keyidx, key)
             if key == 'time':
+                if value.tzinfo is not None:
+                    # Excel doesn't support timezone information
+                    # so this should strip that off
+                    value = datetime(value.year,value.month,value.day,
+                                     value.hour,value.minute,value.second,
+                                     value.microsecond)
                 ws.write_datetime(validx, value, date_format)
             else:
                 ws.write(validx, value)
@@ -201,7 +207,7 @@ def save_dataframe(df, directory, event, file_format, catalog=None):
         workbook.close()
     else:
         ext = 'csv'
-        filename = os.path.join(directory, '%s_phases.%s' % (event.id, ext))
+        filename = os.path.join(directory, '%s_phases.%s' % (edict['id'], ext))
         f = open(filename, 'wt')
         typedict = {'latitude': '%.4f',
                     'longitude': '%.4f',
