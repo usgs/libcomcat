@@ -48,7 +48,7 @@ function [event,table] = read_phases(filename)
 %    - Residual Arrival time residual.
 %    - Weight Arrival weight.
 
-    opts = detectImportOptions(filename);
+    opts = detectImportOptions(filename,'CommentStyle','#');
     opts.CommentStyle = {'#'};
     table = readtable(filename,opts);
     fid = fopen(filename,'r');
