@@ -4,7 +4,7 @@ getproduct
 ==========
 
 .. argparse::
-   :filename: getproduct
+   :filename: bin/getproduct
    :func: get_parser
    :prog: getproduct
 

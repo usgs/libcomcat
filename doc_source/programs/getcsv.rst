@@ -4,7 +4,7 @@ getcsv
 ===========
 
 .. argparse::
-   :filename: ./getcsv
+   :filename: bin/getcsv
    :func: get_parser
    :prog: getcsv
 

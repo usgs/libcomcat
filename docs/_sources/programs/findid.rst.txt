@@ -4,7 +4,7 @@ findid
 ==========
 
 .. argparse::
-   :filename: findid
+   :filename: bin/findid
    :func: get_parser
    :prog: findid
 
