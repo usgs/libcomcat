@@ -4,7 +4,7 @@ getphases
 ==========
 
 .. argparse::
-   :filename: getphases
+   :filename: bin/getphases
    :func: get_parser
    :prog: getphases
 

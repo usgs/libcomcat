@@ -69,32 +69,33 @@
           <div class="body" role="main">
             
   <h1>Source code for libcomcat.search</h1><div class="highlight"><pre>
-<span></span><span class="c1">#stdlib imports</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span><span class="n">timedelta</span>
+<span></span><span class="c1"># stdlib imports</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">urllib</span> <span class="k">import</span> <span class="n">request</span>
 <span class="kn">from</span> <span class="nn">urllib.error</span> <span class="k">import</span> <span class="n">HTTPError</span>
-<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urlparse</span><span class="p">,</span><span class="n">urlencode</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">urlencode</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">calendar</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
-<span class="c1">#third party imports</span>
+<span class="c1"># third party imports</span>
 <span class="kn">from</span> <span class="nn">impactutils.time.ancient_time</span> <span class="k">import</span> <span class="n">HistoricTime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="c1">#local imports</span>
-<span class="kn">from</span> <span class="nn">libcomcat.classes</span> <span class="k">import</span> <span class="n">SummaryEvent</span><span class="p">,</span><span class="n">DetailEvent</span>
+<span class="c1"># local imports</span>
+<span class="kn">from</span> <span class="nn">libcomcat.classes</span> <span class="k">import</span> <span class="n">SummaryEvent</span><span class="p">,</span> <span class="n">DetailEvent</span>
 
-<span class="c1">#constants</span>
-<span class="c1">#url template for counting events</span>
+<span class="c1"># constants</span>
+<span class="c1"># url template for counting events</span>
 <span class="n">CATALOG_COUNT_TEMPLATE</span> <span class="o">=</span> <span class="s1">&#39;https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&#39;</span>
 <span class="n">SEARCH_TEMPLATE</span> <span class="o">=</span> <span class="s1">&#39;https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&#39;</span>
-<span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span> <span class="c1">#how long do we wait for a url to return?</span>
+<span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span>  <span class="c1"># how long do we wait for a url to return?</span>
 <span class="n">TIMEFMT</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S&#39;</span>
-<span class="n">WEEKSECS</span> <span class="o">=</span> <span class="mi">86400</span><span class="o">*</span><span class="mi">7</span> <span class="c1">#number of seconds in a week</span>
-<span class="n">WAITSECS</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1">#number of seconds to wait after failing download before trying again</span>
-<span class="n">SEARCH_LIMIT</span> <span class="o">=</span> <span class="mi">20000</span> <span class="c1">#maximum number of events ComCat will return in one search</span>
+<span class="n">WEEKSECS</span> <span class="o">=</span> <span class="mi">86400</span> <span class="o">*</span> <span class="mi">7</span>  <span class="c1"># number of seconds in a week</span>
+<span class="n">WAITSECS</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># number of seconds to wait after failing download before trying again</span>
+<span class="n">SEARCH_LIMIT</span> <span class="o">=</span> <span class="mi">20000</span>  <span class="c1"># maximum number of events ComCat will return in one search</span>
+
 
 <div class="viewcode-block" id="count"><a class="viewcode-back" href="../../apidoc/libcomcat.search.html#libcomcat.search.count">[docs]</a><span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
           <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -133,7 +134,7 @@
     <span class="sd">&quot;&quot;&quot;Ask the ComCat database for the number of events matching input criteria.</span>
 
 <span class="sd">    This count function is a wrapper around the ComCat Web API described here:</span>
-<span class="sd">    </span>
+
 <span class="sd">    https://earthquake.usgs.gov/fdsnws/event/1/ (see count section)</span>
 
 <span class="sd">    Some of the search parameters described there are NOT implemented here, usually because they do not </span>
@@ -143,7 +144,7 @@
 
 <span class="sd">    Usage:</span>
 <span class="sd">      TODO</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param starttime:</span>
 <span class="sd">      Python datetime - Limit to events on or after the specified start time. </span>
 <span class="sd">    :param endtime:</span>
@@ -235,10 +236,10 @@
 <span class="sd">    :returns:</span>
 <span class="sd">      List of SummaryEvent() objects.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1">#getting the inputargs must be the first line of the method!</span>
+    <span class="c1"># getting the inputargs must be the first line of the method!</span>
     <span class="n">inputargs</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">newargs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">inputargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">inputargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">newargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;true&#39;</span>
             <span class="k">continue</span>
@@ -251,29 +252,31 @@
     <span class="k">if</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;limit&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">20000</span><span class="p">:</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;limit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20000</span>
     <span class="n">nevents</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">segments</span> <span class="o">=</span> <span class="n">_get_time_segments</span><span class="p">(</span><span class="n">starttime</span><span class="p">,</span><span class="n">endtime</span><span class="p">,</span><span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;minmagnitude&#39;</span><span class="p">])</span>
+    <span class="n">segments</span> <span class="o">=</span> <span class="n">_get_time_segments</span><span class="p">(</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">,</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;minmagnitude&#39;</span><span class="p">])</span>
     <span class="n">iseg</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="c1">#remove the verbose element from the arguments</span>
+    <span class="c1"># remove the verbose element from the arguments</span>
     <span class="k">del</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">]</span>
-    
-    <span class="k">for</span> <span class="n">stime</span><span class="p">,</span><span class="n">etime</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+
+    <span class="k">for</span> <span class="n">stime</span><span class="p">,</span> <span class="n">etime</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stime</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">etime</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Searching time segment </span><span class="si">%i</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iseg</span><span class="p">,</span><span class="n">stime</span><span class="p">,</span><span class="n">etime</span><span class="p">))</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s1">&#39;Searching time segment </span><span class="si">%i</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iseg</span><span class="p">,</span> <span class="n">stime</span><span class="p">,</span> <span class="n">etime</span><span class="p">))</span>
         <span class="n">iseg</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">nevents</span> <span class="o">+=</span> <span class="n">_count</span><span class="p">(</span><span class="o">**</span><span class="n">newargs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">nevents</span></div>
 
-<div class="viewcode-block" id="get_event_by_id"><a class="viewcode-back" href="../../apidoc/libcomcat.search.html#libcomcat.search.get_event_by_id">[docs]</a><span class="k">def</span> <span class="nf">get_event_by_id</span><span class="p">(</span><span class="n">eventid</span><span class="p">,</span><span class="n">catalog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+<div class="viewcode-block" id="get_event_by_id"><a class="viewcode-back" href="../../apidoc/libcomcat.search.html#libcomcat.search.get_event_by_id">[docs]</a><span class="k">def</span> <span class="nf">get_event_by_id</span><span class="p">(</span><span class="n">eventid</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">includedeleted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">includesuperseded</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Search the ComCat database for an event matching the input event id.</span>
 
 <span class="sd">    This search function is a wrapper around the ComCat Web API described here:</span>
-<span class="sd">    </span>
+
 <span class="sd">    https://earthquake.usgs.gov/fdsnws/event/1/</span>
 
 <span class="sd">    Some of the search parameters described there are NOT implemented here, usually because they do not </span>
@@ -283,7 +286,7 @@
 
 <span class="sd">    Usage:</span>
 <span class="sd">      TODO</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param eventid:</span>
 <span class="sd">      Select a specific event by ID; event identifiers are data center specific.</span>
 <span class="sd">    :param includesuperseded:</span>
@@ -294,10 +297,10 @@
 <span class="sd">    :returns:</span>
 <span class="sd">      DetailEvent object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1">#getting the inputargs must be the first line of the method!</span>
+    <span class="c1"># getting the inputargs must be the first line of the method!</span>
     <span class="n">inputargs</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">newargs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">inputargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">inputargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">newargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;true&#39;</span>
             <span class="k">continue</span>
@@ -307,10 +310,11 @@
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="n">newargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-        
-    <span class="n">event</span> <span class="o">=</span> <span class="n">_search</span><span class="p">(</span><span class="o">**</span><span class="n">newargs</span><span class="p">)</span> <span class="c1">#this should be a DetailEvent</span>
+
+    <span class="n">event</span> <span class="o">=</span> <span class="n">_search</span><span class="p">(</span><span class="o">**</span><span class="n">newargs</span><span class="p">)</span>  <span class="c1"># this should be a DetailEvent</span>
     <span class="k">return</span> <span class="n">event</span></div>
-    
+
+
 <div class="viewcode-block" id="search"><a class="viewcode-back" href="../../apidoc/libcomcat.search.html#libcomcat.search.search">[docs]</a><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">endtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">updatedafter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -348,7 +352,7 @@
     <span class="sd">&quot;&quot;&quot;Search the ComCat database for events matching input criteria.</span>
 
 <span class="sd">    This search function is a wrapper around the ComCat Web API described here:</span>
-<span class="sd">    </span>
+
 <span class="sd">    https://earthquake.usgs.gov/fdsnws/event/1/</span>
 
 <span class="sd">    Some of the search parameters described there are NOT implemented here, usually because they do not </span>
@@ -358,7 +362,7 @@
 
 <span class="sd">    Usage:</span>
 <span class="sd">      TODO</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param starttime:</span>
 <span class="sd">      Python datetime - Limit to events on or after the specified start time. </span>
 <span class="sd">    :param endtime:</span>
@@ -450,10 +454,10 @@
 <span class="sd">    :returns:</span>
 <span class="sd">      List of SummaryEvent() objects.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1">#getting the inputargs must be the first line of the method!</span>
+    <span class="c1"># getting the inputargs must be the first line of the method!</span>
     <span class="n">inputargs</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">newargs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">inputargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">inputargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">newargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;true&#39;</span>
             <span class="k">continue</span>
@@ -466,53 +470,56 @@
     <span class="k">if</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;limit&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">20000</span><span class="p">:</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;limit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20000</span>
 
-    <span class="c1">#remove the verbose element from the arguments</span>
+    <span class="c1"># remove the verbose element from the arguments</span>
     <span class="k">del</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">]</span>
-    
-    <span class="n">segments</span> <span class="o">=</span> <span class="n">_get_time_segments</span><span class="p">(</span><span class="n">starttime</span><span class="p">,</span><span class="n">endtime</span><span class="p">,</span><span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;minmagnitude&#39;</span><span class="p">])</span>
+
+    <span class="n">segments</span> <span class="o">=</span> <span class="n">_get_time_segments</span><span class="p">(</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">,</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;minmagnitude&#39;</span><span class="p">])</span>
     <span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">iseg</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">stime</span><span class="p">,</span><span class="n">etime</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">stime</span><span class="p">,</span> <span class="n">etime</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stime</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">etime</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Searching time segment </span><span class="si">%i</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iseg</span><span class="p">,</span><span class="n">stime</span><span class="p">,</span><span class="n">etime</span><span class="p">))</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s1">&#39;Searching time segment </span><span class="si">%i</span><span class="s1">: </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iseg</span><span class="p">,</span> <span class="n">stime</span><span class="p">,</span> <span class="n">etime</span><span class="p">))</span>
         <span class="n">iseg</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">events</span> <span class="o">+=</span> <span class="n">_search</span><span class="p">(</span><span class="o">**</span><span class="n">newargs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">events</span></div>
 
-<span class="k">def</span> <span class="nf">_get_time_segments</span><span class="p">(</span><span class="n">starttime</span><span class="p">,</span><span class="n">endtime</span><span class="p">,</span><span class="n">minmag</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">_get_time_segments</span><span class="p">(</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">,</span> <span class="n">minmag</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">starttime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">starttime</span> <span class="o">=</span> <span class="n">HistoricTime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">endtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">endtime</span> <span class="o">=</span> <span class="n">HistoricTime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
-    <span class="c1">#earthquake frequency table: minmag:earthquakes per day</span>
-    <span class="n">freq_table</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="mi">3000</span><span class="o">/</span><span class="mi">7</span><span class="p">,</span>
-                  <span class="mi">1</span><span class="p">:</span><span class="mi">3500</span><span class="o">/</span><span class="mi">14</span><span class="p">,</span>
-                  <span class="mi">2</span><span class="p">:</span><span class="mi">3000</span><span class="o">/</span><span class="mi">18</span><span class="p">,</span>
-                  <span class="mi">3</span><span class="p">:</span><span class="mi">4000</span><span class="o">/</span><span class="mi">59</span><span class="p">,</span>
-                  <span class="mi">4</span><span class="p">:</span><span class="mi">9000</span><span class="o">/</span><span class="mi">151</span><span class="p">,</span>
-                  <span class="mi">5</span><span class="p">:</span><span class="mi">3000</span><span class="o">/</span><span class="mi">365</span><span class="p">,</span>
-                  <span class="mi">6</span><span class="p">:</span><span class="mi">210</span><span class="o">/</span><span class="mi">365</span><span class="p">,</span>
-                  <span class="mi">7</span><span class="p">:</span><span class="mi">20</span><span class="o">/</span><span class="mi">365</span><span class="p">,</span>
-                  <span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="o">/</span><span class="mi">365</span><span class="p">,</span>
-                  <span class="mi">9</span><span class="p">:</span><span class="mf">0.05</span><span class="o">/</span><span class="mi">365</span><span class="p">}</span>
-    
+    <span class="c1"># earthquake frequency table: minmag:earthquakes per day</span>
+    <span class="n">freq_table</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">3000</span> <span class="o">/</span> <span class="mi">7</span><span class="p">,</span>
+                  <span class="mi">1</span><span class="p">:</span> <span class="mi">3500</span> <span class="o">/</span> <span class="mi">14</span><span class="p">,</span>
+                  <span class="mi">2</span><span class="p">:</span> <span class="mi">3000</span> <span class="o">/</span> <span class="mi">18</span><span class="p">,</span>
+                  <span class="mi">3</span><span class="p">:</span> <span class="mi">4000</span> <span class="o">/</span> <span class="mi">59</span><span class="p">,</span>
+                  <span class="mi">4</span><span class="p">:</span> <span class="mi">9000</span> <span class="o">/</span> <span class="mi">151</span><span class="p">,</span>
+                  <span class="mi">5</span><span class="p">:</span> <span class="mi">3000</span> <span class="o">/</span> <span class="mi">365</span><span class="p">,</span>
+                  <span class="mi">6</span><span class="p">:</span> <span class="mi">210</span> <span class="o">/</span> <span class="mi">365</span><span class="p">,</span>
+                  <span class="mi">7</span><span class="p">:</span> <span class="mi">20</span> <span class="o">/</span> <span class="mi">365</span><span class="p">,</span>
+                  <span class="mi">8</span><span class="p">:</span> <span class="mi">5</span> <span class="o">/</span> <span class="mi">365</span><span class="p">,</span>
+                  <span class="mi">9</span><span class="p">:</span> <span class="mf">0.05</span> <span class="o">/</span> <span class="mi">365</span><span class="p">}</span>
+
     <span class="n">floormag</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">minmag</span><span class="p">))</span>
-    <span class="n">ndays</span> <span class="o">=</span> <span class="p">(</span><span class="n">endtime</span><span class="o">-</span><span class="n">starttime</span><span class="p">)</span><span class="o">.</span><span class="n">days</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">ndays</span> <span class="o">=</span> <span class="p">(</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">starttime</span><span class="p">)</span><span class="o">.</span><span class="n">days</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">freq</span> <span class="o">=</span> <span class="n">freq_table</span><span class="p">[</span><span class="n">floormag</span><span class="p">]</span>
-    <span class="n">nsegments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">freq</span> <span class="o">*</span> <span class="n">ndays</span><span class="p">)</span><span class="o">/</span><span class="n">SEARCH_LIMIT</span><span class="p">))</span>
-    <span class="n">days_per_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">ndays</span><span class="o">/</span><span class="n">nsegments</span><span class="p">))</span>
+    <span class="n">nsegments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">freq</span> <span class="o">*</span> <span class="n">ndays</span><span class="p">)</span> <span class="o">/</span> <span class="n">SEARCH_LIMIT</span><span class="p">))</span>
+    <span class="n">days_per_segment</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">ndays</span> <span class="o">/</span> <span class="n">nsegments</span><span class="p">))</span>
     <span class="n">segments</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">startseg</span> <span class="o">=</span> <span class="n">starttime</span>
     <span class="n">endseg</span> <span class="o">=</span> <span class="n">starttime</span>
     <span class="k">while</span> <span class="n">startseg</span> <span class="o">&lt;=</span> <span class="n">endtime</span><span class="p">:</span>
-        <span class="n">endseg</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">endtime</span><span class="p">,</span><span class="n">startseg</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days_per_segment</span><span class="p">))</span>
-        <span class="n">segments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">startseg</span><span class="p">,</span><span class="n">endseg</span><span class="p">))</span>
-        <span class="n">startseg</span> <span class="o">+=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">days_per_segment</span><span class="p">,</span><span class="n">microseconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">endseg</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">endtime</span><span class="p">,</span> <span class="n">startseg</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days_per_segment</span><span class="p">))</span>
+        <span class="n">segments</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">startseg</span><span class="p">,</span> <span class="n">endseg</span><span class="p">))</span>
+        <span class="n">startseg</span> <span class="o">+=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">days_per_segment</span><span class="p">,</span> <span class="n">microseconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">segments</span>
-        
+
+
 <span class="k">def</span> <span class="nf">_search</span><span class="p">(</span><span class="o">**</span><span class="n">newargs</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">&#39;starttime&#39;</span> <span class="ow">in</span> <span class="n">newargs</span><span class="p">:</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">TIMEFMT</span><span class="p">)</span>
@@ -520,16 +527,16 @@
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">TIMEFMT</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;updatedafter&#39;</span> <span class="ow">in</span> <span class="n">newargs</span><span class="p">:</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;updatedafter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;updatedafter&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">TIMEFMT</span><span class="p">)</span>
-        
+
     <span class="n">paramstr</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">newargs</span><span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="n">SEARCH_TEMPLATE</span><span class="o">+</span><span class="s1">&#39;&amp;&#39;</span><span class="o">+</span><span class="n">paramstr</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">SEARCH_TEMPLATE</span> <span class="o">+</span> <span class="s1">&#39;&amp;&#39;</span> <span class="o">+</span> <span class="n">paramstr</span>
     <span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c1">#handle the case when they&#39;re asking for an event id</span>
+    <span class="c1"># handle the case when they&#39;re asking for an event id</span>
     <span class="k">if</span> <span class="s1">&#39;eventid&#39;</span> <span class="ow">in</span> <span class="n">newargs</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DetailEvent</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    
+
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">jdict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -540,7 +547,7 @@
         <span class="k">if</span> <span class="n">htpe</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">503</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAITSECS</span><span class="p">)</span>
-                <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
                 <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="n">jdict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -548,11 +555,14 @@
                 <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">jdict</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">]:</span>
                     <span class="n">events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SummaryEvent</span><span class="p">(</span><span class="n">feature</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">msg</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">msg</span><span class="p">))</span>
-            
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
     <span class="k">return</span> <span class="n">events</span>
+
 
 <span class="k">def</span> <span class="nf">_count</span><span class="p">(</span><span class="o">**</span><span class="n">newargs</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">&#39;starttime&#39;</span> <span class="ow">in</span> <span class="n">newargs</span><span class="p">:</span>
@@ -561,12 +571,12 @@
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;endtime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">TIMEFMT</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;updatedafter&#39;</span> <span class="ow">in</span> <span class="n">newargs</span><span class="p">:</span>
         <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;updatedafter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newargs</span><span class="p">[</span><span class="s1">&#39;updatedafter&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">TIMEFMT</span><span class="p">)</span>
-        
+
     <span class="n">paramstr</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">newargs</span><span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="n">CATALOG_COUNT_TEMPLATE</span><span class="o">+</span><span class="s1">&#39;&amp;&#39;</span><span class="o">+</span><span class="n">paramstr</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">CATALOG_COUNT_TEMPLATE</span> <span class="o">+</span> <span class="s1">&#39;&amp;&#39;</span> <span class="o">+</span> <span class="n">paramstr</span>
     <span class="n">nevents</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
         <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">jdict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -575,16 +585,18 @@
         <span class="k">if</span> <span class="n">htpe</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">503</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAITSECS</span><span class="p">)</span>
-                <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
                 <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="n">jdict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                 <span class="n">nevents</span> <span class="o">=</span> <span class="n">jdict</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">msg</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">msg</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">msg</span><span class="p">))</span>
-            
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s1">&#39;Error downloading data from url </span><span class="si">%s</span><span class="s1">.  &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
     <span class="k">return</span> <span class="n">nevents</span>
 </pre></div>
 

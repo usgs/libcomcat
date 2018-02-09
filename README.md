@@ -18,7 +18,7 @@ line programs that use those:
 
 # Installation and Dependencies
 
-## Mac and Linux Users
+## Mac, Windows, and Linux Users
 
 We recommend using either the Anaconda (https://docs.anaconda.com/anaconda/) or
 Miniconda (https://conda.io/miniconda.html) Python distributions.  These both use the
@@ -29,53 +29,27 @@ either of those packages, see the instructions on the web pages for each.
 
 libcomcat has been tested most often with Python 3.5, but *should*
 work with other Python 3.x versions. It will *not* work with Python
-2.7!  For Anaconda (3.x) users, try the following:
+2.7!  Fortunately, it is easy to install a 3.X version of Python within Anaconda:
+
+`conda create -n comcat --channel conda-forge python=3.5`
+
+Then, in your Python 3.X environment do the following:
 
 - `conda config --add channels conda-forge`
-- `conda install obspy`
-- `pip install git+git://github.com/usgs/earthquake-impact-utils.git`
-- `pip install git+git://github.com/usgs/libcomcat.git`
-
-If you have Anaconda installed but your default environment is Python
-2.7, you can create a new 3.x environment within the Anaconda
-application to house libcomcat.
-
-To create a conda virtual environment called "libcomcat" with
-most of the necessary dependencies installed, do this:
-
- - `conda create -n comcat --channel conda-forge python=3.5 obspy numpy openpyxl pandas xlrd xlsxwriter xlwt`
- - `source activate comcat`
- - `pip install git+git://github.com/usgs/earthquake-impact-utils.git`
- - `pip install git+git://github.com/usgs/libcomcat.git`
+- `conda install libcomcat`
 
 ### Uninstalling and Updating
 
 To uninstall:
 
-`pip uninstall libcomcat`
+`conda remove libcomcat`
 
 To update:
 
-`pip install -U git+git://github.com/usgs/libcomcat.git`
+`conda update libcomcat`
 
-## Windows Users
 
-We recommend using Anaconda (https://docs.anaconda.com/anaconda/)
-Python distribution. In addition to a command line interface (Anaconda
-prompt), this software provides other useful tools (Jupyter notebooks,
-the Spyder code editor, etc.) The *Anaconda Navigator*
-(https://docs.anaconda.com/anaconda/navigator/) provides a very nice
-interface to some of these tools.
-
-### Installing
-
-To install libcomcat in your root environment, open up the *Anaconda
-Prompt* and type the following commands:
-
- - `conda config --add channels conda-forge`
- - `conda install obspy`
- - `pip install https://github.com/usgs/libcomcat/archive/master.zip`
- - `pip install https://github.com/usgs/earthquake-impact-utils/archive/master.zip`
+####For Windows Users
 
 To run (for example) the command line program *getcsv*, which is
 described in the documentation, do the following:
@@ -91,16 +65,6 @@ user, and recognizes that this seems like an unwieldy way to run a
 script.  Anyone who regularly does Python scripting in a Windows
 environment who has advice to make this usage more like Linux or Mac
 (i.e., `getcsv --help`), please submit an issue in this repository.
-
-### Uninstalling and Updating
-
-To uninstall:
-
-`pip uninstall libcomcat`
-
-To update:
-
-`pip install -U git+git://github.com/usgs/libcomcat.git`
 
 # Documentation
 
