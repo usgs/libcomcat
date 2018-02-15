@@ -48,9 +48,14 @@ function [event,table] = read_phases(filename)
 %    - Residual Arrival time residual.
 %    - Weight Arrival weight.
 
-    opts = detectImportOptions(filename,'CommentStyle','#');
-    opts.CommentStyle = {'#'};
-    table = readtable(filename,opts);
+    opts = detectImportOptions(filename,'CommentStyle','#','Delimiter',',');
+    if isa(opts,'matlab.io.spreadsheet.SpreadsheetImportOptions')
+        msgID = 'read_phases:inputError';
+        msgtext = 'Excel files are not supported by read_phases function.';
+        throw(MException(msgID,msgtext));
+    else
+        table = readtable(filename,'CommentStyle','#','Delimiter',',');
+    end
     fid = fopen(filename,'r');
     tline = fgetl(fid);
     event = struct();
@@ -63,7 +68,7 @@ function [event,table] = read_phases(filename)
         key = strtrim(parts{1});
         value = strtrim(parts{2});
         if strcmp(key,'time')
-            value = datenum(value(1:23),'yyyy-mm-dd HH:MM:SS.FFF');
+            value = datenum(value);
         elseif length(str2num(value))
             value = str2num(value);
         end
