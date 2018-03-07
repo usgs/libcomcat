@@ -11,6 +11,7 @@ import warnings
 import re
 from enum import Enum
 import sys
+from io import StringIO
 
 # third party imports
 from obspy.core.event import read_events
@@ -514,27 +515,20 @@ class DetailEvent(object):
                 edict.update(_get_focal_mechanism_info(focal))
 
         if get_all_magnitudes:
-            handle, tmpfile = tempfile.mkstemp()
-            os.close(handle)
-            try:
-                phase_data = self.getProducts('phase-data')[0]
-                phase_data.getContent('quakeml.xml', filename=tmpfile)
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    catalog = read_events(tmpfile)
-                    event = catalog.events[0]
-                    imag = 1
-                    if get_all_magnitudes:
-                        for magnitude in event.magnitudes:
-                            edict['magnitude%i' % imag] = magnitude.mag
-                            edict['magtype%i' %
-                                  imag] = magnitude.magnitude_type
-                            imag += 1
-            except:
-                raise Exception(
-                    'Failed to retrieve quakeml.xml file from phase-data product (%s).' % content_url)
-            finally:
-                os.remove(tmpfile)
+            phase_data = self.getProducts('phase-data')[0]
+            phase_bytes,url = phase_data.getContentBytes('quakeml.xml')
+            phase_io = StringIO(phase_bytes.decode('utf-8'))
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                catalog = read_events(phase_io)
+                event = catalog.events[0]
+                imag = 1
+                if get_all_magnitudes:
+                    for magnitude in event.magnitudes:
+                        edict['magnitude%i' % imag] = magnitude.mag
+                        edict['magtype%i' %
+                              imag] = magnitude.magnitude_type
+                        imag += 1
 
         return edict
 
@@ -775,15 +769,36 @@ class Product(object):
         else:
             return None
 
-    def getContent(self, regexp, filename=None):
+    def getContent(self, regexp, filename):
         """Find and download the shortest file name matching the input regular expression.
 
         :param regexp:
           Regular expression which should match one of the content files in the Product.
         :param filename:
-          Filename to which content should be downloaded.
+          Filename to which content should be downloaded. 
         :returns:
           The URL from which the content was downloaded.
+        :raises:
+          Exception if content could not be downloaded from ComCat after two tries.
+        """
+        data,url = self.getContentBytes(regexp)
+        
+        f = open(filename, 'wb')
+        f.write(data)
+        f.close()
+        
+        return url
+        
+
+    def getContentBytes(self, regexp):
+        """Find the shortest file name matching the input regular expression, return bytes of that file.
+
+        :param regexp:
+          Regular expression which should match one of the content files in the Product.
+        :returns:
+          Tuple of array of bytes containing file contents, and the source url.  Bytes can be 
+          decoded to UTF-8 by the user if file contents are known to be ASCII.  i.e.,
+          product.getContentBytes('info.json').decode('utf-8')
         :raises:
           Exception if content could not be downloaded from ComCat after two tries.
         """
@@ -806,23 +821,19 @@ class Product(object):
             fh = request.urlopen(url, timeout=TIMEOUT)
             data = fh.read()
             fh.close()
-            f = open(filename, 'wb')
-            f.write(data)
-            f.close()
+            
         except HTTPError as htpe:
             time.sleep(WAITSECS)
             try:
                 fh = request.urlopen(url, timeout=TIMEOUT)
                 data = fh.read()
                 fh.close()
-                f = open(filename, 'wb')
-                f.write(data)
-                f.close()
             except Exception as msg:
                 raise Exception('Could not download %s from %s.' %
                                 (content_name, url))
 
-        return url
+
+        return (data,url)
 
     def hasProperty(self, key):
         """Determine if this Product contains a given property.

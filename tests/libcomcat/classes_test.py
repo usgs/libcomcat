@@ -235,7 +235,7 @@ def test_product():
     assert product.getContentURL('foo') is None
     
     try:
-        product.getContent('foo')
+        product.getContent('foo',filename=None)
         assert 1==2
     except AttributeError as ae:
         pass
@@ -259,6 +259,13 @@ def test_product():
     finally:
         os.remove(tfilename)
 
+    # test getting content as a string.
+    infobytes,url = product.getContentBytes('info.json')
+    infostring = infobytes.decode('utf-8')
+    jdict = json.loads(infostring)
+    eid = jdict['input']['event_information']['event_id']
+    assert eid == '19940117123055'
+        
 if __name__ == '__main__':
     test_moment_supplement()
     test_detail_product_versions()
