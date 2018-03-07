@@ -122,4 +122,4 @@ dependencies:
   - jupyter-console==5.2.0
   - jupyter-core==4.4.0
   - prompt-toolkit==1.0.15
-
+  - ./impact-utils.zip
