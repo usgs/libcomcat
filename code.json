@@ -1,8 +1,4 @@
-{
-  "version": "2.0.0",
-  "measurementType": {},
-  "agency": "U.S. Department of Interior",
-  "releases": [
+  [
     {
       "name": "libcomcat",
       "description": "Python wrapper around ComCat web API",
@@ -41,4 +37,3 @@
       }
     }
   ]
-}
