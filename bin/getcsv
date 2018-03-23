@@ -133,8 +133,8 @@ percent double couple) when available."""
                         help='Just return the number of events in search and maximum allowed.')
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                         help='Print progress')
-    parser.add_argument('-d', '--debug', dest='debug', action='store_true',
-                        help='Check the USGS development server (only valid inside USGS network).')
+    parser.add_argument('--host', 
+                        help='Specify a different comcat *search* host than earthquake.usgs.gov.')
     return parser
 
 
@@ -201,6 +201,7 @@ def main(args):
                     maxmagnitude=maxmag,
                     minmagnitude=minmag,
                     producttype=args.limitByProductType,
+                    host=args.host,
                     verbose=args.verbose)
 
     if not len(events):

@@ -136,6 +136,8 @@ def get_parser():
                         default='preferred')
     parser.add_argument('--get-source', dest='source', default='preferred',
                         help='Get contents for the "preferred" source, "all" sources, or a specific source ("us").')
+    parser.add_argument('--host', 
+                        help='Specify a different comcat *search* host than earthquake.usgs.gov.')
     return parser
 
 
@@ -201,7 +203,8 @@ def main(args):
                     contributor=args.contributor,
                     producttype=args.product,
                     maxmagnitude=maxmag,
-                    minmagnitude=minmag)
+                    minmagnitude=minmag,
+                    host=args.host)
 
     if not len(events):
         print('No events found matching your search criteria. Exiting.')

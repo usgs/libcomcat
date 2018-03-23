@@ -17,8 +17,9 @@ from libcomcat.classes import SummaryEvent, DetailEvent
 
 # constants
 # url template for counting events
+HOST = 'earthquake.usgs.gov'
 CATALOG_COUNT_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson'
-SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson'
+SEARCH_TEMPLATE = 'https://[HOST]/fdsnws/event/1/query?format=geojson'
 TIMEOUT = 60  # how long do we wait for a url to return?
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 WEEKSECS = 86400 * 7  # number of seconds in a week
@@ -201,7 +202,8 @@ def count(starttime=None,
 
 def get_event_by_id(eventid, catalog=None,
                     includedeleted=False,
-                    includesuperseded=False):
+                    includesuperseded=False,
+                    host=None):
     """Search the ComCat database for an event matching the input event id.
 
     This search function is a wrapper around the ComCat Web API described here:
@@ -223,6 +225,8 @@ def get_event_by_id(eventid, catalog=None,
       deleted products, and is mutually exclusive to the includedeleted parameter. 
     :param includedeleted:
       Specify if deleted products should be incuded. 
+    :param host:
+      Replace default ComCat host (earthquake.usgs.gov) with a custom host.
     :returns:
       DetailEvent object.
     """
@@ -277,6 +281,7 @@ def search(starttime=None,
            producttype=None,
            productcode=None,
            reviewstatus=None,
+           host=None,
            verbose=False):
     """Search the ComCat database for events matching input criteria.
 
@@ -380,6 +385,8 @@ def search(starttime=None,
       Limit to events with a specific review status. The different review statuses are:
        - automatic Limit to events with review status "automatic".
        - reviewed Limit to events with review status "reviewed".
+    :param host: 
+      Replace default ComCat host (earthquake.usgs.gov) with a custom host.
     :returns:
       List of SummaryEvent() objects.
     """
@@ -456,9 +463,15 @@ def _search(**newargs):
         newargs['endtime'] = newargs['endtime'].strftime(TIMEFMT)
     if 'updatedafter' in newargs:
         newargs['updatedafter'] = newargs['updatedafter'].strftime(TIMEFMT)
-
+    if 'host' in newargs and newargs['host'] is not None:
+        template = SEARCH_TEMPLATE.replace('[HOST]',newargs['host'])
+        del newargs['host']
+    else:
+        template = SEARCH_TEMPLATE.replace('[HOST]',HOST)
+    
+        
     paramstr = urlencode(newargs)
-    url = SEARCH_TEMPLATE + '&' + paramstr
+    url = template + '&' + paramstr
     events = []
     # handle the case when they're asking for an event id
     if 'eventid' in newargs:
