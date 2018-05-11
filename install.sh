@@ -1,5 +1,12 @@
 #!/bin/bash
 
+unamestr=`uname`
+if [ "$unamestr" == 'Linux' ]; then
+    source ~/.bashrc
+elif [ "$unamestr" == 'FreeBSD' ] || [ "$unamestr" == 'Darwin' ]; then
+    source ~/.bash_profile
+fi
+
 VENV=comcat
 
 # Is the reset flag set?
@@ -14,8 +21,8 @@ while getopts r FLAG; do
 done
 
 # Is conda installed?
-conda=$(which conda)
-if [ ! "$conda" ] ; then
+conda --version
+if [ $? -ne 0 ]; then
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
         -O miniconda.sh;
     bash miniconda.sh -f -b -p $HOME/miniconda
@@ -41,7 +48,7 @@ fi
 echo "Environment file: $env_file"
 
 # Turn off whatever other virtual environment user might be in
-source deactivate
+conda deactivate
 
 # Download dependencies not in conda or pypi
 curl --max-time 60 --retry 3 -L \
@@ -63,7 +70,7 @@ fi
 
 # Activate the new environment
 echo "Activating the $VENV virtual environment"
-source activate $VENV
+conda activate $VENV
 
 # Clean up downloaded packages
 rm impact-utils.zip
@@ -73,4 +80,4 @@ echo "Installing ${VENV}..."
 pip install -e .
 
 #tell the user they have to activate this environment
-echo "Type 'source activate ${VENV}' to use this new virtual environment."
+echo "Type 'conda activate ${VENV}' to use this new virtual environment."

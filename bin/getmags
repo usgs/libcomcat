@@ -8,6 +8,9 @@ from impactutils.time.ancient_time import HistoricTime
 from obspy.clients.fdsn import Client
 import pandas as pd
 
+class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter):
+    pass
+
 def get_mag_src(mag):
     """Try to find the best magnitude source from a Magnitude object.
 
@@ -84,7 +87,7 @@ def get_parser():
 
     '''
     parser = argparse.ArgumentParser(
-        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=desc, formatter_class=CustomFormatter)
     # positional arguments
     parser.add_argument('filename',
                         metavar='FILENAME', help='Output filename.')
@@ -107,7 +110,7 @@ def get_parser():
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                         help='Print progress')
     parser.add_argument('-f', '--format', dest='format', choices=['csv', 'tab', 'excel'], default='csv',
-                        metavar='FORMAT', help='Output format.')
+                        help='Output format.')
     return parser
 
 
@@ -198,13 +201,13 @@ def main(args):
             tpl = (event.id,ievent,len(events),len(id_list))
             print('Parsing event %s (%i of %i) - %i origins' % tpl)
         ievent += 1
-
+        errors = []
         for eid in id_list:
             try:
                 obsevent = client.get_events(eventid=eid).events[0]
             except Exception as e:
-                print('Failed to download data for event %s.  Skipping.' % eid)
-                continue
+                msg  = 'Failed to download data for event %s.  Skipping.' % eid
+                errors.append(msg)
             for mag in obsevent.magnitudes:
                 magvalue = mag.mag
                 magtype = mag.magnitude_type
@@ -219,7 +222,11 @@ def main(args):
                 imag += 1
         df = df.append(row,ignore_index=True)
             
-        
+    if len(errors):
+        print('Some events could not be retrieved:')
+        for error in errors:
+            print('\t%s' % error)
+            
     if args.format == 'excel':
         df.to_excel(args.filename)
     else:
