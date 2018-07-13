@@ -1,0 +1,31 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection: [close]
+      Host: [earthquake.usgs.gov]
+      User-Agent: [Python-urllib/3.5]
+    method: GET
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&maxdepth=1000&minmagnitude=6.6&maxmagnitude=10.0&offset=1&starttime=1994-01-17T12%3A30%3A00&mindepth=-100&limit=20000&eventtype=earthquake&endtime=1994-01-18T12%3A35%3A00&orderby=time-asc&updatedafter=2010-01-01T00%3A00%3A00
+  response:
+    body: {string: '{"count":1,"maxAllowed":20000}'}
+    headers:
+      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
+      Access-Control-Allow-Methods: ['*']
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['public, max-age=900']
+      Connection: [close]
+      Content-Length: ['30']
+      Content-Type: [application/json]
+      Date: ['Fri, 13 Jul 2018 14:33:09 GMT']
+      Expires: ['Fri, 13 Jul 2018 14:48:09 GMT']
+      Last-Modified: ['Fri, 13 Jul 2018 14:33:09 GMT']
+      Server: [nginx]
+      Strict-Transport-Security: [max-age=31536000]
+      Vary: [Accept-Encoding]
+      X-Cache-Status: [MISS]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: [1; mode=block]
+    status: {code: 200, message: OK}
+version: 1

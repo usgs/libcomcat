@@ -8,15 +8,17 @@ from impactutils.time.ancient_time import HistoricTime
 from obspy.clients.fdsn import Client
 import pandas as pd
 
+
 class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter):
     pass
+
 
 def get_mag_src(mag):
     """Try to find the best magnitude source from a Magnitude object.
 
     Note: This can be difficult, as there is a great deal of variance
     in how magnitude information is submitted in QuakeML within ComCat.
-    
+
     Args:
         mag (obspy Magnitude): Magnitude object from obspy.
     Returns:
@@ -52,6 +54,7 @@ def get_mag_src(mag):
             magsrc = 'unknown'
 
     return magsrc
+
 
 def get_parser():
     desc = '''Download epicenter and all contributed magnitudes in line format (csv, tab, etc.).
@@ -114,7 +117,10 @@ def get_parser():
     return parser
 
 
-def main(args):
+def main():
+    parser = get_parser()
+    args = parser.parse_args()
+
     latitude = None
     longitude = None
     radiuskm = None
@@ -178,27 +184,27 @@ def main(args):
         sys.exit(0)
 
     # create a dataframe with these columns - we'll add more later
-    df = pd.DataFrame(columns=['id','time','lat','lon','depth',
-                               'location','url','hypo_src'])
+    df = pd.DataFrame(columns=['id', 'time', 'lat', 'lon', 'depth',
+                               'location', 'url', 'hypo_src'])
     client = Client('USGS')
     ievent = 1
-    
+
     for event in events:
         id_list = event['ids'].split(',')[1:-1]
-        source = event.id.replace(event['code'],'')
-        row = pd.Series(data={'id':event.id,
-                              'time':event.time,
-                              'lat':event.latitude,
-                              'lon':event.longitude,
-                              'depth':event.depth,
-                              'location':event.location,
-                              'url':event.url,
-                              'hypo_src':source})
+        source = event.id.replace(event['code'], '')
+        row = pd.Series(data={'id': event.id,
+                              'time': event.time,
+                              'lat': event.latitude,
+                              'lon': event.longitude,
+                              'depth': event.depth,
+                              'location': event.location,
+                              'url': event.url,
+                              'hypo_src': source})
 
         imag = 1
 
         if args.verbose:
-            tpl = (event.id,ievent,len(events),len(id_list))
+            tpl = (event.id, ievent, len(events), len(id_list))
             print('Parsing event %s (%i of %i) - %i origins' % tpl)
         ievent += 1
         errors = []
@@ -206,7 +212,7 @@ def main(args):
             try:
                 obsevent = client.get_events(eventid=eid).events[0]
             except Exception as e:
-                msg  = 'Failed to download data for event %s.  Skipping.' % eid
+                msg = 'Failed to download data for event %s.  Skipping.' % eid
                 errors.append(msg)
             for mag in obsevent.magnitudes:
                 magvalue = mag.mag
@@ -214,19 +220,19 @@ def main(args):
                 magsrc = get_mag_src(mag)
                 if magsrc == 'unknown' and args.verbose:
                     print('Unable to determine magnitude source from %s' % eid)
-                colname = '%s-%s' % (magsrc,magtype)
+                colname = '%s-%s' % (magsrc, magtype)
                 if colname in row:
                     # print('Duplicate column %s for event %s - skipping' % (colname,event.id))
                     continue
                 row[colname] = magvalue
                 imag += 1
-        df = df.append(row,ignore_index=True)
-            
+        df = df.append(row, ignore_index=True)
+
     if len(errors):
         print('Some events could not be retrieved:')
         for error in errors:
             print('\t%s' % error)
-            
+
     if args.format == 'excel':
         df.to_excel(args.filename)
     else:
@@ -236,7 +242,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = get_parser()
-    pargs = parser.parse_args()
-
-    main(pargs)
+    main()

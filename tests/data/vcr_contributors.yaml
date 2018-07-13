@@ -1,0 +1,33 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection: [close]
+      Host: [earthquake.usgs.gov]
+      User-Agent: [Python-urllib/3.5]
+    method: GET
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/contributors
+  response:
+    body: {string: '<?xml version="1.0"?>
+
+        <Contributors><Contributor>admin</Contributor><Contributor>ak</Contributor><Contributor>at</Contributor><Contributor>atlas</Contributor><Contributor>cgs</Contributor><Contributor>ci</Contributor><Contributor>hv</Contributor><Contributor>ismp</Contributor><Contributor>ld</Contributor><Contributor>mb</Contributor><Contributor>nc</Contributor><Contributor>nm</Contributor><Contributor>nn</Contributor><Contributor>np</Contributor><Contributor>official</Contributor><Contributor>pr</Contributor><Contributor>pt</Contributor><Contributor>se</Contributor><Contributor>us</Contributor><Contributor>uu</Contributor><Contributor>uw</Contributor></Contributors>'}
+    headers:
+      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
+      Access-Control-Allow-Methods: ['*']
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['public, max-age=693']
+      Connection: [close]
+      Content-Length: ['675']
+      Content-Type: [application/xml]
+      Date: ['Fri, 13 Jul 2018 14:33:13 GMT']
+      Expires: ['Fri, 13 Jul 2018 14:44:46 GMT']
+      Last-Modified: ['Fri, 13 Jul 2018 14:21:55 GMT']
+      Server: [nginx]
+      Strict-Transport-Security: [max-age=31536000]
+      Vary: [Accept-Encoding]
+      X-Cache-Status: [HIT]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: [1; mode=block]
+    status: {code: 200, message: OK}
+version: 1

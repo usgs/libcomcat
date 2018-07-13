@@ -136,7 +136,10 @@ def get_parser():
     return parser
 
 
-def main(args):
+def main():
+    parser = get_parser()
+    args = parser.parse_args()
+
     if args.eventid:
         detail = get_event_by_id(args.eventid, includesuperseded=True)
         _get_product_from_detail(detail, args.product, args.contents,
@@ -222,8 +225,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = get_parser()
-
-    pargs = parser.parse_args()
-
-    main(pargs)
+    main()

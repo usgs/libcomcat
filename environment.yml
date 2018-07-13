@@ -16,5 +16,6 @@ dependencies:
 - xlrd
 - xlwt
 - openpyxl
+- vcrpy
 - xlsxwriter
 
