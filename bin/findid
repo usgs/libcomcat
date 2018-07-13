@@ -112,7 +112,11 @@ def get_event_info(time, lat, lon, twindow, radius):
     return df
 
 
-def main(args):
+def main():
+    parser = get_parser()
+
+    args = parser.parse_args()
+
     twindow = TIME_WINDOW
     if args.window:
         twindow = args.window
@@ -150,8 +154,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = get_parser()
-
-    pargs = parser.parse_args()
-
-    main(pargs)
+    main()

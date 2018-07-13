@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 
 # stdlib imports
-from urllib.request import urlopen
 from datetime import datetime
 import sys
-import json
 import argparse
 import os.path
 
 
 # third party imports
 import pandas as pd
-import openpyxl
 
 # local imports
 from libcomcat.utils import maketime, get_phase_dataframe
@@ -95,7 +92,9 @@ def get_parser():
     return parser
 
 
-def main(args):
+def main():
+    parser = get_parser()
+    args = parser.parse_args()
     if args.eventid:
         detail = get_event_by_id(args.eventid, catalog=args.catalog)
         df = get_phase_dataframe(detail, args.catalog)
@@ -197,8 +196,8 @@ def save_dataframe(df, directory, event, file_format, catalog=None):
                 if value.tzinfo is not None:
                     # Excel doesn't support timezone information
                     # so this should strip that off
-                    value = datetime(value.year,value.month,value.day,
-                                     value.hour,value.minute,value.second,
+                    value = datetime(value.year, value.month, value.day,
+                                     value.hour, value.minute, value.second,
                                      value.microsecond)
                 ws.write_datetime(validx, value, date_format)
             else:
@@ -233,6 +232,4 @@ def save_dataframe(df, directory, event, file_format, catalog=None):
 
 
 if __name__ == '__main__':
-    parser = get_parser()
-    pargs = parser.parse_args()
-    main(pargs)
+    main()
