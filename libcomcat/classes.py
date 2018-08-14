@@ -5,13 +5,12 @@ from urllib.error import HTTPError
 from urllib.parse import urlparse
 import json
 from collections import OrderedDict
-import tempfile
-import os
 import warnings
 import re
 from enum import Enum
 import sys
 from io import StringIO
+import time
 
 # third party imports
 from obspy.core.event import read_events
@@ -20,9 +19,13 @@ import dateutil
 
 # constants
 # the detail event URL template
-URL_TEMPLATE = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/[EVENTID].geojson'
-# the search template for a detail event that may include one or both of includesuperseded/includedeleted.
-SEARCH_DETAIL_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventid=%s&includesuperseded=%s&includedeleted=%s'
+URL_TEMPLATE = ('https://earthquake.usgs.gov/earthquakes/feed'
+                '/v1.0/detail/[EVENTID].geojson')
+# the search template for a detail event that may
+# include one or both of includesuperseded/includedeleted.
+SEARCH_DETAIL_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/1/query'
+                          '?format=geojson&eventid=%s&'
+                          'includesuperseded=%s&includedeleted=%s')
 TIMEOUT = 60  # how long should we wait for a url to return?
 WAITSECS = 3
 
@@ -34,11 +37,11 @@ class VersionOption(Enum):
     PREFERRED = 4
 
 
-def _get_moment_tensor_info(tensor, get_angles=False, get_moment_supplement=False):
+def _get_moment_tensor_info(tensor, get_angles=False,
+                            get_moment_supplement=False):
     """Internal - gather up tensor components and focal mechanism angles.
     """
     msource = tensor['eventsource']
-    eventid = msource + tensor['eventsourcecode']
     if tensor.hasProperty('derived-magnitude-type'):
         msource += '_' + tensor['derived-magnitude-type']
     elif tensor.hasProperty('beachball-type'):
@@ -206,7 +209,7 @@ class SummaryEvent(object):
         return True
 
     def hasProperty(self, key):
-        """Test to see whether a property with a given key is present in list of properties.
+        """Test to see if property is present in list of properties.
 
         :param key:
           Property to search for.
@@ -242,18 +245,19 @@ class SummaryEvent(object):
     def getDetailEvent(self, includedeleted=False, includesuperseded=False):
         """Instantiate a DetailEvent object from the URL found in the summary.
         :param includedeleted:
-          Boolean indicating wheather to return versions of products that have been deleted.
-          Cannot be used with includesuperseded.
+          Boolean indicating wheather to return versions of products that have
+          been deleted. Cannot be used with includesuperseded.
         :param includesuperseded:
-          Boolean indicating wheather to return versions of products that have been replaced by
-          newer versions.
+          Boolean indicating wheather to return versions of products that have
+          been replaced by newer versions.
           Cannot be used with includedeleted.
         :returns:
           DetailEvent version of SummaryEvent.
         """
         if includesuperseded and includedeleted:
-            raise RuntimeError(
-                'includedeleted and includesuperseded cannot be used together.')
+            msg = ('includedeleted and includesuperseded '
+                   'cannot be used together.')
+            raise RuntimeError(msg)
         if not includedeleted and not includesuperseded:
             durl = self._jdict['properties']['detail']
             return DetailEvent(durl)
@@ -307,7 +311,7 @@ class DetailEvent(object):
             data = fh.read().decode('utf-8')
             fh.close()
             self._jdict = json.loads(data)
-        except HTTPError as htpe:
+        except HTTPError:
             try:
                 fh = request.urlopen(url, timeout=TIMEOUT)
                 data = fh.read().decode('utf-8')
@@ -424,27 +428,30 @@ class DetailEvent(object):
                get_tensors='preferred',
                get_moment_supplement=False,
                get_focals='preferred'):
-        """Return known origin, focal mechanism, and moment tensor information for a DetailEvent.
+        """Return origin, focal mechanism, and tensor information for a DetailEvent.
 
         :param catalog:
-          Retrieve the primary event information (time,lat,lon...) from the catalog given.
-          If no source for this information exists, an AttributeError will be raised.
+          Retrieve the primary event information (time,lat,lon...) from the
+          catalog given. If no source for this information exists, an
+          AttributeError will be raised.
         :param get_all_magnitudes:
-          Boolean indicating whether all known magnitudes for this event should be returned.
-          NOTE: The ComCat phase-data product's QuakeML file will be downloaded and parsed,
-          which takes extra time.
+          Boolean indicating whether all known magnitudes for this event
+           should be returned. NOTE: The ComCat phase-data product's
+           QuakeML file will be downloaded and parsed, which takes extra time.
         :param get_tensors:
           String option of 'none', 'preferred', or 'all'.
         :param get_moment_supplement:
-          Boolean indicating whether derived origin and double-couple/source time information
-          should be extracted (when available.)
+          Boolean indicating whether derived origin and
+          double-couple/source time information should be extracted
+          (when available.)
         :param get_focals:
           String option of 'none', 'preferred', or 'all'.
         :returns:
-          OrderedDict with the same fields as returned by SummaryEvent.toDict(), *preferred* 
-          moment tensor and focal mechanism data.  If all magnitudes are requested, then those
-          will be returned as well.  Generally speaking, the number and name of the fields will 
-          vary by what data is available.
+          OrderedDict with the same fields as returned by
+          SummaryEvent.toDict(), *preferred* moment tensor and focal
+          mechanism data.  If all magnitudes are requested, then
+          those will be returned as well. Generally speaking, the
+          number and name of the fields will vary by what data is available.
         """
         edict = OrderedDict()
 
@@ -467,14 +474,16 @@ class DetailEvent(object):
                         'phase-data', source='all')]
                 if self.hasProduct('origin'):
                     origin_sources = [
-                        o.source for o in self.getProducts('origin', source='all')]
+                        o.source for o in self.getProducts('origin',
+                                                           source='all')]
                 if catalog in phase_sources:
                     phasedata = self.getProducts(
                         'phase-data', source=catalog)[0]
                 elif catalog in origin_sources:
                     phasedata = self.getProducts('origin', source=catalog)[0]
                 else:
-                    msg = 'DetailEvent %s has no phase-data or origin products for source %s'
+                    msg = ('DetailEvent %s has no phase-data or origin '
+                           'products for source %s')
                     raise AttributeError(msg % (self.id, catalog))
                 edict['id'] = phasedata['eventsource'] + \
                     phasedata['eventsourcecode']
@@ -493,14 +502,19 @@ class DetailEvent(object):
                 tensors = self.getProducts(
                     'moment-tensor', source='all', version=VersionOption.ALL)
                 for tensor in tensors:
-                    edict.update(_get_moment_tensor_info(tensor, get_angles=True,
-                                                         get_moment_supplement=get_moment_supplement))
+                    supp = get_moment_supplement
+                    tdict = _get_moment_tensor_info(tensor,
+                                                    get_angles=True,
+                                                    get_moment_supplement=supp)
+                    edict.update(tdict)
 
         if get_tensors == 'preferred':
             if self.hasProduct('moment-tensor'):
                 tensor = self.getProducts('moment-tensor')[0]
-                edict.update(_get_moment_tensor_info(tensor, get_angles=True,
-                                                     get_moment_supplement=get_moment_supplement))
+                supp = get_moment_supplement
+                tdict = _get_moment_tensor_info(tensor, get_angles=True,
+                                                get_moment_supplement=supp)
+                edict.update(tdict)
 
         if get_focals == 'all':
             if self.hasProduct('focal-mechanism'):
@@ -516,7 +530,7 @@ class DetailEvent(object):
 
         if get_all_magnitudes:
             phase_data = self.getProducts('phase-data')[0]
-            phase_bytes,url = phase_data.getContentBytes('quakeml.xml')
+            phase_bytes, url = phase_data.getContentBytes('quakeml.xml')
             phase_io = StringIO(phase_bytes.decode('utf-8'))
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -533,7 +547,7 @@ class DetailEvent(object):
         return edict
 
     def getNumVersions(self, product_name):
-        """Count the number of versions of a product (origin, shakemap, etc.) available for this event.
+        """Count versions of a product (origin, shakemap, etc.) available.
 
         :param product_name:
           Name of product to query.
@@ -545,7 +559,8 @@ class DetailEvent(object):
                 'Event %s has no product of type %s' % (self.id, product_name))
         return len(self._jdict['properties']['products'][product_name])
 
-    def getProducts(self, product_name, source='preferred', version=VersionOption.PREFERRED):
+    def getProducts(self, product_name, source='preferred',
+                    version=VersionOption.PREFERRED):
         """Retrieve a Product object from this DetailEvent.
 
         :param product_name:
@@ -553,10 +568,11 @@ class DetailEvent(object):
         :param version:
           An enum value from VersionOption (PREFERRED,FIRST,ALL).
         :param source:
-          Any one of: 
+          Any one of:
             - 'preferred' Get version(s) of products from preferred source.
             - 'all' Get version(s) of products from all sources.
-            - Any valid source network for this type of product ('us','ak',etc.)
+            - Any valid source network for this type of product
+              ('us','ak',etc.)
         :returns:
           List of Product objects.
         """
@@ -564,16 +580,16 @@ class DetailEvent(object):
             raise AttributeError(
                 'Event %s has no product of type %s' % (self.id, product_name))
 
-        weights = [product['preferredWeight']
-                   for product in self._jdict['properties']['products'][product_name]]
-        sources = [product['source']
-                   for product in self._jdict['properties']['products'][product_name]]
-        times = [product['updateTime']
-                 for product in self._jdict['properties']['products'][product_name]]
+        products = self._jdict['properties']['products'][product_name]
+        weights = [product['preferredWeight'] for product in products]
+        sources = [product['source'] for product in products]
+        times = [product['updateTime'] for product in products]
         indices = list(range(0, len(times)))
         df = pd.DataFrame(
-            {'weight': weights, 'source': sources, 'time': times, 'index': indices})
-        # we need to add a version number column here, ordinal sorted by update time, starting at 1
+            {'weight': weights, 'source': sources,
+             'time': times, 'index': indices})
+        # we need to add a version number column here, ordinal
+        # sorted by update time, starting at 1
         # for each unique source.
         # first sort the dataframe by source and then time
         df = df.sort_values(['source', 'time'])
@@ -589,7 +605,8 @@ class DetailEvent(object):
 
         if source == 'preferred':
             idx = weights.index(max(weights))
-            prefsource = self._jdict['properties']['products'][product_name][idx]['source']
+            tproduct = self._jdict['properties']['products'][product_name][idx]
+            prefsource = tproduct['source']
             df = df[df['source'] == prefsource]
             df = df.sort_values('time')
         elif source == 'all':
@@ -604,6 +621,7 @@ class DetailEvent(object):
 
         products = []
         usources = set(sources)
+        tproducts = self._jdict['properties']['products'][product_name]
         if source == 'all':  # dataframe includes all sources
             for source in usources:
                 df_source = df[df['source'] == source]
@@ -612,27 +630,24 @@ class DetailEvent(object):
                     df_source = df_source.sort_values(['weight', 'time'])
                     idx = df_source.iloc[-1]['index']
                     pversion = df_source.iloc[-1]['version']
-                    product = Product(
-                        product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                    product = Product(product_name, pversion, tproducts[idx])
                     products.append(product)
                 elif version == VersionOption.LAST:
                     idx = df_source.iloc[-1]['index']
                     pversion = df_source.iloc[-1]['version']
-                    product = Product(
-                        product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                    product = Product(product_name, pversion, tproducts[idx])
                     products.append(product)
                 elif version == VersionOption.FIRST:
                     idx = df_source.iloc[0]['index']
                     pversion = df_source.iloc[0]['version']
-                    product = Product(
-                        product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                    product = Product(product_name, pversion, tproducts[idx])
                     products.append(product)
                 elif version == VersionOption.ALL:
                     for idx, row in df_source.iterrows():
                         idx = row['index']
                         pversion = row['version']
                         product = Product(
-                            product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                            product_name, pversion, tproducts[idx])
                         products.append(product)
                 else:
                     raise(AttributeError(
@@ -643,39 +658,40 @@ class DetailEvent(object):
                 idx = df.iloc[-1]['index']
                 pversion = df.iloc[-1]['version']
                 product = Product(
-                    product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                    product_name, pversion, tproducts[idx])
                 products.append(product)
             elif version == VersionOption.LAST:
                 idx = df.iloc[-1]['index']
                 pversion = df.iloc[-1]['version']
                 product = Product(
-                    product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                    product_name, pversion, tproducts[idx])
                 products.append(product)
             elif version == VersionOption.FIRST:
                 idx = df.iloc[0]['index']
                 pversion = df.iloc[0]['version']
                 product = Product(
-                    product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                    product_name, pversion, tproducts[idx])
                 products.append(product)
             elif version == VersionOption.ALL:
                 for idx, row in df.iterrows():
                     idx = row['index']
                     pversion = row['version']
                     product = Product(
-                        product_name, pversion, self._jdict['properties']['products'][product_name][idx])
+                        product_name, pversion, tproducts[idx])
                     products.append(product)
             else:
-                raise(AttributeError('No VersionOption defined for %s' % version))
+                msg = 'No VersionOption defined for %s' % version
+                raise(AttributeError(msg))
 
         return products
 
 
 class Product(object):
-    """Class describing a Product from detailed GeoJSON feed.  Products contain properties and file contents.
+    """Class describing a Product from detailed GeoJSON feed.
     """
 
     def __init__(self, product_name, version, product):
-        """Create a product class from the product found within the detailed event GeoJSON.
+        """Create a product class from product in detailed GeoJSON.
 
         :param product_name:
           Name of Product (origin, shakemap, etc.)
@@ -689,10 +705,11 @@ class Product(object):
         self._product = product.copy()
 
     def getContentsMatching(self, regexp):
-        """Find all contents that match the input regex, ordered by shortest to longest.
+        """Find all contents that match the input regex, shortest to longest.
 
         :param regexp:
-          Regular expression which should match one of the content files in the Product.
+          Regular expression which should match one of the content files
+          in the Product.
         :returns:
           List of contents matching
         """
@@ -711,18 +728,21 @@ class Product(object):
     def __repr__(self):
         ncontents = len(self._product['contents'])
         tpl = (self._product_name, self.source, self.update_time, ncontents)
-        return 'Product %s from %s updated %s containing %i content files.' % tpl
+        return ('Product %s from %s updated %s '
+                'containing %i content files.' % tpl)
 
     def getContentName(self, regexp):
         """Get the shortest filename matching input regular expression.
 
-        For example, if the shakemap product has contents called grid.xml and grid.xml.zip, 
-        and the input regexp is grid.xml, then grid.xml will be matched.
+        For example, if the shakemap product has contents called
+        grid.xml and grid.xml.zip, and the input regexp is grid.xml,
+        then grid.xml will be matched.
 
         :param regexp:
           Regular expression to use to search for matching contents.
         :returns:
-          Shortest file name to match input regexp, or None if no matches found.
+          Shortest file name to match input regexp, or None if
+          no matches found.
         """
         content_name = 'a' * 1000
         found = False
@@ -743,13 +763,15 @@ class Product(object):
     def getContentURL(self, regexp):
         """Get the URL for the shortest filename matching input regular expression.
 
-        For example, if the shakemap product has contents called grid.xml and grid.xml.zip, 
-        and the input regexp is grid.xml, then grid.xml will be matched.
+        For example, if the shakemap product has contents called grid.xml and
+        grid.xml.zip, and the input regexp is grid.xml, then grid.xml will be
+        matched.
 
         :param regexp:
           Regular expression to use to search for matching contents.
         :returns:
-          URL for shortest file name to match input regexp, or None if no matches found.
+          URL for shortest file name to match input regexp, or
+          None if no matches found.
         """
         content_name = 'a' * 1000
         found = False
@@ -770,37 +792,41 @@ class Product(object):
             return None
 
     def getContent(self, regexp, filename):
-        """Find and download the shortest file name matching the input regular expression.
+        """Download the shortest file name matching the input regular expression.
 
         :param regexp:
-          Regular expression which should match one of the content files in the Product.
+          Regular expression which should match one of the content files
+          in the Product.
         :param filename:
-          Filename to which content should be downloaded. 
+          Filename to which content should be downloaded.
         :returns:
           The URL from which the content was downloaded.
         :raises:
-          Exception if content could not be downloaded from ComCat after two tries.
+          Exception if content could not be downloaded from ComCat
+          after two tries.
         """
-        data,url = self.getContentBytes(regexp)
-        
+        data, url = self.getContentBytes(regexp)
+
         f = open(filename, 'wb')
         f.write(data)
         f.close()
-        
+
         return url
-        
 
     def getContentBytes(self, regexp):
-        """Find the shortest file name matching the input regular expression, return bytes of that file.
+        """Return bytes of shortest file name matching input regular expression.
 
         :param regexp:
-          Regular expression which should match one of the content files in the Product.
+          Regular expression which should match one of the content files in
+          the Product.
         :returns:
-          Tuple of array of bytes containing file contents, and the source url.  Bytes can be 
-          decoded to UTF-8 by the user if file contents are known to be ASCII.  i.e.,
+          Tuple of array of bytes containing file contents, and the source url.
+          Bytes can be decoded to UTF-8 by the user if file contents are known
+          to be ASCII.  i.e.,
           product.getContentBytes('info.json').decode('utf-8')
         :raises:
-          Exception if content could not be downloaded from ComCat after two tries.
+          Exception if content could not be downloaded from ComCat
+          after two tries.
         """
         content_name = 'a' * 1000
         content_url = None
@@ -821,19 +847,18 @@ class Product(object):
             fh = request.urlopen(url, timeout=TIMEOUT)
             data = fh.read()
             fh.close()
-            
-        except HTTPError as htpe:
+
+        except HTTPError:
             time.sleep(WAITSECS)
             try:
                 fh = request.urlopen(url, timeout=TIMEOUT)
                 data = fh.read()
                 fh.close()
-            except Exception as msg:
+            except Exception:
                 raise Exception('Could not download %s from %s.' %
                                 (content_name, url))
 
-
-        return (data,url)
+        return (data, url)
 
     def hasProperty(self, key):
         """Determine if this Product contains a given property.
@@ -885,7 +910,7 @@ class Product(object):
 
     @property
     def contents(self):
-        """List of product properties (retrievable from object with getContent() method).
+        """List of product properties (retrievable with getContent() method).
         """
         return list(self._product['contents'].keys())
 
@@ -898,6 +923,7 @@ class Product(object):
           Desired property.
         """
         if key not in self._product['properties']:
-            raise AttributeError(
-                'No property %s found in %s product.' % (key, self._product_name))
+            msg = 'No property %s found in %s product.' % (
+                key, self._product_name)
+            raise AttributeError(msg)
         return self._product['properties'][key]
