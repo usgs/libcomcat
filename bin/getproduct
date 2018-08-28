@@ -123,6 +123,8 @@ def get_parser():
                         help='Product property (reviewstatus:approved).')
     parser.add_argument('-t', '--event-property', dest='eventProperties',
                         help='Event property (alert:yellow, status:REVIEWED, etc.).', type=makedict)
+    parser.add_argument('-v', '--event-type', dest='eventType',
+                        help='Event type (earthquake, "volcanic eruption", etc.).')
     parser.add_argument('-l', '--list-url', dest='list_only', action='store_true',
                         help='Only list urls for contents in events that match criteria.')
 
@@ -200,6 +202,7 @@ def main():
                     catalog=args.catalog,
                     contributor=args.contributor,
                     producttype=args.product,
+                    eventtype=args.eventType,
                     maxmagnitude=maxmag,
                     minmagnitude=minmag,
                     host=args.host)
