@@ -197,12 +197,12 @@ def _get_phaserow(pick, catevent):
         - Status: "manual" or "automatic".
         - Residual: Arrival time residual.
         - Weight: Arrival weight.
+        - Agency: Agency ID.
     """
     pick_id = pick.resource_id
     waveform_id = pick.waveform_id
     arrival = get_arrival(catevent, pick_id)
     if arrival is None:
-        #print('could not find arrival for pick %s' % pick_id)
         return None
 
     # save info to row of dataframe
@@ -215,7 +215,8 @@ def _get_phaserow(pick, catevent):
            'Arrival Time': etime,
            'Status': pick.evaluation_mode,
            'Residual': arrival.time_residual,
-           'Weight': arrival.time_weight}
+           'Weight': arrival.time_weight,
+           'Agency': arrival.creation_info.agency_id}
     return row
 
 
@@ -228,8 +229,8 @@ def get_phase_dataframe(detail, catalog='preferred'):
       Source network ('us','ak', etc. ,or 'preferred'.)
     :returns:
       Pandas DataFrame containing columns:
-        - Channel: Network.Station.Channel.Location (NSCL) style station description.
-                   ("--" indicates missing information)
+        - Channel: Network.Station.Channel.Location (NSCL) style station
+                   description. ("--" indicates missing information)
         - Distance: Distance (kilometers) from epicenter to station.
         - Azimuth: Azimuth (degrees) from epicenter to station.
         - Phase: Name of the phase (Pn,Pg, etc.)
@@ -237,14 +238,16 @@ def get_phase_dataframe(detail, catalog='preferred'):
         - Status: "manual" or "automatic".
         - Residual: Arrival time residual.
         - Weight: Arrival weight.
+        - Agency: Agency ID.
     :raises:
-      AttributeError if input DetailEvent does not have a phase-data product for the input catalog.
+      AttributeError if input DetailEvent does not have a phase-data product
+      for the input catalog.
     """
     if catalog is None:
         catalog = 'preferred'
     df = pd.DataFrame(columns=['Channel', 'Distance', 'Azimuth',
                                'Phase', 'Arrival Time', 'Status',
-                               'Residual', 'Weight'])
+                               'Residual', 'Weight', 'Agency'])
 
     phasedata = detail.getProducts('phase-data', source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
@@ -252,7 +255,7 @@ def get_phase_dataframe(detail, catalog='preferred'):
         fh = urlopen(quakeurl, timeout=TIMEOUT)
         data = fh.read()
         fh.close()
-    except Exception as msg:
+    except Exception:
         return None
     unpickler = Unpickler()
     with warnings.catch_warnings():
@@ -272,7 +275,7 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
                           get_focals='preferred',
                           get_moment_supplement=False,
                           verbose=False):
-    """Take the results of a search and extract the detailed event informat in a pandas DataFrame.
+    """Extract the detailed event informat into a pandas DataFrame.
 
     Usage:
       TODO
