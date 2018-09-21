@@ -10,6 +10,7 @@ import os.path
 import numpy as np
 import pandas as pd
 from obspy.io.quakeml.core import Unpickler
+from obspy.clients.fdsn import Client
 from impactutils.time.ancient_time import HistoricTime
 from openpyxl import load_workbook
 
@@ -20,6 +21,83 @@ TIMEOUT = 60
 TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
+
+
+def get_mag_src(mag):
+    """Try to find the best magnitude source from a Magnitude object.
+
+    Note: This can be difficult, as there is a great deal of variance
+    in how magnitude information is submitted in QuakeML within ComCat.
+
+    Args:
+        mag (obspy Magnitude): Magnitude object from obspy.
+    Returns:
+        str: String indicating the most likely source of the
+             magnitude solution.
+
+    """
+    c1 = mag.creation_info is not None
+    if c1:
+        c2 = mag.creation_info.agency_id is not None
+    else:
+        c2 = False
+    if c2:
+        magsrc = mag.creation_info.agency_id.lower()
+    else:
+        has_gcmt = mag.resource_id.id.lower().find('gcmt') > -1
+        has_at = mag.resource_id.id.lower().find('at') > -1
+        has_pt = mag.resource_id.id.lower().find('pt') > -1
+        has_ak = (mag.resource_id.id.lower().find('ak') > -1 or
+                  mag.resource_id.id.lower().find('alaska') > -1)
+        has_pr = mag.resource_id.id.lower().find('pr') > -1
+        has_dup = mag.resource_id.id.lower().find('duputel') > -1
+        has_us = mag.resource_id.id.lower().find('us') > -1
+        if has_gcmt:
+            magsrc = 'gcmt'
+        elif has_dup:
+            magsrc = 'duputel'
+        elif has_at:
+            magsrc = 'at'
+        elif has_pt:
+            magsrc = 'pt'
+        elif has_ak:
+            magsrc = 'ak'
+        elif has_pr:
+            magsrc = 'pr'
+        elif has_us:
+            magsrc = 'us'
+        else:
+            magsrc = 'unknown'
+
+    return magsrc
+
+
+def get_all_mags(eventid):
+    """Get all magnitudes for a given event ID.
+
+    Args:
+        eventid (str): ComCat Event ID.
+    Returns:
+        dict: Dictionary where keys are "magsrc-magtype" and values
+              are magnitude value.
+
+    """
+    row = {}
+    msg = ''
+    client = Client('USGS')
+    try:
+        obsevent = client.get_events(eventid=eventid).events[0]
+    except Exception as e:
+        msg = 'Failed to download event %s, error "%s".' % (eventid, str(e))
+    for mag in obsevent.magnitudes:
+        magvalue = mag.mag
+        magtype = mag.magnitude_type
+        magsrc = get_mag_src(mag)
+        colname = '%s-%s' % (magsrc, magtype)
+        if colname in row:
+            continue
+        row[colname] = magvalue
+    return (row, msg)
 
 
 def read_phases(filename):
