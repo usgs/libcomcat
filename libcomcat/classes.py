@@ -530,19 +530,15 @@ class DetailEvent(object):
 
         if get_all_magnitudes:
             phase_data = self.getProducts('phase-data')[0]
-            phase_bytes, url = phase_data.getContentBytes('quakeml.xml')
-            phase_io = StringIO(phase_bytes.decode('utf-8'))
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                catalog = read_events(phase_io)
-                event = catalog.events[0]
-                imag = 1
-                if get_all_magnitudes:
-                    for magnitude in event.magnitudes:
-                        edict['magnitude%i' % imag] = magnitude.mag
-                        edict['magtype%i' %
-                              imag] = magnitude.magnitude_type
-                        imag += 1
+            phase_url = phase_data.getContentURL('quakeml.xml')
+            catalog = read_events(phase_url)
+            event = catalog.events[0]
+            imag = 1
+            for magnitude in event.magnitudes:
+                edict['magnitude%i' % imag] = magnitude.mag
+                edict['magtype%i' %
+                      imag] = magnitude.magnitude_type
+                imag += 1
 
         return edict
 
