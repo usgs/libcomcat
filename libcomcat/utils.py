@@ -258,7 +258,7 @@ def get_arrival(event, pickid):
 
 def _get_phaserow(pick, catevent):
     """Return a dictionary containing Phase data matching that found on ComCat event page.
-    Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin 
+    Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin
     (Click on the Phases tab).
 
     :param pick:
@@ -348,6 +348,72 @@ def get_phase_dataframe(detail, catalog='preferred'):
     return df
 
 
+def get_magnitude_data_frame(detail, catalog, magtype):
+    """Return a Pandas DataFrame consisting of magnitude data.
+
+    :param detail:
+      DetailEvent object.
+    :param catalog:
+      Source catalog ('us','ak', etc. ,or 'preferred'.)
+    :param magtype:
+      Magnitude type (mb, ml, etc.)
+    :returns:
+      Pandas DataFrame containing columns:
+        - Channel: Network.Station.Channel.Location (NSCL) style station
+                   description. ("--" indicates missing information)
+        - Type: Magnitude type.
+        - Amplitude: Amplitude of seismic wave at each station (m).
+        - Period: Period of seismic wave at each station (s).
+        - Status: "manual" or "automatic".
+        - Magnitude: Locally determined magnitude.
+        - Weight: Magnitude weight.
+    :raises:
+      AttributeError if input DetailEvent does not have a phase-data product
+      for the input catalog.
+    """
+    columns = columns = ['Channel', 'Type', 'Amplitude',
+                         'Period', 'Status', 'Magnitude',
+                         'Weight']
+    df = pd.DataFrame()
+    phasedata = detail.getProducts('phase-data', source=catalog)[0]
+    quakeurl = phasedata.getContentURL('quakeml.xml')
+    try:
+        fh = urlopen(quakeurl, timeout=TIMEOUT)
+        data = fh.read()
+        fh.close()
+    except Exception:
+        return None
+    unpickler = Unpickler()
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=UserWarning)
+        catalog = unpickler.loads(data)
+        catevent = catalog.events[0]  # match this to input catalog
+        for magnitude in catevent.magnitudes:
+            if magnitude.magnitude_type != magtype:
+                continue
+            for contribution in magnitude.station_magnitude_contributions:
+                row = {}
+                smag = contribution.station_magnitude_id.get_referred_object()
+                ampid = smag.amplitude_id
+                amp = ampid.get_referred_object()
+                waveid = amp.waveform_id
+                fmt = '%s.%s.%s.%s'
+                tpl = (waveid.network_code,
+                       waveid.station_code,
+                       waveid.channel_code,
+                       waveid.location_code)
+                row['Channel'] = fmt % tpl
+                row['Type'] = smag.station_magnitude_type
+                row['Amplitude'] = amp.generic_amplitude
+                row['Period'] = amp.period
+                row['Status'] = amp.evaluation_mode
+                row['Magnitude'] = smag.mag
+                row['Weight'] = contribution.weight
+                df = df.append(row, ignore_index=True)
+    df = df[columns]
+    return df
+
+
 def get_detail_data_frame(events, get_all_magnitudes=False,
                           get_tensors='preferred',
                           get_focals='preferred',
@@ -369,7 +435,7 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
     :param get_moment_supplement:
       Boolean indicating whether derived origin and double-couple/source time information
       should be extracted (when available.)
-    :returns:  
+    :returns:
       Pandas DataFrame with one row per event, and all relevant information in columns.
     """
     elist = []
@@ -412,7 +478,7 @@ def get_summary_data_frame(events):
     :param events:
       List of SummaryEvent objects as returned by search() function.
 
-    :returns:  
+    :returns:
       Pandas DataFrame with one row per event, and columns:
        - id (string) Authoritative ComCat event ID.
        - time (datetime) Authoritative event origin time.
