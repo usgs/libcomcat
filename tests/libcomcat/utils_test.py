@@ -3,6 +3,8 @@
 import os.path
 from datetime import datetime
 
+import numpy as np
+
 import vcr
 
 from libcomcat.utils import (get_summary_data_frame,
@@ -11,6 +13,7 @@ from libcomcat.utils import (get_summary_data_frame,
                              maketime,
                              get_catalogs,
                              get_phase_dataframe,
+                             get_magnitude_data_frame,
                              read_phases,
                              get_contributors)
 from libcomcat.search import search, get_event_by_id
@@ -82,6 +85,16 @@ def test_maketime():
 def test_phase_dataframe():
     datadir = get_datadir()
     tape_file = os.path.join(datadir, 'vcr_phase_dataframe.yaml')
+    # with vcr.use_cassette(tape_file):
+    detail = get_event_by_id('us1000778i')  # 2016 NZ event
+    df = get_magnitude_data_frame(detail, 'us', 'mb')
+    np.testing.assert_almost_equal(df['Magnitude'].sum(), 756.8100000000001)
+    x = 1
+
+
+def test_magnitude_dataframe():
+    datadir = get_datadir()
+    tape_file = os.path.join(datadir, 'vcr_magnitude_dataframe.yaml')
     with vcr.use_cassette(tape_file):
         detail = get_event_by_id('us1000778i')  # 2016 NZ event
         df = get_phase_dataframe(detail, catalog='us')
@@ -146,3 +159,5 @@ if __name__ == '__main__':
     test_get_summary_data_frame()
     print('Testing detail frame...')
     test_get_detail_data_frame()
+    print('Testing magnitude frame...')
+    test_get_magnitude_data_frame()

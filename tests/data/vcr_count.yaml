@@ -6,7 +6,7 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&maxdepth=1000&minmagnitude=6.6&maxmagnitude=10.0&offset=1&starttime=1994-01-17T12%3A30%3A00&mindepth=-100&limit=20000&eventtype=earthquake&endtime=1994-01-18T12%3A35%3A00&orderby=time-asc&updatedafter=2010-01-01T00%3A00%3A00
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&updatedafter=2010-01-01T00%3A00%3A00&mindepth=-100&offset=1&limit=20000&endtime=1994-01-18T12%3A35%3A00&maxdepth=1000&starttime=1994-01-17T12%3A30%3A00&minmagnitude=6.6&maxmagnitude=10.0&orderby=time-asc&eventtype=earthquake
   response:
     body: {string: '{"count":1,"maxAllowed":20000}'}
     headers:
@@ -17,12 +17,15 @@ interactions:
       Connection: [close]
       Content-Length: ['30']
       Content-Type: [application/json]
-      Date: ['Fri, 13 Jul 2018 14:33:09 GMT']
-      Expires: ['Fri, 13 Jul 2018 14:48:09 GMT']
-      Last-Modified: ['Fri, 13 Jul 2018 14:33:09 GMT']
+      Date: ['Fri, 09 Nov 2018 20:28:13 GMT']
+      Expires: ['Fri, 09 Nov 2018 20:43:13 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 20:28:13 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
       Vary: [Accept-Encoding]
+      Via: [1.1 980d2a1c9c4f90ad69118c6357f92882.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [cHouni47xKjvepdEtBvVC3Qasg70s5rWThTlohgsbdR6MZRq7X1plw==]
+      X-Cache: [Miss from cloudfront]
       X-Cache-Status: [MISS]
       X-Content-Type-Options: [nosniff]
       X-Frame-Options: [SAMEORIGIN]

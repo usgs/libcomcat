@@ -6,9 +6,9 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&minmagnitude=6.6&maxmagnitude=10.0&offset=1&starttime=1994-01-17T12%3A30%3A00&maxdepth=1000&eventtype=earthquake&endtime=1994-01-18T12%3A35%3A00&limit=20000&orderby=time-asc
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&maxdepth=1000&limit=20000&minmagnitude=6.6&maxmagnitude=10.0&orderby=time-asc&eventtype=earthquake
   response:
-    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1531492336000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&minmagnitude=6.6&maxmagnitude=10.0&offset=1&starttime=1994-01-17T12%3A30%3A00&maxdepth=1000&eventtype=earthquake&endtime=1994-01-18T12%3A35%3A00&limit=20000&orderby=time-asc","title":"USGS
+    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1541795248000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&maxdepth=1000&limit=20000&minmagnitude=6.6&maxmagnitude=10.0&orderby=time-asc&eventtype=earthquake","title":"USGS
         Earthquakes","status":200,"api":"1.5.8","limit":20000,"offset":1,"count":1},"features":[{"type":"Feature","properties":{"mag":6.7,"place":"1km
         NNW of Reseda, CA","time":758809855390,"updated":1518716430169,"tz":null,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ci3144585","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ci3144585&format=geojson","felt":10955,"cdi":8.6,"mmi":8.6,"alert":null,"status":"reviewed","tsunami":0,"sig":1551,"net":"ci","code":"3144585","ids":",cinorthrid,choy19940117123055,gcmtc011794b,ci3144585,usp00066k9,gcmt19940117123055,duputel011794b,atlas19940117123055,iscgem189275,","sources":",ci,choy,gcmt,ci,us,gcmt,duputel,atlas,iscgem,","types":",associate,dyfi,focal-mechanism,general-link,impact-text,moment-tensor,nearby-cities,origin,phase-data,shakemap,trump-shakemap,","nst":0,"dmin":null,"rms":0.31,"gap":29.7,"magType":"mw","type":"earthquake","title":"M
         6.7 - 1km NNW of Reseda, CA"},"geometry":{"type":"Point","coordinates":[-118.537,34.213,18.202]},"id":"ci3144585"}]}'}
@@ -16,16 +16,20 @@ interactions:
       Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
       Access-Control-Allow-Methods: ['*']
       Access-Control-Allow-Origin: ['*']
-      Cache-Control: ['public, max-age=847']
+      Age: ['45']
+      Cache-Control: ['public, max-age=900']
       Connection: [close]
       Content-Length: ['1376']
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Fri, 13 Jul 2018 14:33:09 GMT']
-      Expires: ['Fri, 13 Jul 2018 14:47:16 GMT']
-      Last-Modified: ['Fri, 13 Jul 2018 14:32:16 GMT']
+      Date: ['Fri, 09 Nov 2018 20:27:28 GMT']
+      Expires: ['Fri, 09 Nov 2018 20:42:28 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 20:27:28 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
-      Vary: [Accept-Encoding]
+      Vary: ['Accept-Encoding,Accept-Encoding']
+      Via: [1.1 08905871043ac5aeb0ec57f59d339cc4.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [7dCW_xEJYziUAJP1tqJm49Obhh90x_pm369T3pdthbA5KJZTPkUKEQ==]
+      X-Cache: [Hit from cloudfront]
       X-Cache-Status: [MISS]
       X-Content-Type-Options: [nosniff]
       X-Frame-Options: [SAMEORIGIN]
@@ -38,9 +42,9 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&maxdepth=1000&minmagnitude=9.0&maxmagnitude=9.9&offset=1&starttime=2008-01-01T00%3A00%3A00&mindepth=-100&limit=20000&eventtype=earthquake&endtime=2010-02-01T00%3A00%3A00&orderby=time-asc&updatedafter=2010-01-01T00%3A00%3A00
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&updatedafter=2010-01-01T00%3A00%3A00&mindepth=-100&offset=1&limit=20000&endtime=2010-02-01T00%3A00%3A00&maxdepth=1000&starttime=2008-01-01T00%3A00%3A00&minmagnitude=9.0&maxmagnitude=9.9&orderby=time-asc&eventtype=earthquake
   response:
-    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1531492389000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&maxdepth=1000&minmagnitude=9.0&maxmagnitude=9.9&offset=1&starttime=2008-01-01T00%3A00%3A00&mindepth=-100&limit=20000&eventtype=earthquake&endtime=2010-02-01T00%3A00%3A00&orderby=time-asc&updatedafter=2010-01-01T00%3A00%3A00","title":"USGS
+    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1541795293000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&updatedafter=2010-01-01T00%3A00%3A00&mindepth=-100&offset=1&limit=20000&endtime=2010-02-01T00%3A00%3A00&maxdepth=1000&starttime=2008-01-01T00%3A00%3A00&minmagnitude=9.0&maxmagnitude=9.9&orderby=time-asc&eventtype=earthquake","title":"USGS
         Earthquakes","status":200,"api":"1.5.8","limit":20000,"offset":1,"count":0},"features":[]}'}
     headers:
       Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
@@ -50,12 +54,15 @@ interactions:
       Connection: [close]
       Content-Length: ['466']
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Fri, 13 Jul 2018 14:33:09 GMT']
-      Expires: ['Fri, 13 Jul 2018 14:48:09 GMT']
-      Last-Modified: ['Fri, 13 Jul 2018 14:33:09 GMT']
+      Date: ['Fri, 09 Nov 2018 20:28:14 GMT']
+      Expires: ['Fri, 09 Nov 2018 20:43:13 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 20:28:13 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
       Vary: [Accept-Encoding]
+      Via: [1.1 e672a9473bd80174ece54114220b84e0.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [YexQOqkHGnSeFm9VAMYlohKFBaqPvKWr_dUPZkzvHq-KONwZ8TIGVA==]
+      X-Cache: [Miss from cloudfront]
       X-Cache-Status: [MISS]
       X-Content-Type-Options: [nosniff]
       X-Frame-Options: [SAMEORIGIN]
@@ -68,9 +75,9 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&minmagnitude=0&maxmagnitude=0.1&offset=1&starttime=2017-01-01T00%3A00%3A00&maxdepth=1000&eventtype=earthquake&endtime=2017-01-30T00%3A00%3A00&limit=20000&orderby=time-asc
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=2017-01-01T00%3A00%3A00&endtime=2017-01-30T00%3A00%3A00&maxdepth=1000&limit=20000&minmagnitude=0&maxmagnitude=0.1&orderby=time-asc&eventtype=earthquake
   response:
-    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1531492390000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&minmagnitude=0&maxmagnitude=0.1&offset=1&starttime=2017-01-01T00%3A00%3A00&maxdepth=1000&eventtype=earthquake&endtime=2017-01-30T00%3A00%3A00&limit=20000&orderby=time-asc","title":"USGS
+    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1541795294000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=2017-01-01T00%3A00%3A00&endtime=2017-01-30T00%3A00%3A00&maxdepth=1000&limit=20000&minmagnitude=0&maxmagnitude=0.1&orderby=time-asc&eventtype=earthquake","title":"USGS
         Earthquakes","status":200,"api":"1.5.8","limit":20000,"offset":1,"count":124},"features":[{"type":"Feature","properties":{"mag":0.02,"place":"4km
         E of Mammoth Lakes, California","time":1483258080330,"updated":1483474614054,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72746875","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72746875&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72746875","ids":",nc72746875,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":12,"dmin":0.01571,"rms":0.04,"gap":80,"magType":"md","type":"earthquake","title":"M
         0.0 - 4km E of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.9253333,37.6525,1.59]},"id":"nc72746875"},
@@ -490,15 +497,19 @@ interactions:
       Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
       Access-Control-Allow-Methods: ['*']
       Access-Control-Allow-Origin: ['*']
-      Cache-Control: ['public, max-age=869']
-      Connection: [close, Transfer-Encoding]
+      Cache-Control: ['public, max-age=900']
+      Connection: [close]
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Fri, 13 Jul 2018 14:33:10 GMT']
-      Expires: ['Fri, 13 Jul 2018 14:47:39 GMT']
-      Last-Modified: ['Fri, 13 Jul 2018 14:33:09 GMT']
+      Date: ['Fri, 09 Nov 2018 20:28:14 GMT']
+      Expires: ['Fri, 09 Nov 2018 20:43:14 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 20:28:14 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
+      Transfer-Encoding: [chunked]
       Vary: [Accept-Encoding]
+      Via: [1.1 980d2a1c9c4f90ad69118c6357f92882.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [Vq9WH6M0HGBVQ2_NtQ0rQNYYsBi5NLFMEX2tmELjAZLcCsASCTjHEA==]
+      X-Cache: [Miss from cloudfront]
       X-Cache-Status: [MISS]
       X-Content-Type-Options: [nosniff]
       X-Frame-Options: [SAMEORIGIN]
