@@ -5,6 +5,7 @@ from urllib.request import urlopen
 import warnings
 from datetime import datetime
 import os.path
+import json
 
 # third party imports
 import numpy as np
@@ -21,7 +22,7 @@ TIMEOUT = 60
 TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
-
+COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
 
 def get_mag_src(mag):
     """Try to find the best magnitude source from a Magnitude object.
@@ -492,3 +493,138 @@ def get_summary_data_frame(events):
         elist.append(event.toDict())
     df = pd.DataFrame(elist)
     return df
+
+def get_pager_results(detail, get_losses=False,
+                      get_country_exposures=False):
+    """Extract PAGER results for an event as a DataFrame.
+    
+    Args:
+        detail (DetailEvent): Detailed information for a given event.
+        get_losses (bool): Indicates whether to retrieve predicted fatalities 
+            and dollar losses and uncertainties.
+        get_country_exposures (bool): Indicates whether to retrieve per-country
+            shaking exposures.
+    Returns:
+        (DataFrame): DataFrame whose columns will vary depending on input:
+            (all):
+            id - ComCat Event ID
+            location - Location string for event.
+            time - Date/time of event.
+            latitude - Event latitude (dd)
+            longitude - Event longitude (dd)
+            depth - Event depth (km)
+            magnitude - Event magnitude.
+            mmi1 - Estimated population exposed to shaking at MMI intensity 1.
+            ...
+            mmi10 - Estimated population exposed to shaking at MMI intensity 10.
+    """
+    default_columns = ['id','location','time',
+                       'latitude','longitude',
+                       'depth','magnitude', 'country',
+                       'mmi1','mmi2',
+                       'mmi3','mmi4',
+                       'mmi5','mmi6',
+                       'mmi7','mmi8',
+                       'mmi9','mmi10']
+    
+    if not detail.hasProduct('losspager'):
+        return None
+    pager = detail.getProducts('losspager')[0]
+    total_row = {}
+    default = {}
+    default['id'] = detail.id
+    default['location'] = detail.location
+    lat = detail.latitude
+    lon = detail.longitude
+    default['time'] = detail.time
+    default['latitude'] = lat
+    default['longitude'] = lon
+    default['depth'] = detail.depth
+    default['magnitude'] = detail.depth
+
+    total_row.update(default)
+        
+    if len(pager.getContentsMatching('exposures.json')):
+        exposure_json = pager.getContentBytes('exposures.json')[0].decode('utf-8')
+        jdict = json.loads(exposure_json)
+        exp = jdict['population_exposure']['aggregated_exposure']
+        total_row['mmi1'] = exp[0]
+        total_row['mmi2'] = exp[1]
+        total_row['mmi3'] = exp[2]
+        total_row['mmi4'] = exp[3]
+        total_row['mmi5'] = exp[4]
+        total_row['mmi6'] = exp[5]
+        total_row['mmi7'] = exp[6]
+        total_row['mmi8'] = exp[7]
+        total_row['mmi9'] = exp[8]
+        total_row['mmi10'] = exp[9]
+        total_row['country'] = 'Total'
+        country_rows = {}
+        if get_country_exposures:
+            for country in jdict['population_exposure']['country_exposures']:
+                country_row = {}
+                ccode = country['country_code']
+                country_row.update(default)
+                country_row['country'] = ccode
+                exp = country['exposure']
+                country_row['mmi1'] = exp[0]
+                country_row['mmi2'] = exp[1]
+                country_row['mmi3'] = exp[2]
+                country_row['mmi4'] = exp[3]
+                country_row['mmi5'] = exp[4]
+                country_row['mmi6'] = exp[5]
+                country_row['mmi7'] = exp[6]
+                country_row['mmi8'] = exp[7]
+                country_row['mmi9'] = exp[8]
+                country_row['mmi10'] = exp[9]
+                country_rows[ccode] = country_row
+
+        if get_losses:
+            loss_json = pager.getContentBytes('losses.json')[0].decode('utf-8')
+            jdict = json.loads(loss_json)
+            empfat = jdict['empirical_fatality']
+            total_row['predicted_fatalities'] = empfat['total_fatalities']
+            emploss = jdict['empirical_economic']
+            total_row['predicted_dollars'] = emploss['total_dollars']
+            if get_country_exposures:
+                for country_fat in empfat['country_fatalities']:
+                    fat = country_fat['fatalities']
+                    ccode = country_fat['country_code']
+                    country_rows[ccode]['predicted_fatalities'] = fat
+                    # TODO - can we get one number for uncertainty??
+
+                for country_eco in emploss['country_dollars']:
+                    eco = country_eco['us_dollars']
+                    ccode = country_eco['country_code']
+                    country_rows[ccode]['predicted_dollars'] = eco
+                    # TODO - can we get one number for uncertainty??
+            
+                
+    else: # event does not have JSON content
+        country_rows = []
+        exposure_xml = pager.getContentBytes('pager.xml')[0].decode('utf-8')
+        root = minidom.parseString(exposure_xml)
+        exposures = root.getElementsByTagName('exposure')
+        if get_losses:
+            total_row['predicted_fatalities'] = np.nan
+            total_row['predicted_dollars'] = np.nan
+        for exposure in exposures:
+            mmistr = 'mmi%i' % (int(float(exposure.getAttribute('dmax'))))
+            total_row[mmistr] = int(exposure.getAttribute('exposure'))
+            total_row['ccode'] = 'Total'
+        root.unlink()
+
+    columns = default_columns
+    if get_losses:
+        columns = default_columns + ['predicted_fatalities',
+                                      'predicted_dollars']
+    df = pd.DataFrame(columns=columns)
+    df = df.append(total_row, ignore_index=True)
+    for ccode, country_row in country_rows.items():
+        df = df.append(country_row, ignore_index=True)
+
+    df = df[columns]
+    return df
+        
+
+        

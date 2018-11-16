@@ -9,6 +9,7 @@ import vcr
 
 from libcomcat.utils import (get_summary_data_frame,
                              get_detail_data_frame,
+                             get_pager_results,
                              makedict,
                              maketime,
                              get_catalogs,
@@ -141,8 +142,41 @@ def test_get_detail_data_frame():
             events, get_all_magnitudes=True, verbose=True)
         assert all_mags.iloc[0]['magnitude'] == 8.2
 
+def test_get_pager_results():
+    datadir = get_datadir()
+    EVENTID = 'us2000h8ty'
+    detail = get_event_by_id(EVENTID)
+    tape_file = os.path.join(datadir, 'vcr_pager_results.yaml')
+    # with vcr.use_cassette(tape_file):
+    df = get_pager_results(detail)
+    mmi3_total = 2248544
+    mmi3 = df.iloc[0]['mmi3']
+    assert mmi3 == mmi3_total
+
+    df = get_pager_results(detail, get_country_exposures=True)
+    assert mmi3_total == df.iloc[1:]['mmi3'].sum()
+
+    df = get_pager_results(detail, get_losses=True)
+    testfat = 13
+    testeco = 323864991
+    assert df.iloc[0]['predicted_fatalities'] == testfat
+    assert df.iloc[0]['predicted_dollars'] == testeco
+
+    df = get_pager_results(detail, get_losses=True, get_country_exposures=True)
+    assert df.iloc[1:]['predicted_fatalities'].sum() == testfat
+    assert df.iloc[1:]['predicted_dollars'].sum() == testeco
+
+    EVENTID = 'us1000778i'
+    detail = get_event_by_id(EVENTID)
+    x = 1
+
+        
+
+        
 
 if __name__ == '__main__':
+    print('Testing pager extraction...')
+    test_get_pager_results()
     print('Testing getting phase dataframe...')
     test_phase_dataframe()
     print('Testing reader...')
