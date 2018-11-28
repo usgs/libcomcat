@@ -1,0 +1,4 @@
+Source Network,ID,Time,Magnitude,EffectType,LossType,LossExtent,LossValue,LossMin,LossMax,CollectionTime,CollectionAuthor,CollectionSource,Authoritative,Lat,Lon,LossQuantifier,Comment
+iscgem,910478,1925-05-05T10:06:13.000000Z,6.7,shaking,people,killed,17.0,,,2018-11-29T21:30:19.416151,Kristin Marano,htd,1,,,,
+iscgem,910478,1925-05-05T10:06:13.000000Z,6.7,all,people,killed,17.0,,,2018-11-29T21:29:19.416151,Kristin Marano,htd,1,,,,
+iscgem,910478,1925-05-05T10:06:13.000000Z,6.7,all,,,,,,2018-11-29T21:29:19.416151,Kristin Marano,htd,1,,,,"W. LUZON ISLAND , PHILIPPINES "

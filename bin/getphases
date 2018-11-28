@@ -11,7 +11,8 @@ import os.path
 import pandas as pd
 
 # local imports
-from libcomcat.utils import maketime, get_phase_dataframe
+from libcomcat.utils import maketime
+from libcomcat.dataframes import get_phase_dataframe
 from libcomcat.search import search, get_event_by_id
 
 TIMEOUT = 60  # how many seconds to wait to fetch a url?

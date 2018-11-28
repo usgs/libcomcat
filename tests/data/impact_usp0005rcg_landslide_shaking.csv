@@ -1,0 +1,4 @@
+Source Network,ID,Time,Magnitude,EffectType,LossType,LossExtent,LossValue,LossMin,LossMax,CollectionTime,CollectionAuthor,CollectionSource,Authoritative,Lat,Lon,LossQuantifier,Comment
+us,p0005rcg,1993-04-18T09:16:23.220000Z,6.3,landslide,people,killed,3.0,,,2018-11-29T22:45:40.906954,Kristin Marano,pde,1,,,,including 3 killed by  earthquake_induced landslides at Lima
+us,p0005rcg,1993-04-18T09:16:23.220000Z,6.3,shaking,people,killed,3.0,,,2018-11-29T22:46:40.906954,Kristin Marano,pde,1,,,,"Six people killed, including 3 killed by  earthquake_induced landslides at Lima"
+us,p0005rcg,1993-04-18T09:16:23.220000Z,6.3,landslide,,,,,,2018-11-29T22:45:40.906954,Kristin Marano,pde,1,,,,
