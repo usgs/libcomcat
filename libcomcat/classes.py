@@ -126,50 +126,71 @@ class SummaryEvent(object):
 
         https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
 
-        :param feature:
-          GeoJSON feature as described at above URL.
+        Args:
+            feature (dict): GeoJSON feature as described at above URL.
         """
         self._jdict = feature.copy()
 
     @property
     def location(self):
         """Earthquake location string.
+
+        Returns:
+            str: Earthquake location.
         """
         return self._jdict['properties']['place']
 
     @property
     def url(self):
         """ComCat URL.
+
+        Returns:
+            str: ComCat URL
         """
         return self._jdict['properties']['url']
 
     @property
     def latitude(self):
         """Authoritative origin latitude.
+
+        Returns:
+            float: Authoritative origin latitude.
         """
         return self._jdict['geometry']['coordinates'][1]
 
     @property
     def longitude(self):
         """Authoritative origin longitude.
+
+        Returns:
+            float: Authoritative origin longitude.
         """
         return self._jdict['geometry']['coordinates'][0]
 
     @property
     def depth(self):
         """Authoritative origin depth.
+
+        Returns:
+            float: Authoritative origin depth.
         """
         return self._jdict['geometry']['coordinates'][2]
 
     @property
     def id(self):
         """Authoritative origin ID.
+
+        Returns:
+            str: Authoritative origin ID.
         """
         return self._jdict['id']
 
     @property
     def time(self):
         """Authoritative origin time.
+
+        Returns:
+            datetime: Authoritative origin time.
         """
         time_in_msec = self._jdict['properties']['time']
         time_in_sec = time_in_msec // 1000
@@ -182,6 +203,9 @@ class SummaryEvent(object):
     @property
     def magnitude(self):
         """Authoritative origin magnitude.
+
+        Returns:
+            float: Authoritative origin magnitude.
         """
         return self._jdict['properties']['mag']
 
@@ -192,17 +216,21 @@ class SummaryEvent(object):
 
     @property
     def properties(self):
-        """List of summary event properties (retrievable from object with [] operator).
+        """List of summary event properties.
+
+        Returns:
+            list: List of summary event properties (retrievable 
+                  from object with [] operator).
         """
         return list(self._jdict['properties'].keys())
 
     def hasProduct(self, product):
         """Test to see whether a given product exists for this event.
 
-        :param product:
-          Product to search for.
-        :returns:
-          Boolean indicating whether that product exists or not.
+        Args:
+            product (str): Product to search for.
+        Returns:
+            bool: Indicates whether that product exists or not.
         """
         if product not in self._jdict['properties']['types'].split(',')[1:]:
             return False
@@ -211,10 +239,10 @@ class SummaryEvent(object):
     def hasProperty(self, key):
         """Test to see if property is present in list of properties.
 
-        :param key:
-          Property to search for.
-        :returns:
-          Boolean indicating whether that key exists or not.
+        Args:
+            key (str): Property to search for.
+        Returns: 
+          bool: Indicates whether that key exists or not.
         """
         if key not in self._jdict['properties']:
             return False
@@ -223,10 +251,10 @@ class SummaryEvent(object):
     def __getitem__(self, key):
         """Extract SummaryEvent property using the [] operator.
 
-        :param key:
-          Property to extract.
-        :returns:
-          Desired property.
+        Args:
+            key (str): Property to extract.
+        Returns:
+            str: Desired property.
         """
         if key not in self._jdict['properties']:
             raise AttributeError(
@@ -236,23 +264,26 @@ class SummaryEvent(object):
     def getDetailURL(self):
         """Instantiate a DetailEvent object from the URL found in the summary.
 
-        :returns:
-          URL for detailed version of event.
+        Returns:
+            str: URL for detailed version of event.
         """
         durl = self._jdict['properties']['detail']
         return durl
 
     def getDetailEvent(self, includedeleted=False, includesuperseded=False):
         """Instantiate a DetailEvent object from the URL found in the summary.
-        :param includedeleted:
-          Boolean indicating wheather to return versions of products that have
-          been deleted. Cannot be used with includesuperseded.
-        :param includesuperseded:
-          Boolean indicating wheather to return versions of products that have
-          been replaced by newer versions.
-          Cannot be used with includedeleted.
-        :returns:
-          DetailEvent version of SummaryEvent.
+
+        Args:
+            includedeleted (bool): Boolean indicating wheather to return 
+                versions of products that have
+                been deleted. Cannot be used with 
+                includesuperseded.
+            includesuperseded (bool):
+                Boolean indicating wheather to return versions of products 
+                that have been replaced by newer versions.
+                Cannot be used with includedeleted.
+        Returns:
+            DetailEvent: Detailed version of SummaryEvent.
         """
         if includesuperseded and includedeleted:
             msg = ('includedeleted and includesuperseded '
@@ -271,14 +302,14 @@ class SummaryEvent(object):
     def toDict(self):
         """Render the SummaryEvent origin information as an OrderedDict().
 
-        :returns:
-          Dictionary containing fields:
-            - id (string) Authoritative ComCat event ID.
-            - time (datetime) Authoritative event origin time.
-            - latitude (float) Authoritative event latitude.
-            - longitude (float) Authoritative event longitude.
-            - depth (float) Authoritative event depth.
-            - magnitude (float) Authoritative event magnitude.
+        Returns:
+            dict: Containing fields:
+               - id (string) Authoritative ComCat event ID.
+               - time (datetime) Authoritative event origin time.
+               - latitude (float) Authoritative event latitude.
+               - longitude (float) Authoritative event longitude.
+               - depth (float) Authoritative event depth.
+               - magnitude (float) Authoritative event magnitude.
         """
         edict = OrderedDict()
         edict['id'] = self.id
@@ -303,8 +334,8 @@ class DetailEvent(object):
 
         https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson_detail.php
 
-        :param url:
-          String indicating a URL pointing to a detailed GeoJSON event.
+        Args:
+            url (str): String indicating a URL pointing to a detailed GeoJSON event.
         """
         try:
             fh = request.urlopen(url, timeout=TIMEOUT)
@@ -329,24 +360,46 @@ class DetailEvent(object):
     @property
     def location(self):
         """Earthquake location string.
+
+        Returns:
+            str: Earthquake location.
         """
         return self._jdict['properties']['place']
 
     @property
     def url(self):
         """ComCat URL.
+
+        Returns:
+            str: Earthquake URL.
         """
         return self._jdict['properties']['url']
 
     @property
+    def detail_url(self):
+        """ComCat Detailed URL (with JSON).
+
+        Returns:
+            str: Earthquake Detailed URL with JSON.
+        """
+        url = URL_TEMPLATE.replace('[EVENTID]', self.id)
+        return url
+
+    @property
     def latitude(self):
         """Authoritative origin latitude.
+
+        Returns:
+            float: Authoritative origin latitude.
         """
         return self._jdict['geometry']['coordinates'][1]
 
     @property
     def longitude(self):
         """Authoritative origin longitude.
+
+        Returns:
+            float: Authoritative origin longitude.
         """
         return self._jdict['geometry']['coordinates'][0]
 
@@ -359,12 +412,18 @@ class DetailEvent(object):
     @property
     def id(self):
         """Authoritative origin ID.
+
+        Returns:
+            str: Authoritative origin ID.
         """
         return self._jdict['id']
 
     @property
     def time(self):
         """Authoritative origin time.
+
+        Returns:
+            datetime: Authoritative origin time.
         """
         time_in_msec = self._jdict['properties']['time']
         time_in_sec = time_in_msec // 1000
@@ -377,22 +436,28 @@ class DetailEvent(object):
     @property
     def magnitude(self):
         """Authoritative origin magnitude.
+
+        Returns:
+            float: Authoritative origin magnitude.
         """
         return self._jdict['properties']['mag']
 
     @property
     def properties(self):
-        """List of summary event properties (retrievable from object with [] operator).
+        """List of summary event properties.
+
+        Returns:
+            list: List of summary event properties (retrievable from object with [] operator).
         """
         return list(self._jdict['properties'].keys())
 
     def hasProduct(self, product):
         """Return a boolean indicating whether given product can be extracted from DetailEvent.
 
-        :param product:
-          Product to search for.
-        :returns:
-          Boolean indicating whether that product exists or not.
+        Args:
+            product (str): Product to search for.
+        Returns:
+            bool: Indicates whether that product exists or not.
         """
         if product in self._jdict['properties']['products']:
             return True
@@ -401,10 +466,10 @@ class DetailEvent(object):
     def hasProperty(self, key):
         """Test to see whether a property with a given key is present in list of properties.
 
-        :param key:
-          Property to search for.
-        :returns:
-          Boolean indicating whether that key exists or not.
+        Args:
+            key (str): Property to search for.
+        Returns:
+            bool: Indicates whether that key exists or not.
         """
         if key not in self._jdict['properties']:
             return False
@@ -413,10 +478,10 @@ class DetailEvent(object):
     def __getitem__(self, key):
         """Extract DetailEvent property using the [] operator.
 
-        :param key:
-          Property to extract.
-        :returns:
-          Desired property.
+        Args:
+            key (str): Property to extract.
+        Returns:
+            str: Desired property.
         """
         if key not in self._jdict['properties']:
             raise AttributeError(
@@ -430,28 +495,24 @@ class DetailEvent(object):
                get_focals='preferred'):
         """Return origin, focal mechanism, and tensor information for a DetailEvent.
 
-        :param catalog:
-          Retrieve the primary event information (time,lat,lon...) from the
-          catalog given. If no source for this information exists, an
-          AttributeError will be raised.
-        :param get_all_magnitudes:
-          Boolean indicating whether all known magnitudes for this event
-           should be returned. NOTE: The ComCat phase-data product's
-           QuakeML file will be downloaded and parsed, which takes extra time.
-        :param get_tensors:
-          String option of 'none', 'preferred', or 'all'.
-        :param get_moment_supplement:
-          Boolean indicating whether derived origin and
-          double-couple/source time information should be extracted
-          (when available.)
-        :param get_focals:
-          String option of 'none', 'preferred', or 'all'.
-        :returns:
-          OrderedDict with the same fields as returned by
-          SummaryEvent.toDict(), *preferred* moment tensor and focal
-          mechanism data.  If all magnitudes are requested, then
-          those will be returned as well. Generally speaking, the
-          number and name of the fields will vary by what data is available.
+        Args:
+            catalog (str): Retrieve the primary event information (time,lat,lon...) from the
+                catalog given. If no source for this information exists, an
+                AttributeError will be raised.
+            get_all_magnitudes (bool): Indicates whether all known magnitudes for this event
+                should be returned. NOTE: The ComCat phase-data product's
+                QuakeML file will be downloaded and parsed, which takes extra time.
+            get_tensors (str): Option of 'none', 'preferred', or 'all'.
+            get_moment_supplement (bool): Boolean indicating whether derived origin and
+                double-couple/source time information should be extracted
+                (when available.)
+            get_focals (str): String option of 'none', 'preferred', or 'all'.
+        Returns:
+            dict: OrderedDict with the same fields as returned by
+                SummaryEvent.toDict(), *preferred* moment tensor and focal
+                mechanism data.  If all magnitudes are requested, then
+                those will be returned as well. Generally speaking, the
+                number and name of the fields will vary by what data is available.
         """
         edict = OrderedDict()
 
@@ -545,10 +606,10 @@ class DetailEvent(object):
     def getNumVersions(self, product_name):
         """Count versions of a product (origin, shakemap, etc.) available.
 
-        :param product_name:
-          Name of product to query.
-        :returns:
-          Number of versions of a given product.
+        Args:
+            product_name (str): Name of product to query.
+        Returns:
+            int: Number of versions of a given product.
         """
         if not self.hasProduct(product_name):
             raise AttributeError(
@@ -559,18 +620,16 @@ class DetailEvent(object):
                     version=VersionOption.PREFERRED):
         """Retrieve a Product object from this DetailEvent.
 
-        :param product_name:
-          Name of product (origin, shakemap, etc.) to retrieve.
-        :param version:
-          An enum value from VersionOption (PREFERRED,FIRST,ALL).
-        :param source:
-          Any one of:
-            - 'preferred' Get version(s) of products from preferred source.
-            - 'all' Get version(s) of products from all sources.
-            - Any valid source network for this type of product
-              ('us','ak',etc.)
-        :returns:
-          List of Product objects.
+        Args:
+            product_name (str): Name of product (origin, shakemap, etc.) to retrieve.
+            version (enum): A value from VersionOption (PREFERRED,FIRST,ALL).
+            source (str): Any one of:
+                - 'preferred' Get version(s) of products from preferred source.
+                - 'all' Get version(s) of products from all sources.
+                - Any valid source network for this type of product
+                  ('us','ak',etc.)
+        Returns:
+          list: List of Product objects.
         """
         if not self.hasProduct(product_name):
             raise AttributeError(
@@ -689,12 +748,10 @@ class Product(object):
     def __init__(self, product_name, version, product):
         """Create a product class from product in detailed GeoJSON.
 
-        :param product_name:
-          Name of Product (origin, shakemap, etc.)
-        :param version:
-          Best guess as to ordinal version of the product.
-        :param product:
-          Product data to be copied from DetailEvent.
+        Args:
+            product_name (str): Name of Product (origin, shakemap, etc.)
+            version (int): Best guess as to ordinal version of the product.
+            product (dict): Product data to be copied from DetailEvent.
         """
         self._product_name = product_name
         self._version = version
@@ -703,11 +760,11 @@ class Product(object):
     def getContentsMatching(self, regexp):
         """Find all contents that match the input regex, shortest to longest.
 
-        :param regexp:
-          Regular expression which should match one of the content files
-          in the Product.
-        :returns:
-          List of contents matching
+        Args:
+            regexp (str): Regular expression which should match one of the content files
+                in the Product.
+        Returns:
+            list: List of contents matching input regex.
         """
         contents = []
         if not len(self._product['contents']):
@@ -734,11 +791,11 @@ class Product(object):
         grid.xml and grid.xml.zip, and the input regexp is grid.xml,
         then grid.xml will be matched.
 
-        :param regexp:
-          Regular expression to use to search for matching contents.
-        :returns:
-          Shortest file name to match input regexp, or None if
-          no matches found.
+        Args:
+            regexp (str): Regular expression to use to search for matching contents.
+        Returns:
+            str: Shortest file name to match input regexp, or None if
+                 no matches found.
         """
         content_name = 'a' * 1000
         found = False
@@ -763,11 +820,11 @@ class Product(object):
         grid.xml.zip, and the input regexp is grid.xml, then grid.xml will be
         matched.
 
-        :param regexp:
-          Regular expression to use to search for matching contents.
-        :returns:
-          URL for shortest file name to match input regexp, or
-          None if no matches found.
+        Args:
+            regexp (str): Regular expression to use to search for matching contents.
+        Returns:
+            str: URL for shortest file name to match input regexp, or
+                 None if no matches found.
         """
         content_name = 'a' * 1000
         found = False
@@ -790,16 +847,16 @@ class Product(object):
     def getContent(self, regexp, filename):
         """Download the shortest file name matching the input regular expression.
 
-        :param regexp:
-          Regular expression which should match one of the content files
-          in the Product.
-        :param filename:
-          Filename to which content should be downloaded.
-        :returns:
-          The URL from which the content was downloaded.
-        :raises:
-          Exception if content could not be downloaded from ComCat
-          after two tries.
+        Args:
+            regexp (str): Regular expression which should match one of the 
+                content files
+                in the Product.
+        filename (str): Filename to which content should be downloaded.
+        Returns:
+            str: The URL from which the content was downloaded.
+        Raises:
+          Exception: If content could not be downloaded from ComCat
+              after two tries.
         """
         data, url = self.getContentBytes(regexp)
 
@@ -812,17 +869,19 @@ class Product(object):
     def getContentBytes(self, regexp):
         """Return bytes of shortest file name matching input regular expression.
 
-        :param regexp:
-          Regular expression which should match one of the content files in
-          the Product.
-        :returns:
-          Tuple of array of bytes containing file contents, and the source url.
-          Bytes can be decoded to UTF-8 by the user if file contents are known
-          to be ASCII.  i.e.,
-          product.getContentBytes('info.json').decode('utf-8')
-        :raises:
-          Exception if content could not be downloaded from ComCat
-          after two tries.
+
+        Args:
+            regexp (str): Regular expression which should match one of the 
+                content files in
+                the Product.
+        Returns:
+            tuple: (array of bytes containing file contents, source url)
+                Bytes can be decoded to UTF-8 by the user if file contents are known
+                to be ASCII.  i.e.,
+                product.getContentBytes('info.json').decode('utf-8')
+        Raises:
+            Exception: If content could not be downloaded from ComCat
+                after two tries.
         """
         content_name = 'a' * 1000
         content_url = None
@@ -859,10 +918,10 @@ class Product(object):
     def hasProperty(self, key):
         """Determine if this Product contains a given property.
 
-        :param key:
-          Property to search for.
-        :returns:
-          Boolean indicating whether that key exists or not.
+        Args:
+            key (str): Property to search for.
+        Returns:
+            bool: Indicates whether that key exists or not.
         """
         if key not in self._product['properties']:
             return False
@@ -871,18 +930,38 @@ class Product(object):
     @property
     def preferred_weight(self):
         """The weight assigned to this product by ComCat.
+
+        Returns:
+            float: weight assigned to this product by ComCat.
         """
         return self._product['preferredWeight']
 
     @property
     def source(self):
         """The contributing source for this product.
+
+        Returns:
+            str: contributing source for this product.
         """
         return self._product['source']
 
     @property
+    def product_timestamp(self):
+        """The timestamp for this product.
+
+        Returns:
+            int: The timestamp for this product (effectively used as 
+                version number by ComCat).
+        """
+        time_in_msec = self._product['updateTime']
+        return time_in_msec
+
+    @property
     def update_time(self):
         """The datetime for when this product was updated.
+
+        Returns:
+            datetime: datetime for when this product was updated.
         """
         time_in_msec = self._product['updateTime']
         time_in_sec = time_in_msec // 1000
@@ -895,28 +974,37 @@ class Product(object):
     @property
     def version(self):
         """The best guess for the ordinal version number of this product.
+
+        Returns:
+            int: best guess for the ordinal version number of this product.
         """
         return self._version
 
     @property
     def properties(self):
-        """List of product properties (retrievable from object with [] operator).
+        """List of product properties.
+
+        Returns:
+            list: List of product properties (retrievable from object with [] operator).
         """
         return list(self._product['properties'].keys())
 
     @property
     def contents(self):
-        """List of product properties (retrievable with getContent() method).
+        """List of product properties.
+
+        Returns:
+            list: List of product properties (retrievable with getContent() method).
         """
         return list(self._product['contents'].keys())
 
     def __getitem__(self, key):
         """Extract Product property using the [] operator.
 
-        :param key:
-          Property to extract.
-        :returns:
-          Desired property.
+        Args:
+            key (str): Property to extract.
+        Returns:
+            str: Desired property.
         """
         if key not in self._product['properties']:
             msg = 'No property %s found in %s product.' % (

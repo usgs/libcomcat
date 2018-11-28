@@ -3,9 +3,9 @@ import argparse
 import sys
 
 from libcomcat.search import search, count
-from libcomcat.utils import (get_detail_data_frame,
-                             get_summary_data_frame,
-                             maketime)
+from libcomcat.utils import maketime
+from libcomcat.dataframes import (get_detail_data_frame,
+                                  get_summary_data_frame)
 
 
 def get_parser():
