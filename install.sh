@@ -22,18 +22,6 @@ echo $PATH
 
 VENV=comcat
 
-# Is the reset flag set?
-reset=0
-while getopts r FLAG; do
-  case $FLAG in
-    r)
-        reset=1
-        
-      ;;
-  esac
-done
-
-
 # create a matplotlibrc file with the non-interactive backend "Agg" in it.
 if [ ! -d "$matplotlibdir" ]; then
     mkdir -p $matplotlibdir
@@ -77,23 +65,40 @@ echo ""
 
 
 # Choose an environment file based on platform
-echo ". $HOME/miniconda/etc/profile.d/conda.sh" >> $prof
-
-# If the user has specified the -r (reset) flag, then create an
-# environment based on only the named dependencies, without
-# any versions of packages specified.
-if [ $reset == 1 ]; then
-    echo "Ignoring platform, letting conda sort out dependencies..."
-    env_file=environment.yml
+# only add this line if it does not already exist
+grep "/etc/profile.d/conda.sh" $prof
+if [ $? -ne 0 ]; then
+    echo ". $_CONDA_ROOT/etc/profile.d/conda.sh" >> $prof
 fi
 
 # Start in conda base environment
 echo "Activate base virtual environment"
 conda activate base
 
+# Remove existing libcomcat environment if it exists
+conda remove -y -n $VENV --all
+
+# Package list:
+package_list=(
+      "python=3.5"
+      "impactutils"
+      "ipython"
+      "jupyter"
+      "numpy"
+      "obspy"
+      "pandas"
+      "pytest"
+      "pytest-cov"
+      "vcrpy"
+      "xlrd"
+      "xlwt"
+      "openpyxl"
+      "xlsxwriter"
+)
+
 # Create a conda virtual environment
 echo "Creating the $VENV virtual environment:"
-conda env create -f $env_file --force
+conda create -y -n $VENV -c conda-forge --channel-priority ${package_list[*]}
 
 # Bail out at this point if the conda create command fails.
 # Clean up zip files we've downloaded
@@ -110,9 +115,6 @@ conda activate $VENV
 # This package
 echo "Installing libcomcat..."
 pip install -e .
-
-# Install default profile
-#python bin/sm_profile -c default -a
 
 # Tell the user they have to activate this environment
 echo "Type 'conda activate $VENV' to use this new virtual environment."
