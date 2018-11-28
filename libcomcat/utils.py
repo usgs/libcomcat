@@ -5,6 +5,7 @@ from urllib.request import urlopen
 import warnings
 from datetime import datetime
 import os.path
+import json
 
 # third party imports
 import numpy as np
@@ -13,6 +14,10 @@ from obspy.io.quakeml.core import Unpickler
 from obspy.clients.fdsn import Client
 from impactutils.time.ancient_time import HistoricTime
 from openpyxl import load_workbook
+import requests
+
+# local imports
+from .classes import VersionOption
 
 # constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
@@ -21,6 +26,11 @@ TIMEOUT = 60
 TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
+COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
+
+# where is the PAGER fatality model found?
+FATALITY_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/fatality.xml'
+ECONOMIC_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/economy.xml'
 
 
 def get_mag_src(mag):
@@ -103,12 +113,13 @@ def get_all_mags(eventid):
 def read_phases(filename):
     """Read a phase file CSV or Excel file into data structures.
 
-    :param filename:
-      String file name of a CSV or Excel file created by getphases program.
-    :returns:
-      Tuple of:
-        header_dict - Dictionary containing header data from top of file.
-        dataframe - Pandas dataframe containing phase data.
+    Args:
+        filename (str): String file name of a CSV or Excel file 
+            created by getphases program.
+    Returns:
+        tuple: 
+            header_dict - Dictionary containing header data from top of file.
+            dataframe - Pandas dataframe containing phase data.
     """
     if not os.path.isfile(filename):
         raise FileNotFoundError('Filename %s does not exist.' % filename)
@@ -178,8 +189,9 @@ def maketime(timestring):
 def get_catalogs():
     """Get the list of catalogs available in ComCat.
 
-    :returns:
-      List of catalogs available in ComCat (see the catalog parameter in search() method.)
+    Returns:
+        list: Catalogs available in ComCat (see the catalog 
+            parameter in search() method.)
     """
     fh = urlopen(CATALOG_SEARCH_TEMPLATE, timeout=TIMEOUT)
     data = fh.read().decode('utf8')
@@ -196,8 +208,9 @@ def get_catalogs():
 def get_contributors():
     """Get the list of contributors available in ComCat.
 
-    :returns:
-      List of contributors available in ComCat (see the contributor parameter in search() method.)
+    Returns:
+        list: Contributors available in ComCat (see the contributor 
+            parameter in search() method.)
     """
     fh = urlopen(CONTRIBUTORS_SEARCH_TEMPLATE, timeout=TIMEOUT)
     data = fh.read().decode('utf8')
@@ -209,286 +222,3 @@ def get_contributors():
         conlist.append(contributor.firstChild.data)
     root.unlink()
     return conlist
-
-
-def stringify(waveform):
-    """Turn waveform object into NSCL-style station code
-
-    :param waveform:
-      Obspy Catalog Waveform object.
-    :returns:
-      NSCL- style string representation of waveform object.
-    """
-    fmt = '%s.%s.%s.%s'
-    network = '--'
-    if waveform.network_code is not None:
-        network = waveform.network_code
-    station = '--'
-    if waveform.station_code is not None:
-        station = waveform.station_code
-    channel = '--'
-    if waveform.channel_code is not None:
-        channel = waveform.channel_code
-    location = '--'
-    if waveform.location_code is not None:
-        location = waveform.location_code
-    tpl = (network, station, channel, location)
-    return fmt % tpl
-
-
-def get_arrival(event, pickid):
-    """Find the arrival object in a Catalog Event corresponding to input pick id.
-    :param event:
-      Obspy Catalog Event object.
-    :param pickid:
-      Pick ID string.
-    :returns:
-      Obspy Catalog arrival object.
-    """
-    for origin in event.origins:
-        idlist = [arr.pick_id for arr in origin.arrivals]
-        if pickid not in idlist:
-            continue
-        idx = idlist.index(pickid)
-        arrival = origin.arrivals[idx]
-        return arrival
-    if pickid is None:
-        return None
-
-
-def _get_phaserow(pick, catevent):
-    """Return a dictionary containing Phase data matching that found on ComCat event page.
-    Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin
-    (Click on the Phases tab).
-
-    :param pick:
-      Obspy Catalog Pick object.
-    :param catevent:
-      Obspy Catalog Event object.
-    :returns:
-      Dictionary containing:
-        - Channel: NSCL-style channel string.
-        - Distance: Distance (km) from station to origin.
-        - Azimuth: Azimuth (deg.) from epicenter to station.
-        - Phase: Name of the phase (Pn,Pg, etc.)
-        - Arrival Time: Pick arrival time (UTC).
-        - Status: "manual" or "automatic".
-        - Residual: Arrival time residual.
-        - Weight: Arrival weight.
-        - Agency: Agency ID.
-    """
-    pick_id = pick.resource_id
-    waveform_id = pick.waveform_id
-    arrival = get_arrival(catevent, pick_id)
-    if arrival is None:
-        return None
-
-    # save info to row of dataframe
-    etime = pick.time.datetime
-    channel = stringify(waveform_id)
-    row = {'Channel': channel,
-           'Distance': arrival.distance,
-           'Azimuth': arrival.azimuth,
-           'Phase': arrival.phase,
-           'Arrival Time': etime,
-           'Status': pick.evaluation_mode,
-           'Residual': arrival.time_residual,
-           'Weight': arrival.time_weight,
-           'Agency': arrival.creation_info.agency_id}
-    return row
-
-
-def get_phase_dataframe(detail, catalog='preferred'):
-    """Return a Pandas DataFrame consisting of Phase arrival data.
-
-    :param detail:
-      DetailEvent object.
-    :param catalog:
-      Source network ('us','ak', etc. ,or 'preferred'.)
-    :returns:
-      Pandas DataFrame containing columns:
-        - Channel: Network.Station.Channel.Location (NSCL) style station
-                   description. ("--" indicates missing information)
-        - Distance: Distance (kilometers) from epicenter to station.
-        - Azimuth: Azimuth (degrees) from epicenter to station.
-        - Phase: Name of the phase (Pn,Pg, etc.)
-        - Arrival Time: Pick arrival time (UTC).
-        - Status: "manual" or "automatic".
-        - Residual: Arrival time residual.
-        - Weight: Arrival weight.
-        - Agency: Agency ID.
-    :raises:
-      AttributeError if input DetailEvent does not have a phase-data product
-      for the input catalog.
-    """
-    if catalog is None:
-        catalog = 'preferred'
-    df = pd.DataFrame(columns=['Channel', 'Distance', 'Azimuth',
-                               'Phase', 'Arrival Time', 'Status',
-                               'Residual', 'Weight', 'Agency'])
-
-    phasedata = detail.getProducts('phase-data', source=catalog)[0]
-    quakeurl = phasedata.getContentURL('quakeml.xml')
-    try:
-        fh = urlopen(quakeurl, timeout=TIMEOUT)
-        data = fh.read()
-        fh.close()
-    except Exception:
-        return None
-    unpickler = Unpickler()
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=UserWarning)
-        catalog = unpickler.loads(data)
-        catevent = catalog.events[0]
-        for pick in catevent.picks:
-            phaserow = _get_phaserow(pick, catevent)
-            if phaserow is None:
-                continue
-            df = df.append(phaserow, ignore_index=True)
-    return df
-
-
-def get_magnitude_data_frame(detail, catalog, magtype):
-    """Return a Pandas DataFrame consisting of magnitude data.
-
-    :param detail:
-      DetailEvent object.
-    :param catalog:
-      Source catalog ('us','ak', etc. ,or 'preferred'.)
-    :param magtype:
-      Magnitude type (mb, ml, etc.)
-    :returns:
-      Pandas DataFrame containing columns:
-        - Channel: Network.Station.Channel.Location (NSCL) style station
-                   description. ("--" indicates missing information)
-        - Type: Magnitude type.
-        - Amplitude: Amplitude of seismic wave at each station (m).
-        - Period: Period of seismic wave at each station (s).
-        - Status: "manual" or "automatic".
-        - Magnitude: Locally determined magnitude.
-        - Weight: Magnitude weight.
-    :raises:
-      AttributeError if input DetailEvent does not have a phase-data product
-      for the input catalog.
-    """
-    columns = columns = ['Channel', 'Type', 'Amplitude',
-                         'Period', 'Status', 'Magnitude',
-                         'Weight']
-    df = pd.DataFrame()
-    phasedata = detail.getProducts('phase-data', source=catalog)[0]
-    quakeurl = phasedata.getContentURL('quakeml.xml')
-    try:
-        fh = urlopen(quakeurl, timeout=TIMEOUT)
-        data = fh.read()
-        fh.close()
-    except Exception:
-        return None
-    unpickler = Unpickler()
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=UserWarning)
-        catalog = unpickler.loads(data)
-        catevent = catalog.events[0]  # match this to input catalog
-        for magnitude in catevent.magnitudes:
-            if magnitude.magnitude_type != magtype:
-                continue
-            for contribution in magnitude.station_magnitude_contributions:
-                row = {}
-                smag = contribution.station_magnitude_id.get_referred_object()
-                ampid = smag.amplitude_id
-                amp = ampid.get_referred_object()
-                waveid = amp.waveform_id
-                fmt = '%s.%s.%s.%s'
-                tpl = (waveid.network_code,
-                       waveid.station_code,
-                       waveid.channel_code,
-                       waveid.location_code)
-                row['Channel'] = fmt % tpl
-                row['Type'] = smag.station_magnitude_type
-                row['Amplitude'] = amp.generic_amplitude
-                row['Period'] = amp.period
-                row['Status'] = amp.evaluation_mode
-                row['Magnitude'] = smag.mag
-                row['Weight'] = contribution.weight
-                df = df.append(row, ignore_index=True)
-    df = df[columns]
-    return df
-
-
-def get_detail_data_frame(events, get_all_magnitudes=False,
-                          get_tensors='preferred',
-                          get_focals='preferred',
-                          get_moment_supplement=False,
-                          verbose=False):
-    """Extract the detailed event informat into a pandas DataFrame.
-
-    Usage:
-      TODO
-
-    :param events:
-      List of SummaryEvent objects as returned by search() function.
-    :param get_all_magnitudes:
-      Boolean indicating whether to return all magnitudes in results for each event.
-    :param get_tensors:
-      String option of 'none', 'preferred', or 'all'.
-    :param get_focals:
-      String option of 'none', 'preferred', or 'all'.
-    :param get_moment_supplement:
-      Boolean indicating whether derived origin and double-couple/source time information
-      should be extracted (when available.)
-    :returns:
-      Pandas DataFrame with one row per event, and all relevant information in columns.
-    """
-    elist = []
-    ic = 0
-    inc = min(100, np.power(10, np.floor(np.log10(len(events))) - 1))
-    if verbose:
-        sys.stderr.write(
-            'Getting detailed event info - reporting every %i events.\n' % inc)
-    for event in events:
-        try:
-            detail = event.getDetailEvent()
-        except Exception as e:
-            print('Failed to get detailed version of event %s' % event.id)
-            continue
-        edict = detail.toDict(get_all_magnitudes=get_all_magnitudes,
-                              get_tensors=get_tensors,
-                              get_moment_supplement=get_moment_supplement,
-                              get_focals=get_focals)
-        elist.append(edict)
-        if ic % inc == 0 and verbose:
-            msg = 'Getting detailed information for %s, %i of %i events.\n'
-            sys.stderr.write(msg % (event.id, ic, len(events)))
-        ic += 1
-    df = pd.DataFrame(elist)
-    first_columns = ['id', 'time', 'latitude',
-                     'longitude', 'depth', 'magnitude']
-    all_columns = df.columns
-    rem_columns = [col for col in all_columns if col not in first_columns]
-    new_columns = first_columns + rem_columns
-    df = df[new_columns]
-    return df
-
-
-def get_summary_data_frame(events):
-    """Take the results of a search and extract the summary event informat in a pandas DataFrame.
-
-    Usage:
-      TODO
-
-    :param events:
-      List of SummaryEvent objects as returned by search() function.
-
-    :returns:
-      Pandas DataFrame with one row per event, and columns:
-       - id (string) Authoritative ComCat event ID.
-       - time (datetime) Authoritative event origin time.
-       - latitude (float) Authoritative event latitude.
-       - longitude (float) Authoritative event longitude.
-       - depth (float) Authoritative event depth.
-       - magnitude (float) Authoritative event magnitude.
-    """
-    elist = []
-    for event in events:
-        elist.append(event.toDict())
-    df = pd.DataFrame(elist)
-    return df

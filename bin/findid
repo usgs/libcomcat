@@ -12,7 +12,8 @@ import numpy as np
 
 # local imports
 from libcomcat.search import search
-from libcomcat.utils import get_summary_data_frame, maketime
+from libcomcat.utils import maketime
+from libcomcat.dataframes import get_summary_data_frame
 
 # constants
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
@@ -25,15 +26,15 @@ pd.set_option('display.max_colwidth', 100)
 
 
 def get_parser():
-    desc = '''Find the id(s) of the closest earthquake to input parameters. 
+    desc = '''Find the id(s) of the closest earthquake to input parameters.
 
-    To print the authoritative id of the event closest in time and space 
+    To print the authoritative id of the event closest in time and space
     inside a 100 km, 16 second window to "2017-08-30 03:00:33 UTC 37.571   118.888":
-    
-    
+
+
     %(prog)s  2017-08-30T03:00:33 37.571 -118.888
 
-    To make a similar query but with the time shifted by 2 minutes, and a 
+    To make a similar query but with the time shifted by 2 minutes, and a
     custom time window of 3 minutes:
 
     %(prog)s  -w 180 2017-08-30T03:00:33 37.571 -118.888
@@ -52,7 +53,7 @@ def get_parser():
 
     Notes:
      - The time format at the command line must be of the form "YYYY-MM-DDTHH:MM:SS".  The time format in an input csv file
-     can be either :YYYY-MM-DDTHH:MM:SS" OR "YYYY-MM-DD HH:MM:SS".  This is because on the command line the argument parser 
+     can be either :YYYY-MM-DDTHH:MM:SS" OR "YYYY-MM-DD HH:MM:SS".  This is because on the command line the argument parser
      would be confused by the space between the date and the time, whereas in the csv file the input files are being split
      by commas.
      - Supplying the -a option with the -f option has no effect.
@@ -100,7 +101,8 @@ def get_event_info(time, lat, lon, twindow, radius):
     for idx, row in df.iterrows():
         distance, az, azb = gps2dist_azimuth(
             lat, lon, row['latitude'], row['longitude'])
-        dtime = row['time'] - time
+        row_time = row['time'].to_pydatetime()
+        dtime = row_time - time
         dt = np.abs(dtime.days * 86400 + dtime.seconds)
         df.loc[idx, 'distance'] = distance
         df.loc[idx, 'timedelta'] = dt
