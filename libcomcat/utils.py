@@ -11,6 +11,7 @@ import json
 import numpy as np
 import pandas as pd
 from obspy.io.quakeml.core import Unpickler
+from libcomcat.classes import VersionOption
 from obspy.clients.fdsn import Client
 from impactutils.time.ancient_time import HistoricTime
 from openpyxl import load_workbook
@@ -110,14 +111,15 @@ def get_all_mags(eventid):
     return (row, msg)
 
 
+
 def read_phases(filename):
     """Read a phase file CSV or Excel file into data structures.
 
     Args:
-        filename (str): String file name of a CSV or Excel file 
+        filename (str): String file name of a CSV or Excel file
             created by getphases program.
     Returns:
-        tuple: 
+        tuple:
             header_dict - Dictionary containing header data from top of file.
             dataframe - Pandas dataframe containing phase data.
     """
@@ -190,7 +192,7 @@ def get_catalogs():
     """Get the list of catalogs available in ComCat.
 
     Returns:
-        list: Catalogs available in ComCat (see the catalog 
+        list: Catalogs available in ComCat (see the catalog
             parameter in search() method.)
     """
     fh = urlopen(CATALOG_SEARCH_TEMPLATE, timeout=TIMEOUT)
@@ -209,7 +211,7 @@ def get_contributors():
     """Get the list of contributors available in ComCat.
 
     Returns:
-        list: Contributors available in ComCat (see the contributor 
+        list: Contributors available in ComCat (see the contributor
             parameter in search() method.)
     """
     fh = urlopen(CONTRIBUTORS_SEARCH_TEMPLATE, timeout=TIMEOUT)

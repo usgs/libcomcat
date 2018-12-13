@@ -1,4 +1,5 @@
 # stdlib imports
+from collections import OrderedDict
 from xml.dom import minidom
 import sys
 from urllib.request import urlopen
@@ -18,7 +19,8 @@ import requests
 from scipy.special import erfc, erfcinv
 
 # local imports
-from .classes import VersionOption
+from libcomcat.classes import VersionOption
+
 
 # constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
@@ -249,16 +251,16 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
 
     Args:
         events (list): List of SummaryEvent objects as returned by search() function.
-        get_all_magnitudes (bool): Boolean indicating whether to return all 
+        get_all_magnitudes (bool): Boolean indicating whether to return all
             magnitudes in results for each event.
         get_tensors (str): String option of 'none', 'preferred', or 'all'.
         get_focals (str): String option of 'none', 'preferred', or 'all'.
-        get_moment_supplement (bool): Indicates whether derived origin and 
+        get_moment_supplement (bool): Indicates whether derived origin and
             double-couple/source time information
             should be extracted (when available.)
 
     Returns:
-        DataFrame: Pandas DataFrame with one row per event, and all 
+        DataFrame: Pandas DataFrame with one row per event, and all
             relevant information in columns.
     """
     elist = []
@@ -299,7 +301,7 @@ def get_summary_data_frame(events):
       TODO
 
     Args:
-        events (list): List of SummaryEvent objects as returned by search() 
+        events (list): List of SummaryEvent objects as returned by search()
             function.
 
     Returns:
@@ -325,11 +327,11 @@ def get_pager_data_frame(detail, get_losses=False,
 
     Args:
         detail (DetailEvent): Detailed information for a given event.
-        get_losses (bool): Indicates whether to retrieve predicted fatalities 
+        get_losses (bool): Indicates whether to retrieve predicted fatalities
             and dollar losses and uncertainties.
         get_country_exposures (bool): Indicates whether to retrieve per-country
             shaking exposures.
-        get_all_versions (bool): Indicates whether to retrieve PAGER results for 
+        get_all_versions (bool): Indicates whether to retrieve PAGER results for
             all versions.
     Returns:
         (DataFrame): DataFrame whose columns will vary depending on input:
@@ -474,7 +476,7 @@ def _invphi(input):
 
     Args:
     input (float or ndarray): Float (scalar or array) value.
-    Returns: 
+    Returns:
       float: invphi(input)
     """
     return -1 * np.sqrt(2) * erfcinv(input/0.5)
@@ -486,7 +488,7 @@ def _get_total_g(pager):
     Args:
         pager (Product): PAGER ComCat Product.
     Returns:
-        tuple: (Aggregated Fatality G value, Aggregated Economic G value) 
+        tuple: (Aggregated Fatality G value, Aggregated Economic G value)
     """
     alert_json = pager.getContentBytes(
         'alerts.json')[0].decode('utf-8')
@@ -617,3 +619,251 @@ def get_g_values(ccodes):
     root.unlink()
 
     return (fatmodels, ecomodels)
+
+
+def get_impact_data_frame(detail, effect_types=None, loss_types=None,
+        loss_extents=None, all_sources=False, include_contributing=False,
+        source='preferred', version=VersionOption.PREFERRED):
+        """Return a Pandas DataFrame consisting of impact data.
+
+        Args:
+            detail (DetailEvent): DetailEvent object.
+            effect_types (list): List of requested effect types. Default is None.
+            loss_types (list): List of requested loss types. Default is None.
+            loss_extents (list): List of requested loss extents. Default is None.
+            all_sources (bool): Include all sources including those that are
+                    not the most recent or authoritative. Default is False.
+            include_contributing (bool): Include contributing features, not
+                    just the total summary. Default is False.
+            source (str): Default is 'preferred'. Can be any one of:
+                    - 'preferred' Get version(s) of products from preferred source.
+                    - 'all' Get version(s) of products from all sources.
+                    - Any valid source network for this type of product ('us','ak',etc.)
+            version (VersionOption): Product version. Default is VersionOption.PREFERRED.
+
+        Returns:
+            dataframe: Dataframe of the impact information.
+
+        Raises:
+            Exception: If the impact.json file cannot be read. Likely do to one
+                    not existing.
+        """
+        # Define spreadsheet columns and equivalent geojson keys
+        columns = ['Source Network', 'ID', 'Time',
+               'Magnitude', 'EffectType', 'LossType',
+               'LossExtent', 'LossValue', 'LossMin',
+               'LossMax', 'CollectionTime',
+               'CollectionAuthor', 'CollectionSource',
+               'Authoritative', 'Lat', 'Lon',
+               'LossQuantifier', 'Comment']
+        geojson_equivalent = {'EffectType': 'effect-type',
+                'LossType': 'loss-type',
+                'LossExtent': 'loss-extent',
+                'LossValue': 'loss-value',
+                'LossMin': 'loss-min',
+                'LossMax': 'loss-max',
+                'CollectionTime': 'collection-time',
+                'CollectionAuthor': 'collection-author',
+                'CollectionSource': 'collection-source',
+                'Authoritative': 'authoritative',
+                'LossQuantifier': 'loss-quantifier',
+                'Comment': 'comment'
+        }
+        # Define valid parameters
+        valid_effects = ['all', 'coal bump', 'dam failure', 'faulting', 'fire',
+        'geyser activity', 'ground cracking', 'landslide', 'lights', 'liquefaction',
+        'mine blast', 'mine collapse', 'odors', 'other', 'rockburst',
+        'sandblows', 'seiche', 'shaking', 'subsidence', 'tsunami',
+        'undifferentiated', 'uplift', 'volcanic activity']
+        valid_loss_extents = ['damaged', 'damaged or destroyed', 'destroyed',
+        'displaced', 'injured', 'killed', 'missing']
+        valid_loss_types = ['bridges', 'buildings', 'dollars', 'electricity',
+        'livestock', 'people', 'railroads', 'roads', 'telecommunications','water']
+
+        # Convert arguments to lists
+        if isinstance(effect_types, str):
+            effect_types = [effect_types]
+        if isinstance(loss_types, str):
+            loss_types = [loss_types]
+        if isinstance(loss_extents, str):
+            loss_extents = [loss_extents]
+        # Set defaults if no user input and validate options
+        if effect_types is None:
+            effect_types = valid_effects
+        else:
+            for effect in effect_types:
+                if effect not in valid_effects:
+                    raise Exception('%r is not a valid effect type.' % effect)
+        if loss_types is None:
+            loss_types = valid_loss_types
+        else:
+            for loss in valid_loss_types:
+                if loss not in valid_loss_types:
+                    raise Exception('%r is not a valid loss type.' % loss)
+        if loss_extents is None:
+            loss_extents = valid_loss_extents
+        else:
+            for extent in loss_extents:
+                if extent not in valid_loss_extents:
+                    raise Exception('%r is not a valid loss extent.' % extent)
+
+        # Get the product(s)
+        impacts = detail.getProducts('impact', source=source, version=version)
+        table = OrderedDict()
+        for col in columns:
+            table[col] =[]
+        # Each product append to the OrderedDict
+        for impact in impacts:
+            # Attempt to read the json file
+            impact_url = impact.getContentURL('impact.json')
+            # Look for previous naming scheme
+            if impact_url is None:
+                impact_url = impact.getContentURL('.geojson')
+            try:
+                fh = urlopen(impact_url, timeout=TIMEOUT)
+                file_text = fh.read().decode("utf-8")
+                impact_data = json.loads(file_text)
+                fh.close()
+            except Exception as e:
+                raise Exception('Unable to read impact.json for %s '
+                    'which includes the file(s): %r' % (impact, impact.contents))
+            features = impact_data['features']
+            main_properties = {}
+            # Get total feature lines
+            for feature in features:
+                # Impact-totals denotes the summary/total feature
+                # This only considers summary/total features
+                if 'impact-totals' in feature['properties']:
+                    main_properties['Time'] = feature['properties']['time']
+                    main_properties['ID'] = feature['properties']['id']
+                    main_properties['Source Network'] = feature['properties']['eventsource']
+                    main_properties['Magnitude'] = feature['properties']['magnitude']
+                    for impact_total in feature['properties']['impact-totals']:
+                        # Ensure that the "row" is valid
+                        valid = _validate_row(impact_total, 'total',
+                                effect_types, loss_types, loss_extents,
+                                all_sources, valid_effects,
+                                valid_loss_extents, valid_loss_types)
+                        if valid:
+                            for column in columns:
+                                # for totals the lat/lon fields are always empty
+                                if column == 'Lat':
+                                    table['Lat'] += ['']
+                                elif column == 'Lon':
+                                    table['Lon'] += ['']
+                                elif column not in geojson_equivalent:
+                                    table[column] += [main_properties[column]]
+                                else:
+                                    key = geojson_equivalent[column]
+                                    if key in impact_total:
+                                        table[column] += [impact_total[key]]
+                                    else:
+                                        table[column] += ['']
+            # Get contributing feature lines
+            if include_contributing:
+                for feature in features:
+                    # Impact-totals denotes the summary/total feature
+                    # This only considers contributing features
+                    if 'impact-totals' not in feature['properties']:
+                        # Ensure that the "row" is valid
+                        valid = _validate_row(feature, 'contributing',
+                                effect_types, loss_types, loss_extents,
+                                all_sources, valid_effects,
+                                valid_loss_extents, valid_loss_types)
+                        if valid:
+                            for column in columns:
+                                if column == 'Lat':
+                                    lat = feature['geometry']['coordinates'][1]
+                                    table['Lat'] += [lat]
+                                elif column == 'Lon':
+                                    lon = feature['geometry']['coordinates'][0]
+                                    table['Lon'] += [lon]
+                                elif column not in geojson_equivalent:
+                                    table[column] += [main_properties[column]]
+                                else:
+                                    key = geojson_equivalent[column]
+                                    if key in feature['properties']:
+                                        table[column] += [feature['properties'][key]]
+                                    else:
+                                        table[column] += ['']
+        # Create the dataframe
+        df = pd.DataFrame.from_dict(table)
+        # Get most recent sources
+        if not all_sources and len(df) > 0:
+            df = _get_most_recent(df, effect_types, loss_extents, loss_types)
+        return df
+
+def _get_most_recent(df, effect_types, loss_extents, loss_types):
+    """Get the most recent (most "trusted") source.
+
+    Args:
+        effect_types (list): List of requested effect types.
+        loss_types (list): List of requested loss types.
+        loss_extents (list): List of requested loss extents.
+    Returns:
+        dataframe: Dataframe without older sources.
+    """
+    drop_list = []
+    effect_types += ['']
+    loss_types += ['']
+    loss_extents += ['']
+    for effect in effect_types:
+        for loss in loss_types:
+            for extent in loss_extents:
+                boolean_df = df[(df.EffectType == effect) & (df.LossType == loss) & (df.LossExtent == extent)]
+                if len(boolean_df) > 0:
+                    max_date = max(boolean_df['CollectionTime'])
+                    idx = df.index[(df.EffectType == effect) & (df.LossType == loss) & (df.LossExtent == extent) & (df.CollectionTime != max_date)].tolist()
+                    drop_list += idx
+    df = df.drop(set(drop_list))
+    return df
+
+def _validate_row(feature, feature_type, effect_types, loss_types, loss_extents,
+        all_sources, valid_effects, valid_loss_extents, valid_loss_types):
+        """Validate that the row is valid based upon the requested parameters.
+
+        Args:
+            feature (dictionary): feature dictionary.
+            feature_type (dictionary): Dictionary of the data row.
+            effect_types (list): List of requested effect types. Default is None.
+            loss_types (list): List of requested loss types. Default is None.
+            loss_extents (list): List of requested loss extents. Default is None.
+            all_sources (bool): Include all sources including those that are
+                    not the most recent or authoritative. Default is False.
+            valid_effects (list): Valid effect types.
+            valid_loss_types (list): Valid loss types.
+            valid_loss_extents (list): Valid loss extents.
+
+        Returns:
+            bool: Whether or not the row is valid.
+        """
+        valid_row = True
+        if feature_type == 'total':
+            row = feature
+        else:
+            row = feature['properties']
+        # Check source criteria
+        if not all_sources and row['authoritative'] == 0:
+            valid_row =  False
+
+        # Check loss_extent criteria
+        if loss_extents != valid_loss_extents:
+            if 'loss-extent' not in row:
+                valid_row =  False
+            elif row['loss-extent'] not in loss_extents:
+                valid_row =  False
+
+        # Check loss_type criteria
+        if loss_types != valid_loss_types:
+            if 'loss-type' not in row:
+                valid_row =  False
+            elif row['loss-type'] not in loss_types:
+                valid_row =  False
+
+        # Check loss_type criteria
+        if effect_types != valid_effects:
+            if 'effect-type' not in row:
+                valid_row =  False
+            elif row['effect-type'] not in effect_types:
+                valid_row =  False
+        return valid_row

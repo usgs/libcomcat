@@ -1,0 +1,2 @@
+Source Network,ID,Time,Magnitude,EffectType,LossType,LossExtent,LossValue,LossMin,LossMax,CollectionTime,CollectionAuthor,CollectionSource,Authoritative,Lat,Lon,LossQuantifier,Comment
+us,p0005rcg,1993-04-18T09:16:23.220000Z,6.3,all,buildings,destroyed,30.0,,,2018-11-29T22:45:40.906954,Kristin Marano,pde,1,,,,Thirty houses destroyed I=VI MM at Lima
