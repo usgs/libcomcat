@@ -649,7 +649,7 @@ def get_impact_data_frame(detail, effect_types=None, loss_types=None,
                     not existing.
         """
         # Define spreadsheet columns and equivalent geojson keys
-        columns = ['Source Network', 'ID', 'Time',
+        columns = ['Source Network', 'ID', 'EventID','Time',
                'Magnitude', 'EffectType', 'LossType',
                'LossExtent', 'LossValue', 'LossMin',
                'LossMax', 'CollectionTime',
@@ -737,6 +737,7 @@ def get_impact_data_frame(detail, effect_types=None, loss_types=None,
                     main_properties['Time'] = feature['properties']['time']
                     main_properties['ID'] = feature['properties']['id']
                     main_properties['Source Network'] = feature['properties']['eventsource']
+                    main_properties['EventID'] = main_properties['Source Network'] + main_properties['ID']
                     main_properties['Magnitude'] = feature['properties']['magnitude']
                     for impact_total in feature['properties']['impact-totals']:
                         # Ensure that the "row" is valid

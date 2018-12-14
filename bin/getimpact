@@ -179,7 +179,7 @@ def main():
                         maxradiuskm=radiuskm,
                         maxmagnitude=maxmag,
                         minmagnitude=minmag,
-                        producttype='losspager',
+                        producttype='impact',
                         host=args.host)
 
     if not len(events):
