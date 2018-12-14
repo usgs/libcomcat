@@ -649,7 +649,7 @@ def get_impact_data_frame(detail, effect_types=None, loss_types=None,
                     not existing.
         """
         # Define spreadsheet columns and equivalent geojson keys
-        columns = ['Source Network', 'ID', 'EventID','Time',
+        columns = ['Source Network', 'ID', 'EventID', 'Time',
                'Magnitude', 'EffectType', 'LossType',
                'LossExtent', 'LossValue', 'LossMin',
                'LossMax', 'CollectionTime',
@@ -696,12 +696,14 @@ def get_impact_data_frame(detail, effect_types=None, loss_types=None,
                     raise Exception('%r is not a valid effect type.' % effect)
         if loss_types is None:
             loss_types = valid_loss_types
+            loss_types += ['']
         else:
             for loss in valid_loss_types:
                 if loss not in valid_loss_types:
                     raise Exception('%r is not a valid loss type.' % loss)
         if loss_extents is None:
             loss_extents = valid_loss_extents
+            loss_extents += ['']
         else:
             for extent in loss_extents:
                 if extent not in valid_loss_extents:
@@ -741,56 +743,50 @@ def get_impact_data_frame(detail, effect_types=None, loss_types=None,
                     main_properties['Magnitude'] = feature['properties']['magnitude']
                     for impact_total in feature['properties']['impact-totals']:
                         # Ensure that the "row" is valid
-                        valid = _validate_row(impact_total, 'total',
-                                effect_types, loss_types, loss_extents,
-                                all_sources, valid_effects,
-                                valid_loss_extents, valid_loss_types)
-                        if valid:
-                            for column in columns:
-                                # for totals the lat/lon fields are always empty
-                                if column == 'Lat':
-                                    table['Lat'] += ['']
-                                elif column == 'Lon':
-                                    table['Lon'] += ['']
-                                elif column not in geojson_equivalent:
-                                    table[column] += [main_properties[column]]
+                        for column in columns:
+                            # for totals the lat/lon fields are always empty
+                            if column == 'Lat':
+                                table['Lat'] += ['']
+                            elif column == 'Lon':
+                                table['Lon'] += ['']
+                            elif column not in geojson_equivalent:
+                                table[column] += [main_properties[column]]
+                            else:
+                                key = geojson_equivalent[column]
+                                if key in impact_total:
+                                    table[column] += [impact_total[key]]
                                 else:
-                                    key = geojson_equivalent[column]
-                                    if key in impact_total:
-                                        table[column] += [impact_total[key]]
-                                    else:
-                                        table[column] += ['']
+                                    table[column] += ['']
+                    break
+            features.remove(feature)
             # Get contributing feature lines
             if include_contributing:
                 for feature in features:
-                    # Impact-totals denotes the summary/total feature
-                    # This only considers contributing features
-                    if 'impact-totals' not in feature['properties']:
-                        # Ensure that the "row" is valid
-                        valid = _validate_row(feature, 'contributing',
-                                effect_types, loss_types, loss_extents,
-                                all_sources, valid_effects,
-                                valid_loss_extents, valid_loss_types)
-                        if valid:
-                            for column in columns:
-                                if column == 'Lat':
-                                    lat = feature['geometry']['coordinates'][1]
-                                    table['Lat'] += [lat]
-                                elif column == 'Lon':
-                                    lon = feature['geometry']['coordinates'][0]
-                                    table['Lon'] += [lon]
-                                elif column not in geojson_equivalent:
-                                    table[column] += [main_properties[column]]
-                                else:
-                                    key = geojson_equivalent[column]
-                                    if key in feature['properties']:
-                                        table[column] += [feature['properties'][key]]
-                                    else:
-                                        table[column] += ['']
+                    # Ensure that the "row" is valid
+                    for column in columns:
+                        if column == 'Lat':
+                            lat = feature['geometry']['coordinates'][1]
+                            table['Lat'] += [lat]
+                        elif column == 'Lon':
+                            lon = feature['geometry']['coordinates'][0]
+                            table['Lon'] += [lon]
+                        elif column not in geojson_equivalent:
+                            table[column] += [main_properties[column]]
+                        else:
+                            key = geojson_equivalent[column]
+                            if key in feature['properties']:
+                                table[column] += [feature['properties'][key]]
+                            else:
+                                table[column] += ['']
         # Create the dataframe
         df = pd.DataFrame.from_dict(table)
+        df = df[(df.LossExtent.isin(loss_extents))]
+        df = df[(df.LossType.isin(loss_types))]
+        df = df[(df.EffectType.isin(effect_types))]
         # Get most recent sources
-        if not all_sources and len(df) > 0:
+        if not all_sources:
+            df = df[(df.Authoritative == 1)]
+        if not all_sources and len(df) > 1:
             df = _get_most_recent(df, effect_types, loss_extents, loss_types)
         return df
 
@@ -805,9 +801,6 @@ def _get_most_recent(df, effect_types, loss_extents, loss_types):
         dataframe: Dataframe without older sources.
     """
     drop_list = []
-    effect_types += ['']
-    loss_types += ['']
-    loss_extents += ['']
     for effect in effect_types:
         for loss in loss_types:
             for extent in loss_extents:
@@ -818,53 +811,3 @@ def _get_most_recent(df, effect_types, loss_extents, loss_types):
                     drop_list += idx
     df = df.drop(set(drop_list))
     return df
-
-def _validate_row(feature, feature_type, effect_types, loss_types, loss_extents,
-        all_sources, valid_effects, valid_loss_extents, valid_loss_types):
-        """Validate that the row is valid based upon the requested parameters.
-
-        Args:
-            feature (dictionary): feature dictionary.
-            feature_type (dictionary): Dictionary of the data row.
-            effect_types (list): List of requested effect types. Default is None.
-            loss_types (list): List of requested loss types. Default is None.
-            loss_extents (list): List of requested loss extents. Default is None.
-            all_sources (bool): Include all sources including those that are
-                    not the most recent or authoritative. Default is False.
-            valid_effects (list): Valid effect types.
-            valid_loss_types (list): Valid loss types.
-            valid_loss_extents (list): Valid loss extents.
-
-        Returns:
-            bool: Whether or not the row is valid.
-        """
-        valid_row = True
-        if feature_type == 'total':
-            row = feature
-        else:
-            row = feature['properties']
-        # Check source criteria
-        if not all_sources and row['authoritative'] == 0:
-            valid_row =  False
-
-        # Check loss_extent criteria
-        if loss_extents != valid_loss_extents:
-            if 'loss-extent' not in row:
-                valid_row =  False
-            elif row['loss-extent'] not in loss_extents:
-                valid_row =  False
-
-        # Check loss_type criteria
-        if loss_types != valid_loss_types:
-            if 'loss-type' not in row:
-                valid_row =  False
-            elif row['loss-type'] not in loss_types:
-                valid_row =  False
-
-        # Check loss_type criteria
-        if effect_types != valid_effects:
-            if 'effect-type' not in row:
-                valid_row =  False
-            elif row['effect-type'] not in effect_types:
-                valid_row =  False
-        return valid_row
