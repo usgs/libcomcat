@@ -41,8 +41,8 @@ def get_parser():
     discrepancy.
 
     4) The ComCat API has a returned event limit of 20,000.  Queries that
-    exceed this ComCat limit ARE supported by this software, by
-    breaking up one large request into a number of smaller ones.'''
+    exceed this ComCat limit ARE supported by this software if the --disable_limit
+    flag is used.'''
 
     parser = argparse.ArgumentParser(
         description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -115,6 +115,10 @@ def get_parser():
                'earthquake.usgs.gov.')
     parser.add_argument('--host',
                         help=helpstr)
+    helpstr = ('Segment search to exceede the 20,000 event limit.'
+            ' This will slow down the search process.')
+    parser.add_argument('--disable_limit',help=helpstr, action='store_false',
+                        default=True)
     return parser
 
 
@@ -179,8 +183,9 @@ def main():
                         maxradiuskm=radiuskm,
                         maxmagnitude=maxmag,
                         minmagnitude=minmag,
-                        producttype='losspager',
-                        host=args.host)
+                        producttype='impact',
+                        host=args.host,
+                        enable_limit=args.disable_limit)
 
     if not len(events):
         print('No events found matching your search criteria. Exiting.')
