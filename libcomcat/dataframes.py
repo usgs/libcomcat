@@ -7,6 +7,7 @@ import warnings
 from datetime import datetime
 import os.path
 import json
+from io import StringIO
 
 # third party imports
 import numpy as np
@@ -34,6 +35,26 @@ COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
 # where is the PAGER fatality model found?
 FATALITY_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/fatality.xml'
 ECONOMIC_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/economy.xml'
+
+
+# what are the DYFI columns and what do we rename them to?
+DYFI_COLUMNS_REPLACE = {
+    'Geocoded box': 'station',
+    'CDI': 'intensity',
+    'Latitude': 'lat',
+    'Longitude': 'lon',
+    'No. of responses': 'nresp',
+    'Hypocentral distance': 'distance'
+}
+
+OLD_DYFI_COLUMNS_REPLACE = {
+    'ZIP/Location': 'station',
+    'CDI': 'intensity',
+    'Latitude': 'lat',
+    'Longitude': 'lon',
+    'No. of responses': 'nresp',
+    'Hypocentral distance': 'distance'
+}
 
 
 def get_phase_dataframe(detail, catalog='preferred'):
@@ -116,6 +137,9 @@ def _get_phaserow(pick, catevent):
     # save info to row of dataframe
     etime = pick.time.datetime
     channel = stringify(waveform_id)
+    agency_id = ''
+    if arrival.creation_info is not None:
+        agency_id = arrival.creation_info.agency_id
     row = {'Channel': channel,
            'Distance': arrival.distance,
            'Azimuth': arrival.azimuth,
@@ -124,7 +148,7 @@ def _get_phaserow(pick, catevent):
            'Status': pick.evaluation_mode,
            'Residual': arrival.time_residual,
            'Weight': arrival.time_weight,
-           'Agency': arrival.creation_info.agency_id}
+           'Agency': agency_id}
     return row
 
 
@@ -199,7 +223,7 @@ def get_magnitude_data_frame(detail, catalog, magtype):
     columns = columns = ['Channel', 'Type', 'Amplitude',
                          'Period', 'Status', 'Magnitude',
                          'Weight']
-    df = pd.DataFrame()
+    df = pd.DataFrame(columns=columns)
     phasedata = detail.getProducts('phase-data', source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
     try:
@@ -208,30 +232,51 @@ def get_magnitude_data_frame(detail, catalog, magtype):
         fh.close()
     except Exception:
         return None
+    fmt = '%s.%s.%s.%s'
     unpickler = Unpickler()
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=UserWarning)
         catalog = unpickler.loads(data)
         catevent = catalog.events[0]  # match this to input catalog
         for magnitude in catevent.magnitudes:
-            if magnitude.magnitude_type != magtype:
+            if magnitude.magnitude_type.lower() != magtype.lower():
                 continue
             for contribution in magnitude.station_magnitude_contributions:
                 row = {}
                 smag = contribution.station_magnitude_id.get_referred_object()
                 ampid = smag.amplitude_id
-                amp = ampid.get_referred_object()
-                waveid = amp.waveform_id
-                fmt = '%s.%s.%s.%s'
-                tpl = (waveid.network_code,
-                       waveid.station_code,
-                       waveid.channel_code,
-                       waveid.location_code)
+                amp = None
+                if ampid is None:
+                    waveid = smag.waveform_id
+                    tpl = (waveid.network_code,
+                           waveid.station_code,
+                           '--',
+                           '--')
+                else:
+                    amp = ampid.get_referred_object()
+                    if amp is None:
+                        waveid = smag.waveform_id
+                        tpl = (waveid.network_code,
+                               waveid.station_code,
+                               '--',
+                               '--')
+                    else:
+                        waveid = amp.waveform_id
+                        tpl = (waveid.network_code,
+                               waveid.station_code,
+                               waveid.channel_code,
+                               waveid.location_code)
+
                 row['Channel'] = fmt % tpl
                 row['Type'] = smag.station_magnitude_type
-                row['Amplitude'] = amp.generic_amplitude
-                row['Period'] = amp.period
-                row['Status'] = amp.evaluation_mode
+                if amp is not None:
+                    row['Amplitude'] = amp.generic_amplitude
+                    row['Period'] = amp.period
+                    row['Status'] = amp.evaluation_mode
+                else:
+                    row['Amplitude'] = np.nan
+                    row['Period'] = np.nan
+                    row['Status'] = 'automatic'
                 row['Magnitude'] = smag.mag
                 row['Weight'] = contribution.weight
                 df = df.append(row, ignore_index=True)
@@ -622,173 +667,175 @@ def get_g_values(ccodes):
 
 
 def get_impact_data_frame(detail, effect_types=None, loss_types=None,
-        loss_extents=None, all_sources=False, include_contributing=False,
-        source='preferred', version=VersionOption.PREFERRED):
-        """Return a Pandas DataFrame consisting of impact data.
+                          loss_extents=None, all_sources=False, include_contributing=False,
+                          source='preferred', version=VersionOption.PREFERRED):
+    """Return a Pandas DataFrame consisting of impact data.
 
-        Args:
-            detail (DetailEvent): DetailEvent object.
-            effect_types (list): List of requested effect types. Default is None.
-            loss_types (list): List of requested loss types. Default is None.
-            loss_extents (list): List of requested loss extents. Default is None.
-            all_sources (bool): Include all sources including those that are
-                    not the most recent or authoritative. Default is False.
-            include_contributing (bool): Include contributing features, not
-                    just the total summary. Default is False.
-            source (str): Default is 'preferred'. Can be any one of:
-                    - 'preferred' Get version(s) of products from preferred source.
-                    - 'all' Get version(s) of products from all sources.
-                    - Any valid source network for this type of product ('us','ak',etc.)
-            version (VersionOption): Product version. Default is VersionOption.PREFERRED.
+    Args:
+        detail (DetailEvent): DetailEvent object.
+        effect_types (list): List of requested effect types. Default is None.
+        loss_types (list): List of requested loss types. Default is None.
+        loss_extents (list): List of requested loss extents. Default is None.
+        all_sources (bool): Include all sources including those that are
+                not the most recent or authoritative. Default is False.
+        include_contributing (bool): Include contributing features, not
+                just the total summary. Default is False.
+        source (str): Default is 'preferred'. Can be any one of:
+                - 'preferred' Get version(s) of products from preferred source.
+                - 'all' Get version(s) of products from all sources.
+                - Any valid source network for this type of product ('us','ak',etc.)
+        version (VersionOption): Product version. Default is VersionOption.PREFERRED.
 
-        Returns:
-            dataframe: Dataframe of the impact information.
+    Returns:
+        dataframe: Dataframe of the impact information.
 
-        Raises:
-            Exception: If the impact.json file cannot be read. Likely do to one
-                    not existing.
-        """
-        # Define spreadsheet columns and equivalent geojson keys
-        columns = ['Source Network', 'ID', 'EventID', 'Time',
+    Raises:
+        Exception: If the impact.json file cannot be read. Likely do to one
+                not existing.
+    """
+    # Define spreadsheet columns and equivalent geojson keys
+    columns = ['Source Network', 'ID', 'EventID', 'Time',
                'Magnitude', 'EffectType', 'LossType',
                'LossExtent', 'LossValue', 'LossMin',
                'LossMax', 'CollectionTime',
                'CollectionAuthor', 'CollectionSource',
                'Authoritative', 'Lat', 'Lon',
                'LossQuantifier', 'Comment']
-        geojson_equivalent = {'EffectType': 'effect-type',
-                'LossType': 'loss-type',
-                'LossExtent': 'loss-extent',
-                'LossValue': 'loss-value',
-                'LossMin': 'loss-min',
-                'LossMax': 'loss-max',
-                'CollectionTime': 'collection-time',
-                'CollectionAuthor': 'collection-author',
-                'CollectionSource': 'collection-source',
-                'Authoritative': 'authoritative',
-                'LossQuantifier': 'loss-quantifier',
-                'Comment': 'comment'
-        }
-        # Define valid parameters
-        valid_effects = ['all', 'coal bump', 'dam failure', 'faulting', 'fire',
-        'geyser activity', 'ground cracking', 'landslide', 'lights', 'liquefaction',
-        'mine blast', 'mine collapse', 'odors', 'other', 'rockburst',
-        'sandblows', 'seiche', 'shaking', 'subsidence', 'tsunami',
-        'undifferentiated', 'uplift', 'volcanic activity']
-        valid_loss_extents = ['damaged', 'damaged or destroyed', 'destroyed',
-        'displaced', 'injured', 'killed', 'missing']
-        valid_loss_types = ['bridges', 'buildings', 'dollars', 'electricity',
-        'livestock', 'people', 'railroads', 'roads', 'telecommunications','water']
+    geojson_equivalent = {'EffectType': 'effect-type',
+                          'LossType': 'loss-type',
+                          'LossExtent': 'loss-extent',
+                          'LossValue': 'loss-value',
+                          'LossMin': 'loss-min',
+                          'LossMax': 'loss-max',
+                          'CollectionTime': 'collection-time',
+                          'CollectionAuthor': 'collection-author',
+                          'CollectionSource': 'collection-source',
+                          'Authoritative': 'authoritative',
+                          'LossQuantifier': 'loss-quantifier',
+                          'Comment': 'comment'
+                          }
+    # Define valid parameters
+    valid_effects = ['all', 'coal bump', 'dam failure', 'faulting', 'fire',
+                     'geyser activity', 'ground cracking', 'landslide', 'lights', 'liquefaction',
+                     'mine blast', 'mine collapse', 'odors', 'other', 'rockburst',
+                     'sandblows', 'seiche', 'shaking', 'subsidence', 'tsunami',
+                     'undifferentiated', 'uplift', 'volcanic activity']
+    valid_loss_extents = ['damaged', 'damaged or destroyed', 'destroyed',
+                          'displaced', 'injured', 'killed', 'missing']
+    valid_loss_types = ['bridges', 'buildings', 'dollars', 'electricity',
+                        'livestock', 'people', 'railroads', 'roads', 'telecommunications', 'water']
 
-        # Convert arguments to lists
-        if isinstance(effect_types, str):
-            effect_types = [effect_types]
-        if isinstance(loss_types, str):
-            loss_types = [loss_types]
-        if isinstance(loss_extents, str):
-            loss_extents = [loss_extents]
-        # Set defaults if no user input and validate options
-        if effect_types is None:
-            effect_types = valid_effects
-        else:
-            for effect in effect_types:
-                if effect not in valid_effects:
-                    raise Exception('%r is not a valid effect type.' % effect)
-        if loss_types is None:
-            loss_types = valid_loss_types
-            loss_types += ['']
-        else:
-            for loss in valid_loss_types:
-                if loss not in valid_loss_types:
-                    raise Exception('%r is not a valid loss type.' % loss)
-        if loss_extents is None:
-            loss_extents = valid_loss_extents
-            loss_extents += ['']
-        else:
-            for extent in loss_extents:
-                if extent not in valid_loss_extents:
-                    raise Exception('%r is not a valid loss extent.' % extent)
+    # Convert arguments to lists
+    if isinstance(effect_types, str):
+        effect_types = [effect_types]
+    if isinstance(loss_types, str):
+        loss_types = [loss_types]
+    if isinstance(loss_extents, str):
+        loss_extents = [loss_extents]
+    # Set defaults if no user input and validate options
+    if effect_types is None:
+        effect_types = valid_effects
+    else:
+        for effect in effect_types:
+            if effect not in valid_effects:
+                raise Exception('%r is not a valid effect type.' % effect)
+    if loss_types is None:
+        loss_types = valid_loss_types
+        loss_types += ['']
+    else:
+        for loss in valid_loss_types:
+            if loss not in valid_loss_types:
+                raise Exception('%r is not a valid loss type.' % loss)
+    if loss_extents is None:
+        loss_extents = valid_loss_extents
+        loss_extents += ['']
+    else:
+        for extent in loss_extents:
+            if extent not in valid_loss_extents:
+                raise Exception('%r is not a valid loss extent.' % extent)
 
-        # Get the product(s)
-        impacts = detail.getProducts('impact', source=source, version=version)
-        table = OrderedDict()
-        for col in columns:
-            table[col] =[]
-        # Each product append to the OrderedDict
-        for impact in impacts:
-            # Attempt to read the json file
-            impact_url = impact.getContentURL('impact.json')
-            # Look for previous naming scheme
-            if impact_url is None:
-                impact_url = impact.getContentURL('.geojson')
-            try:
-                fh = urlopen(impact_url, timeout=TIMEOUT)
-                file_text = fh.read().decode("utf-8")
-                impact_data = json.loads(file_text)
-                fh.close()
-            except Exception as e:
-                raise Exception('Unable to read impact.json for %s '
-                    'which includes the file(s): %r' % (impact, impact.contents))
-            features = impact_data['features']
-            main_properties = {}
-            # Get total feature lines
-            for feature in features:
-                # Impact-totals denotes the summary/total feature
-                # This only considers summary/total features
-                if 'impact-totals' in feature['properties']:
-                    main_properties['Time'] = feature['properties']['time']
-                    main_properties['ID'] = feature['properties']['id']
-                    main_properties['Source Network'] = feature['properties']['eventsource']
-                    main_properties['EventID'] = main_properties['Source Network'] + main_properties['ID']
-                    main_properties['Magnitude'] = feature['properties']['magnitude']
-                    for impact_total in feature['properties']['impact-totals']:
+    # Get the product(s)
+    impacts = detail.getProducts('impact', source=source, version=version)
+    table = OrderedDict()
+    for col in columns:
+        table[col] = []
+    # Each product append to the OrderedDict
+    for impact in impacts:
+        # Attempt to read the json file
+        impact_url = impact.getContentURL('impact.json')
+        # Look for previous naming scheme
+        if impact_url is None:
+            impact_url = impact.getContentURL('.geojson')
+        try:
+            fh = urlopen(impact_url, timeout=TIMEOUT)
+            file_text = fh.read().decode("utf-8")
+            impact_data = json.loads(file_text)
+            fh.close()
+        except Exception as e:
+            raise Exception('Unable to read impact.json for %s '
+                            'which includes the file(s): %r' % (impact, impact.contents))
+        features = impact_data['features']
+        main_properties = {}
+        # Get total feature lines
+        for feature in features:
+            # Impact-totals denotes the summary/total feature
+            # This only considers summary/total features
+            if 'impact-totals' in feature['properties']:
+                main_properties['Time'] = feature['properties']['time']
+                main_properties['ID'] = feature['properties']['id']
+                main_properties['Source Network'] = feature['properties']['eventsource']
+                main_properties['EventID'] = main_properties['Source Network'] + \
+                    main_properties['ID']
+                main_properties['Magnitude'] = feature['properties']['magnitude']
+                for impact_total in feature['properties']['impact-totals']:
                         # Ensure that the "row" is valid
-                        for column in columns:
-                            # for totals the lat/lon fields are always empty
-                            if column == 'Lat':
-                                table['Lat'] += ['']
-                            elif column == 'Lon':
-                                table['Lon'] += ['']
-                            elif column not in geojson_equivalent:
-                                table[column] += [main_properties[column]]
-                            else:
-                                key = geojson_equivalent[column]
-                                if key in impact_total:
-                                    table[column] += [impact_total[key]]
-                                else:
-                                    table[column] += ['']
-                    break
-            features.remove(feature)
-            # Get contributing feature lines
-            if include_contributing:
-                for feature in features:
-                    # Ensure that the "row" is valid
                     for column in columns:
+                            # for totals the lat/lon fields are always empty
                         if column == 'Lat':
-                            lat = feature['geometry']['coordinates'][1]
-                            table['Lat'] += [lat]
+                            table['Lat'] += ['']
                         elif column == 'Lon':
-                            lon = feature['geometry']['coordinates'][0]
-                            table['Lon'] += [lon]
+                            table['Lon'] += ['']
                         elif column not in geojson_equivalent:
                             table[column] += [main_properties[column]]
                         else:
                             key = geojson_equivalent[column]
-                            if key in feature['properties']:
-                                table[column] += [feature['properties'][key]]
+                            if key in impact_total:
+                                table[column] += [impact_total[key]]
                             else:
                                 table[column] += ['']
-        # Create the dataframe
-        df = pd.DataFrame.from_dict(table)
-        df = df[(df.LossExtent.isin(loss_extents))]
-        df = df[(df.LossType.isin(loss_types))]
-        df = df[(df.EffectType.isin(effect_types))]
-        # Get most recent sources
-        if not all_sources:
-            df = df[(df.Authoritative == 1)]
-        if not all_sources and len(df) > 1:
-            df = _get_most_recent(df, effect_types, loss_extents, loss_types)
-        return df
+                break
+        features.remove(feature)
+        # Get contributing feature lines
+        if include_contributing:
+            for feature in features:
+                # Ensure that the "row" is valid
+                for column in columns:
+                    if column == 'Lat':
+                        lat = feature['geometry']['coordinates'][1]
+                        table['Lat'] += [lat]
+                    elif column == 'Lon':
+                        lon = feature['geometry']['coordinates'][0]
+                        table['Lon'] += [lon]
+                    elif column not in geojson_equivalent:
+                        table[column] += [main_properties[column]]
+                    else:
+                        key = geojson_equivalent[column]
+                        if key in feature['properties']:
+                            table[column] += [feature['properties'][key]]
+                        else:
+                            table[column] += ['']
+    # Create the dataframe
+    df = pd.DataFrame.from_dict(table)
+    df = df[(df.LossExtent.isin(loss_extents))]
+    df = df[(df.LossType.isin(loss_types))]
+    df = df[(df.EffectType.isin(effect_types))]
+    # Get most recent sources
+    if not all_sources:
+        df = df[(df.Authoritative == 1)]
+    if not all_sources and len(df) > 1:
+        df = _get_most_recent(df, effect_types, loss_extents, loss_types)
+    return df
+
 
 def _get_most_recent(df, effect_types, loss_extents, loss_types):
     """Get the most recent (most "trusted") source.
@@ -804,10 +851,188 @@ def _get_most_recent(df, effect_types, loss_extents, loss_types):
     for effect in effect_types:
         for loss in loss_types:
             for extent in loss_extents:
-                boolean_df = df[(df.EffectType == effect) & (df.LossType == loss) & (df.LossExtent == extent)]
+                boolean_df = df[(df.EffectType == effect) & (
+                    df.LossType == loss) & (df.LossExtent == extent)]
                 if len(boolean_df) > 0:
                     max_date = max(boolean_df['CollectionTime'])
-                    idx = df.index[(df.EffectType == effect) & (df.LossType == loss) & (df.LossExtent == extent) & (df.CollectionTime != max_date)].tolist()
+                    idx = df.index[(df.EffectType == effect) & (df.LossType == loss) & (
+                        df.LossExtent == extent) & (df.CollectionTime != max_date)].tolist()
                     drop_list += idx
     df = df.drop(set(drop_list))
     return df
+
+
+<< << << < HEAD
+== == == =
+
+
+def _validate_row(feature, feature_type, effect_types, loss_types, loss_extents,
+                  all_sources, valid_effects, valid_loss_extents, valid_loss_types):
+    """Validate that the row is valid based upon the requested parameters.
+
+    Args:
+        feature (dictionary): feature dictionary.
+        feature_type (dictionary): Dictionary of the data row.
+        effect_types (list): List of requested effect types. Default is None.
+        loss_types (list): List of requested loss types. Default is None.
+        loss_extents (list): List of requested loss extents. Default is None.
+        all_sources (bool): Include all sources including those that are
+                not the most recent or authoritative. Default is False.
+        valid_effects (list): Valid effect types.
+        valid_loss_types (list): Valid loss types.
+        valid_loss_extents (list): Valid loss extents.
+
+    Returns:
+        bool: Whether or not the row is valid.
+    """
+    valid_row = True
+    if feature_type == 'total':
+        row = feature
+    else:
+        row = feature['properties']
+    # Check source criteria
+    if not all_sources and row['authoritative'] == 0:
+        valid_row = False
+
+    # Check loss_extent criteria
+    if loss_extents != valid_loss_extents:
+        if 'loss-extent' not in row:
+            valid_row = False
+        elif row['loss-extent'] not in loss_extents:
+            valid_row = False
+
+    # Check loss_type criteria
+    if loss_types != valid_loss_types:
+        if 'loss-type' not in row:
+            valid_row = False
+        elif row['loss-type'] not in loss_types:
+            valid_row = False
+
+    # Check loss_type criteria
+    if effect_types != valid_effects:
+        if 'effect-type' not in row:
+            valid_row = False
+        elif row['effect-type'] not in effect_types:
+            valid_row = False
+    return valid_row
+
+
+def get_dyfi_data_frame(detail, dyfi_file=None, version=VersionOption.PREFERRED):
+    """Retrieve a pandas DataFrame containing DYFI responses.
+
+    Args:
+        detail (DetailEvent): DetailEvent object.
+        dyfi_file (str or None): If None, the file is chosen from the following list,
+                                 in the order presented.
+                                - utm_1km: UTM aggregated at 1km resolution.
+                                - utm_10km: UTM aggregated at 10km resolution.
+                                - utm_var: UTM aggregated "best" resolution for map.
+                                - zip: ZIP/city aggregated.
+        version (VersionOption): DYFI version. Default is VersionOption.PREFERRED.
+
+    Returns:
+        DataFrame or None: Pandas DataFrame containing columns:
+            - station: Name of the location where aggregated responses are located.
+            - lat: Latitude of responses.
+            - lon: Longitude of responses.
+            - distance: Distance from epicenter to location of aggregated responses.
+            - intensity: Modified Mercalli Intensity
+            - nresp: Number of DYFI responses at aggregated location.
+
+    This function returns None if no DYFI products were found.
+    """
+    if not detail.hasProduct('dyfi'):
+        return None
+    dyfi = detail.getProducts('dyfi', version=version)[0]
+    files = ['dyfi_geo_1km.geojson',
+             'dyfi_geo_10km.geojson',
+             'cdi_geo.txt',
+             'cdi_zip.txt']
+    dataframe = None
+    if dyfi_file is not None:
+        if dyfi_file == 'utm_1km':
+            if 'dyfi_geo_1km.geojson' not in dyfi.contents:
+                return None
+            data, _ = dyfi.getContentBytes('dyfi_geo_1km.geojson')
+            dataframe = _parse_geojson(data)
+        elif dyfi_file == 'utm_10km':
+            if 'dyfi_geo_10km.geojson' not in dyfi.contents:
+                return None
+            data, _ = dyfi.getContentBytes('dyfi_geo_10km.geojson')
+            dataframe = _parse_geojson(data)
+        elif dyfi_file == 'utm_var':
+            if 'cdi_geo.txt' not in dyfi.contents:
+                return None
+            data, _ = dyfi.getContentBytes('cdi_geo.txt')
+            dataframe = _parse_text(data)
+        elif dyfi_file == 'zip':
+            if 'cdi_zip.txt' not in dyfi.contents:
+                return None
+            data, _ = dyfi.getContentBytes('cdi_zip.txt')
+            dataframe = _parse_text(data)
+    else:
+        for file in files:
+            if file in dyfi.contents:
+                data, _ = dyfi.getContentBytes(file)
+                if file.endswith('geojson'):
+                    dataframe = _parse_geojson(data)
+                else:
+                    dataframe = _parse_text(data)
+                break
+    columns = ['station', 'lat', 'lon', 'distance', 'intensity', 'nresp']
+    dataframe = dataframe[columns]
+    return dataframe
+
+
+def _parse_text(bytes_geo):
+    text_geo = bytes_geo.decode('utf-8')
+    lines = text_geo.split('\n')
+    columns = lines[0].split(':')[1].split(',')
+    columns = [col.strip() for col in columns]
+    fileio = StringIO(text_geo)
+    df = pd.read_csv(fileio, skiprows=1, names=columns)
+    if 'ZIP/Location' in columns:
+        df = df.rename(index=str, columns=OLD_DYFI_COLUMNS_REPLACE)
+    else:
+        df = df.rename(index=str, columns=DYFI_COLUMNS_REPLACE)
+    df = df.drop(['Suspect?', 'City', 'State'], axis=1)
+    # df = df[df['nresp'] >= MIN_RESPONSES]
+    return df
+
+
+def _parse_geojson(bytes_data):
+    text_data = bytes_data.decode('utf-8')
+    jdict = json.loads(text_data)
+    if len(jdict['features']) == 0:
+        return None
+    prop_columns = list(jdict['features'][0]['properties'].keys())
+    columns = ['lat', 'lon'] + prop_columns
+    arrays = [[] for col in columns]
+    df_dict = dict(zip(columns, arrays))
+    for feature in jdict['features']:
+        for column in prop_columns:
+            if column == 'name':
+                prop = feature['properties'][column]
+                prop = prop[0: prop.find('<br>')]
+            else:
+                prop = feature['properties'][column]
+
+            df_dict[column].append(prop)
+        # the geojson defines a box, so let's grab the center point
+        lons = [c[0] for c in feature['geometry']['coordinates'][0]]
+        lats = [c[1] for c in feature['geometry']['coordinates'][0]]
+        clon = np.mean(lons)
+        clat = np.mean(lats)
+        df_dict['lat'].append(clat)
+        df_dict['lon'].append(clon)
+
+    df = pd.DataFrame(df_dict)
+    df = df.rename(index=str, columns={
+        'cdi': 'intensity',
+        'dist': 'distance',
+        'name': 'station'
+    })
+    return df
+
+
+>>>>>> > Added dyfi data reader.
