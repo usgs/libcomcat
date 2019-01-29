@@ -80,7 +80,7 @@ conda remove -y -n $VENV --all
 
 # Package list:
 package_list=(
-      "python=3.5"
+      "python>3.6"
       "impactutils"
       "ipython"
       "jupyter"
