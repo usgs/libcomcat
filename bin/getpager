@@ -5,10 +5,10 @@ import sys
 # third party imports
 import pandas as pd
 import openpyxl
-from openpyxl.styles import Font, Color, colors
+from openpyxl.styles import Font, colors
 
 # local imports
-from libcomcat.search import search, count, get_event_by_id
+from libcomcat.search import search, get_event_by_id
 from libcomcat.classes import SummaryEvent
 from libcomcat.utils import maketime
 from libcomcat.dataframes import get_pager_data_frame
@@ -36,7 +36,7 @@ def add_headers(filename, file_format):
         ws = wb.active
         ws.insert_rows(1, amount=len(headers))
         for cellidx in range(0, len(headers)):
-            coordinate = 'A%i' % (cellidx+1)
+            coordinate = 'A%i' % (cellidx + 1)
             ws[coordinate] = headers[cellidx].strip('#')
             cell = ws[coordinate]
             cell.font = font
@@ -208,7 +208,7 @@ def main():
     nevents = len(events)
     i = 1
     for event in events:
-        if args.verbose and (i == 1 or (not i % (nevents//10))):
+        if args.verbose and (i == 1 or (not i % (nevents // 10))):
             sys.stderr.write('Processing event %s (%i of %i).\n' %
                              (event.id, i, nevents))
         i += 1

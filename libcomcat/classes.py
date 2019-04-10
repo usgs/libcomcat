@@ -444,12 +444,22 @@ class DetailEvent(object):
 
     @property
     def properties(self):
-        """List of summary event properties.
+        """List of detail event properties.
 
         Returns:
             list: List of summary event properties (retrievable from object with [] operator).
         """
         return list(self._jdict['properties'].keys())
+
+    @property
+    def products(self):
+        """List of detail event properties.
+
+        Returns:
+            list: List of detail event products (retrievable from object with 
+                getProducts() method).
+        """
+        return list(self._jdict['properties']['products'].keys())
 
     def hasProduct(self, product):
         """Return a boolean indicating whether given product can be extracted from DetailEvent.

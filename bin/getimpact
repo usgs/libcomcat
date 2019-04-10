@@ -13,6 +13,7 @@ from libcomcat.utils import maketime
 from libcomcat.dataframes import get_impact_data_frame
 from libcomcat.search import search, count, get_event_by_id
 
+
 def get_parser():
     desc = '''Download impact results in line format (csv, tab, etc.).
 
@@ -102,10 +103,10 @@ def get_parser():
     parser.add_argument('-p', '--previous-versions', help=versionhelp, action='store_true',
                         default=False)
     source = ("Specify comcat product source network."
-        "Any one of:\n"
-        "        - 'preferred' Get version(s) of products from preferred source.\n"
-        "        - 'all' Get version(s) of products from all sources.\n"
-        "        - Any valid source network for this type of product ('us','ak',etc.)\n")
+              "Any one of:\n"
+              "        - 'preferred' Get version(s) of products from preferred source.\n"
+              "        - 'all' Get version(s) of products from all sources.\n"
+              "        - Any valid source network for this type of product ('us','ak',etc.)\n")
     parser.add_argument('--source', dest='source', help=source,
                         default='preferred')
     version = "Specify product version. (PREFERRED, FIRST, ALL)."
@@ -150,11 +151,13 @@ def main():
         maxmag = args.magRange[1]
 
     if args.bounds and args.radius:
-        print('Please specify either a bounding box OR radius search.')
+        sys.stderr.write(
+            'Please specify either a bounding box OR radius search.\n')
         sys.exit(1)
 
     if args.version.upper() not in ['PREFERRED', 'FIRST', 'ALL']:
-        print("Not a valid product version. Must be one of ['PREFERRED', 'FIRST', 'ALL'].")
+        sys.stderr.write(
+            "Not a valid product version. Must be one of ['PREFERRED', 'FIRST', 'ALL'].\n")
         sys.exit(1)
     elif args.version.upper() == 'PREFERRED':
         product_version = VersionOption.PREFERRED
@@ -188,7 +191,8 @@ def main():
                         enable_limit=args.disable_limit)
 
     if not len(events):
-        print('No events found matching your search criteria. Exiting.')
+        sys.stderr.write(
+            'No events found matching your search criteria. Exiting.\n')
         sys.exit(0)
 
     dataframe = None
@@ -197,24 +201,31 @@ def main():
 
     for event in events:
         i += 1
+        sys.stderr.write('Checking event %s, %i of %i\n' %
+                         (str(event), i, len(events)))
         if isinstance(event, SummaryEvent):
-            detail = event.getDetailEvent(includesuperseded=args.previous_versions)
+            try:
+                detail = event.getDetailEvent(
+                    includesuperseded=args.previous_versions)
+            except Exception as e:
+                sys.stderr.write('Error: "%s". Skipping.\n' % str(e))
+                continue
         else:
             detail = event
         try:
             df = get_impact_data_frame(detail, effect_types=args.effect_types,
-                    loss_types=args.loss_types, loss_extents=args.loss_extents,
-                    all_sources=args.all_sources,
-                    include_contributing=args.include_contributing,
-                    source=args.source,
-                    version=product_version)
+                                       loss_types=args.loss_types, loss_extents=args.loss_extents,
+                                       all_sources=args.all_sources,
+                                       include_contributing=args.include_contributing,
+                                       source=args.source,
+                                       version=product_version)
             if dataframe is None:
                 dataframe = df
             else:
                 dataframe = pd.concat([dataframe, df])
         except AttributeError as e:
-            print(e)
-            print("Skipping this event.")
+            sys.stderr.write(str(e)+'\n')
+            sys.stderr.write("Skipping this event.\n")
 
     if dataframe is not None:
         if args.format == 'csv':
@@ -224,11 +235,13 @@ def main():
         else:
             dataframe.to_excel(args.filename, index=False)
 
-        print('%i rows saved to %s.' % (len(dataframe), args.filename))
+        sys.stderr.write('%i rows saved to %s.\n' %
+                         (len(dataframe), args.filename))
         sys.exit(0)
     else:
-        print('No valid impact products found.')
+        sys.stderr.write('No valid impact products found.\n')
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
