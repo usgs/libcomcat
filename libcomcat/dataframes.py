@@ -4,20 +4,16 @@ from xml.dom import minidom
 import sys
 from urllib.request import urlopen
 import warnings
-from datetime import datetime
-import os.path
 import json
 from io import StringIO
+import re
 
 # third party imports
 import numpy as np
 import pandas as pd
 from obspy.io.quakeml.core import Unpickler
-from obspy.clients.fdsn import Client
-from impactutils.time.ancient_time import HistoricTime
-from openpyxl import load_workbook
 import requests
-from scipy.special import erfc, erfcinv
+from scipy.special import erfcinv
 
 # local imports
 from libcomcat.classes import VersionOption
@@ -477,7 +473,10 @@ def get_pager_data_frame(detail, get_losses=False,
                             country_rows[ccode]['mmi10'] = np.nan
 
                         country_rows[ccode]['predicted_fatalities'] = fat
-                        gvalue = gfat[ccode]
+                        if ccode in gfat:
+                            gvalue = gfat[ccode]
+                        else:
+                            gvalue = np.nan
                         country_rows[ccode]['fatality_sigma'] = get_sigma(
                             fat, gvalue)
 
@@ -485,7 +484,10 @@ def get_pager_data_frame(detail, get_losses=False,
                         eco = country_eco['us_dollars']
                         ccode = country_eco['country_code']
                         country_rows[ccode]['predicted_dollars'] = eco
-                        gvalue = gfat[ccode]
+                        if ccode in geco:
+                            gvalue = geco[ccode]
+                        else:
+                            gvalue = np.nan
                         country_rows[ccode]['dollars_sigma'] = get_sigma(
                             eco, gvalue)
 
@@ -524,7 +526,7 @@ def _invphi(input):
     Returns:
       float: invphi(input)
     """
-    return -1 * np.sqrt(2) * erfcinv(input/0.5)
+    return -1 * np.sqrt(2) * erfcinv(input / 0.5)
 
 
 def _get_total_g(pager):
@@ -862,10 +864,6 @@ def _get_most_recent(df, effect_types, loss_extents, loss_types):
     return df
 
 
-<< << << < HEAD
-== == == =
-
-
 def _validate_row(feature, feature_type, effect_types, loss_types, loss_extents,
                   all_sources, valid_effects, valid_loss_extents, valid_loss_types):
     """Validate that the row is valid based upon the requested parameters.
@@ -989,6 +987,8 @@ def _parse_text(bytes_geo):
     lines = text_geo.split('\n')
     columns = lines[0].split(':')[1].split(',')
     columns = [col.strip() for col in columns]
+    columns = [col.strip('[') for col in columns]
+    columns = [col.strip(']') for col in columns]
     fileio = StringIO(text_geo)
     df = pd.read_csv(fileio, skiprows=1, names=columns)
     if 'ZIP/Location' in columns:
@@ -1033,6 +1033,3 @@ def _parse_geojson(bytes_data):
         'name': 'station'
     })
     return df
-
-
->>>>>> > Added dyfi data reader.
