@@ -6,7 +6,6 @@ from urllib.request import urlopen
 import warnings
 import json
 from io import StringIO
-import re
 
 # third party imports
 import numpy as np
@@ -555,19 +554,26 @@ def _get_xml_exposure(total_row, pager, get_losses):
     Returns:
         dict: Filled in total_row.
     """
-    exposure_xml = pager.getContentBytes('pager.xml')[0].decode('utf-8')
-    root = minidom.parseString(exposure_xml)
-    pager = root.getElementsByTagName('pager')[0]
-    if get_losses:
+    if not len(pager.getContentsMatching('pager.xml')):
+        for i in range(0, 11):
+            mmistr = 'mmi%i' % i
+            total_row[mmistr] = np.nan
         total_row['predicted_fatalities'] = np.nan
         total_row['predicted_dollars'] = np.nan
-    for node in pager.childNodes:
-        if node.localName != 'exposure':
-            continue
-        mmistr = 'mmi%i' % (int(float(node.getAttribute('dmax'))))
-        total_row[mmistr] = int(node.getAttribute('exposure'))
-        total_row['ccode'] = 'Total'
-    root.unlink()
+    else:
+        exposure_xml = pager.getContentBytes('pager.xml')[0].decode('utf-8')
+        root = minidom.parseString(exposure_xml)
+        pager = root.getElementsByTagName('pager')[0]
+        if get_losses:
+            total_row['predicted_fatalities'] = np.nan
+            total_row['predicted_dollars'] = np.nan
+        for node in pager.childNodes:
+            if node.localName != 'exposure':
+                continue
+            mmistr = 'mmi%i' % (int(float(node.getAttribute('dmax'))))
+            total_row[mmistr] = int(node.getAttribute('exposure'))
+            total_row['ccode'] = 'Total'
+        root.unlink()
     return total_row
 
 
