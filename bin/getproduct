@@ -8,12 +8,14 @@ from datetime import datetime, timedelta
 
 # local imports
 from libcomcat.search import search, get_event_by_id
-from libcomcat.utils import maketime, makedict
+from libcomcat.utils import (maketime, makedict, check_ccode,
+                             get_country_bounds, filter_by_country)
 from libcomcat.classes import VersionOption
 
 # third party imports
 import numpy as np
 import pandas as pd
+from shapely.geometry import Point
 
 
 def _get_product_from_detail(detail, product, contents, folder,
@@ -103,6 +105,12 @@ def get_parser():
     parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
+
+    country_str = '''Specify three character country code and earthquakes 
+    from inside country polygon (50m resolution) will be returned. Earthquakes 
+    in the ocean likely will NOT be returned.'''
+    parser.add_argument('--country', help=country_str)
+
     parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
                         nargs=3, help='Search radius in KM (use instead of bounding box)')
     parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
@@ -149,8 +157,10 @@ def main():
                                  args.source, list_only=args.list_only)
         sys.exit(0)
 
-    if args.bounds and args.radius:
-        print('Please specify either a bounding box OR radius search.')
+    tsum = (args.bounds is not None) + \
+        (args.radius is not None) + (args.country is not None)
+    if tsum != 1:
+        print('Please specify a bounding box, radius, or country code.')
         sys.exit(1)
 
     latitude = None
@@ -172,6 +182,7 @@ def main():
     else:
         endtime = args.endTime
 
+    bounds = None
     if args.radius:
         latitude = args.radius[0]
         longitude = args.radius[1]
@@ -182,6 +193,19 @@ def main():
         # fix longitude bounds when crossing dateline
         if lonmin > lonmax and lonmax >= -180:
             lonmin -= 360
+    else:
+        lonmin, lonmax, latmin, latmax = None, None, None, None
+        bounds = (lonmin, lonmax, latmin, latmax)
+
+    if args.country:
+        ccode = args.country
+        if not check_ccode(ccode):
+            curl = 'https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2'
+            fmt = '%s is not a valid ISO 3166 country code. See %s for the list.'
+            tpl = (ccode, curl)
+            print(fmt % tpl)
+            sys.exit(1)
+        bounds = get_country_bounds(ccode)  # this returns a list
 
     minmag = 0.0
     maxmag = 9.9
@@ -189,31 +213,66 @@ def main():
         minmag = args.magRange[0]
         maxmag = args.magRange[1]
 
-    events = search(starttime=starttime,
-                    endtime=endtime,
-                    updatedafter=args.after,
-                    minlatitude=latmin,
-                    maxlatitude=latmax,
-                    minlongitude=lonmin,
-                    maxlongitude=lonmax,
-                    latitude=latitude,
-                    longitude=longitude,
-                    maxradiuskm=radiuskm,
-                    catalog=args.catalog,
-                    contributor=args.contributor,
-                    producttype=args.product,
-                    eventtype=args.eventType,
-                    maxmagnitude=maxmag,
-                    minmagnitude=minmag,
-                    host=args.host)
+    if isinstance(bounds, tuple) or bounds is None:
+        events = search(starttime=starttime,
+                        endtime=endtime,
+                        updatedafter=args.after,
+                        minlatitude=latmin,
+                        maxlatitude=latmax,
+                        minlongitude=lonmin,
+                        maxlongitude=lonmax,
+                        latitude=latitude,
+                        longitude=longitude,
+                        maxradiuskm=radiuskm,
+                        catalog=args.catalog,
+                        contributor=args.contributor,
+                        producttype=args.product,
+                        eventtype=args.eventType,
+                        maxmagnitude=maxmag,
+                        minmagnitude=minmag,
+                        host=args.host)
+    else:
+        events = []
+        for i, tbounds in enumerate(bounds):
+            lonmin, lonmax, latmin, latmax = tbounds
+            tevents = search(starttime=starttime,
+                             endtime=endtime,
+                             updatedafter=args.after,
+                             minlatitude=latmin,
+                             maxlatitude=latmax,
+                             minlongitude=lonmin,
+                             maxlongitude=lonmax,
+                             latitude=latitude,
+                             longitude=longitude,
+                             maxradiuskm=radiuskm,
+                             catalog=args.catalog,
+                             contributor=args.contributor,
+                             producttype=args.product,
+                             eventtype=args.eventType,
+                             maxmagnitude=maxmag,
+                             minmagnitude=minmag,
+                             host=args.host)
+            events += tevents
 
     if not len(events):
         print('No events found matching your search criteria. Exiting.')
         sys.exit(0)
 
+    if args.country:
+        ids = [event.id for event in events]
+        lats = [event.latitude for event in events]
+        lons = [event.longitude for event in events]
+        df = pd.DataFrame({'id': ids, 'latitude': lats, 'longitude': lons})
+        df2 = filter_by_country(df, ccode)
+        events = [event for event in events if event.id in df2['id'].unique()]
+
     for event in events:
         if not event.hasProduct(args.product):
             continue
+        if args.country:
+            elon = event.longitude
+            elat = event.latitude
+            point = Point(elon, elat)
         try:
             detail = event.getDetailEvent(includesuperseded=True)
         except Exception as e:

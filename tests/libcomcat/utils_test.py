@@ -4,6 +4,7 @@ import os.path
 from datetime import datetime
 
 import numpy as np
+import pandas as pd
 
 import vcr
 
@@ -11,7 +12,12 @@ from libcomcat.utils import (makedict,
                              maketime,
                              get_catalogs,
                              read_phases,
-                             get_contributors)
+                             get_contributors,
+                             check_ccode,
+                             get_country_bounds,
+                             get_country_shape,
+                             filter_by_country,
+                             get_utm_proj)
 from libcomcat.search import search, get_event_by_id
 
 
@@ -94,7 +100,61 @@ def test_contributors():
         assert 'ak' in contributors
 
 
+def test_get_utm_proj():
+    tuples = [(36, -76, '+proj=utm +zone=18S, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
+              (-66, 0, '+proj=utm +zone=31D, +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
+              (-81, 0, '+proj=utm +zone=31C, +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
+              (85, 0, '+proj=utm +zone=31X, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
+              (76, 178, '+proj=utm +zone=60X, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
+              (4, 122, '+proj=utm +zone=51N, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
+              ]
+
+    for tpl in tuples:
+        lat, lon, projstr = tpl
+        proj = get_utm_proj(lat, lon)
+        assert proj.srs == projstr
+
+
+def test_check_ccode():
+    for ccode in ['AFG', 'CHN', 'USA', 'FRA']:
+        assert check_ccode(ccode)
+
+    try:
+        assert check_ccode('foo')
+    except Exception:
+        pass
+
+
+def test_get_country_bounds():
+    bounds = get_country_bounds('FRA')
+    assert len(bounds) == 10
+    tbounds = (8.565625000000011, 9.556445312500017,
+               41.384912109374994, 43.021484375)
+    assert bounds[0] == tbounds
+
+
+def test_get_country_shape():
+    shape = get_country_shape('JAM')
+    assert len(shape.exterior.coords[:]) == 48
+
+
+def test_filter_by_country():
+    # first event is in Haiti, second is in Dom. Rep.
+    data = {'id': ['us1000h8hi', 'pr2019035005'],
+            'latitude': [20.041, 18.136],
+            'longitude': [-73.014, -68.552]}
+    df = pd.DataFrame(data)
+    df2 = filter_by_country(df, 'DOM')
+    assert len(df2) == 1
+    assert df2.iloc[0]['id'] == 'pr2019035005'
+
+
 if __name__ == '__main__':
+    test_filter_by_country()
+    test_get_country_shape()
+    test_get_country_bounds()
+    test_check_ccode()
+    test_get_utm_proj()
     print('Testing reader...')
     test_reader()
     print('Testing makedict...')
