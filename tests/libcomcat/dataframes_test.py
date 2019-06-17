@@ -241,13 +241,17 @@ def test_dyfi():
     tape_file = os.path.join(datadir, 'vcr_dyfi_dataframe.yaml')
     with vcr.use_cassette(tape_file):
         df1km = get_dyfi_data_frame(detail, dyfi_file='utm_1km')
-        np.testing.assert_almost_equal(df1km['intensity'].sum(), 14887.3)
+        np.testing.assert_almost_equal(
+            df1km['intensity'].sum(), 14888.699999999)
         df10km = get_dyfi_data_frame(detail, dyfi_file='utm_10km')
-        np.testing.assert_almost_equal(df10km['intensity'].sum(), 3479.5)
+        np.testing.assert_almost_equal(
+            df10km['intensity'].sum(), 3480.2000000000003)
         dfutm = get_dyfi_data_frame(detail, dyfi_file='utm_var')
-        np.testing.assert_almost_equal(dfutm['intensity'].sum(), 3479.5)
+        np.testing.assert_almost_equal(
+            dfutm['intensity'].sum(), 3480.2000000000003)
         dfzip = get_dyfi_data_frame(detail, dyfi_file='zip')
-        np.testing.assert_almost_equal(dfzip['intensity'].sum(), 2344.7)
+        np.testing.assert_almost_equal(
+            dfzip['intensity'].sum(), 2344.6000000000004)
 
 
 if __name__ == '__main__':

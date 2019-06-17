@@ -128,8 +128,8 @@ def test_check_ccode():
 def test_get_country_bounds():
     bounds = get_country_bounds('FRA')
     assert len(bounds) == 10
-    tbounds = (8.565625000000011, 9.556445312500017,
-               41.384912109374994, 43.021484375)
+    tbounds = (7.944129165762711, 10.177941146737316,
+               40.54592258835411, 43.860473896020885)
     assert bounds[0] == tbounds
 
 

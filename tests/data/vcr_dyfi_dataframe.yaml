@@ -6,7 +6,7 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1551819820509/dyfi_geo_1km.geojson
+    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1558448846732/dyfi_geo_1km.geojson
   response:
     body: {string: '{"features":[{"geometry":{"coordinates":[[[-97.86622,28.46285],[-97.856,28.46276],[-97.85591,28.47179],[-97.86612,28.47187]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(14R
         0611 3149 1000)<br>UTM:(14R 0611 3149 1000)","cdi":2.7,"dist":1471}},{"geometry":{"coordinates":[[[-100.61645,38.47718],[-100.60499,38.47734],[-100.60519,38.48635],[-100.61665,38.48619]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":2,"name":"UTM:(14S
@@ -3396,8 +3396,8 @@ interactions:
         0739 3933 1000)<br>UTM:(16S 0739 3933 1000)","cdi":2,"dist":36}},{"geometry":{"coordinates":[[[-84.36406,35.52984],[-84.35304,35.5296],[-84.35275,35.53861],[-84.36377,35.53885]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
         0739 3935 1000)<br>UTM:(16S 0739 3935 1000)","cdi":2.7,"dist":35}},{"geometry":{"coordinates":[[[-84.35755,35.728],[-84.3465,35.72775],[-84.3462,35.73676],[-84.35725,35.737]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
         0739 3957 1000)<br>UTM:(16S 0739 3957 1000)","cdi":2.7,"dist":37}},{"geometry":{"coordinates":[[[-84.34886,35.98918],[-84.33777,35.98894],[-84.33747,35.99794],[-84.34856,35.99819]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
-        0739 3986 1000)<br>UTM:(16S 0739 3986 1000)","cdi":2,"dist":55}},{"geometry":{"coordinates":[[[-84.34705,36.04322],[-84.33596,36.04298],[-84.33565,36.05198],[-84.34674,36.05223]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
-        0739 3992 1000)<br>UTM:(16S 0739 3992 1000)","cdi":2,"dist":60}},{"geometry":{"coordinates":[[[-84.41964,33.39451],[-84.4089,33.39429],[-84.40863,33.4033],[-84.41937,33.40352]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
+        0739 3986 1000)<br>UTM:(16S 0739 3986 1000)","cdi":2,"dist":55}},{"geometry":{"coordinates":[[[-84.34705,36.04322],[-84.33596,36.04298],[-84.33565,36.05198],[-84.34674,36.05223]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":2,"name":"UTM:(16S
+        0739 3992 1000)<br>UTM:(16S 0739 3992 1000)","cdi":3.4,"dist":60}},{"geometry":{"coordinates":[[[-84.41964,33.39451],[-84.4089,33.39429],[-84.40863,33.4033],[-84.41937,33.40352]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
         0740 3698 1000)<br>UTM:(16S 0740 3698 1000)","cdi":2,"dist":247}},{"geometry":{"coordinates":[[[-84.4167,33.49363],[-84.40595,33.4934],[-84.40568,33.50241],[-84.41643,33.50264]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
         0740 3709 1000)<br>UTM:(16S 0740 3709 1000)","cdi":3.4,"dist":236}},{"geometry":{"coordinates":[[[-84.4159,33.52066],[-84.40514,33.52043],[-84.40487,33.52944],[-84.41563,33.52967]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
         0740 3712 1000)<br>UTM:(16S 0740 3712 1000)","cdi":2,"dist":233}},{"geometry":{"coordinates":[[[-84.41509,33.54769],[-84.40433,33.54746],[-84.40406,33.55647],[-84.41482,33.5567]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
@@ -6285,20 +6285,21 @@ interactions:
       Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
       Access-Control-Allow-Methods: ['*']
       Access-Control-Allow-Origin: ['*']
-      Age: ['954']
+      Age: ['283']
       Cache-Control: [max-age=315360000]
       Connection: [close]
-      Content-Length: ['1677868']
+      Content-Length: ['1677870']
       Content-Type: [text/plain]
-      Date: ['Wed, 10 Apr 2019 19:44:17 GMT']
-      ETag: ['"199a2c-5835f35206300"']
-      Expires: ['Sat, 07 Apr 2029 19:44:17 GMT']
-      Last-Modified: ['Tue, 05 Mar 2019 21:03:40 GMT']
+      Date: ['Mon, 17 Jun 2019 15:42:04 GMT']
+      ETag: ['"199a2e-58966a5ddcf80"']
+      Expires: ['Thu, 14 Jun 2029 15:42:04 GMT']
+      Last-Modified: ['Tue, 21 May 2019 14:27:26 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
       Vary: ['Accept-Encoding,Accept-Encoding']
-      Via: [1.1 c29390732f5bc4b2c7832623ae6e492f.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [n57_pbVC2To11LLnf9GUyhbRWdjQYkd3hFfUVbEPfeaCmUvPvDziDA==]
+      Via: [1.1 685083d3a5f8eecb6c517728d821ec87.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [N9FBkP3dbfb1ifHma0FGtPSLAvtm4dPDlcFQNd9HnjjNNTf8oakrgA==]
+      X-Amz-Cf-Pop: [IAD79-C1]
       X-Cache: [Hit from cloudfront]
       X-Cache-Status: [MISS]
       X-Content-Type-Options: [nosniff]
@@ -6312,7 +6313,7 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1551819820509/dyfi_geo_10km.geojson
+    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1558448846732/dyfi_geo_10km.geojson
   response:
     body: {string: '{"features":[{"geometry":{"coordinates":[[[-97.87729,28.38171],[-97.77524,28.38083],[-97.7742,28.47107],[-97.87633,28.47196]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(14R
         061 314 10000)<br>UTM:(14R 061 314 10000)","cdi":2.7,"dist":1471}},{"geometry":{"coordinates":[[[-100.71958,38.47571],[-100.60499,38.47734],[-100.60699,38.56743],[-100.72173,38.5658]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":2,"name":"UTM:(14S
@@ -7002,8 +7003,8 @@ interactions:
         073 395 10000)<br>Loudon","cdi":3.3,"dist":32}},{"geometry":{"coordinates":[[[-84.4561,35.75716],[-84.3456,35.75477],[-84.3426,35.84484],[-84.45323,35.84723]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":15,"name":"UTM:(16S
         073 396 10000)<br>Kingston","cdi":3,"dist":37}},{"geometry":{"coordinates":[[[-84.45323,35.84723],[-84.3426,35.84484],[-84.33959,35.9349],[-84.45034,35.93731]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":3,"name":"UTM:(16S
         073 397 10000)<br>Kingston","cdi":2.5,"dist":44}},{"geometry":{"coordinates":[[[-84.45034,35.93731],[-84.33959,35.9349],[-84.33656,36.02496],[-84.44744,36.02738]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":10,"name":"UTM:(16S
-        073 398 10000)<br>Oak Ridge","cdi":3.2,"dist":51}},{"geometry":{"coordinates":[[[-84.44744,36.02738],[-84.33656,36.02496],[-84.33352,36.11502],[-84.44452,36.11744]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":5,"name":"UTM:(16S
-        073 399 10000)<br>Oliver Springs","cdi":2.2,"dist":60}},{"geometry":{"coordinates":[[[-84.39923,37.46828],[-84.28626,37.46574],[-84.283,37.55578],[-84.3961,37.55833]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
+        073 398 10000)<br>Oak Ridge","cdi":3.2,"dist":51}},{"geometry":{"coordinates":[[[-84.44744,36.02738],[-84.33656,36.02496],[-84.33352,36.11502],[-84.44452,36.11744]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":6,"name":"UTM:(16S
+        073 399 10000)<br>Oliver Springs","cdi":2.9,"dist":60}},{"geometry":{"coordinates":[[[-84.39923,37.46828],[-84.28626,37.46574],[-84.283,37.55578],[-84.3961,37.55833]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
         073 415 10000)<br>Berea","cdi":2.7,"dist":213}},{"geometry":{"coordinates":[[[-84.42705,33.14221],[-84.31995,33.13995],[-84.3172,33.23005],[-84.42441,33.23232]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":2,"name":"UTM:(16S
         074 367 10000)<br>Williamson","cdi":2.8,"dist":271}},{"geometry":{"coordinates":[[[-84.42441,33.23232],[-84.3172,33.23005],[-84.31444,33.32015],[-84.42177,33.32242]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":1,"name":"UTM:(16S
         074 368 10000)<br>UTM:(16S 074 368 10000)","cdi":2,"dist":261}},{"geometry":{"coordinates":[[[-84.42177,33.32242],[-84.31444,33.32015],[-84.31167,33.41025],[-84.4191,33.41253]]],"type":"Polygon"},"type":"Feature","properties":{"stddev":0,"nresp":3,"name":"UTM:(16S
@@ -7721,22 +7722,23 @@ interactions:
       Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
       Access-Control-Allow-Methods: ['*']
       Access-Control-Allow-Origin: ['*']
-      Age: ['854']
+      Age: ['109']
       Cache-Control: [max-age=315360000]
       Connection: [close]
       Content-Length: ['356409']
       Content-Type: [text/plain]
-      Date: ['Wed, 10 Apr 2019 19:46:08 GMT']
-      ETag: ['"57039-5835f35206300"']
-      Expires: ['Sat, 07 Apr 2029 19:46:08 GMT']
-      Last-Modified: ['Tue, 05 Mar 2019 21:03:40 GMT']
+      Date: ['Mon, 17 Jun 2019 15:45:00 GMT']
+      ETag: ['"57039-58966a5ddcf80"']
+      Expires: ['Mon, 04 Jun 2029 04:26:56 GMT']
+      Last-Modified: ['Tue, 21 May 2019 14:27:26 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
       Vary: ['Accept-Encoding,Accept-Encoding']
-      Via: [1.1 48ea53c7edffa2cdbdc32f7d94966344.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [ck2oDJmF0SqsZAMTexBKxXmezT_9Q944MB1Dabl7gL870QEu5j1yYg==]
+      Via: [1.1 68f4ce62965bee950d499088765039e4.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [ys57cCY_YQagZ_Ip5r30uoKtmrlowkGaNRw6M7dsbovlzGHk9TaioQ==]
+      X-Amz-Cf-Pop: [IAD79-C1]
       X-Cache: [Hit from cloudfront]
-      X-Cache-Status: [MISS]
+      X-Cache-Status: [HIT]
       X-Content-Type-Options: [nosniff]
       X-Frame-Options: [SAMEORIGIN]
       X-XSS-Protection: [1; mode=block]
@@ -7748,7 +7750,7 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1551819820509/cdi_geo.txt
+    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1558448846732/cdi_geo.txt
   response:
     body: {string: '# Columns: Geocoded box,CDI,No. of responses,Hypocentral distance,Latitude,Longitude,Suspect?,Standard
         deviation,City,State
@@ -9259,7 +9261,7 @@ interactions:
 
         "UTM:(16S 073 398 10000)",3.2,10,51,35.9811,-84.3935,0,0.000,"Oak Ridge",""
 
-        "UTM:(16S 073 399 10000)",2.2,5,60,36.0712,-84.3905,0,0.000,"Oliver Springs",""
+        "UTM:(16S 073 399 10000)",2.9,6,60,36.0712,-84.3905,0,0.000,"Oliver Springs",""
 
         "UTM:(16S 073 415 10000)",2.7,1,213,37.5121,-84.3411,0,0.000,"Berea",""
 
@@ -10819,20 +10821,21 @@ interactions:
       Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
       Access-Control-Allow-Methods: ['*']
       Access-Control-Allow-Origin: ['*']
-      Age: ['798']
+      Age: ['62']
       Cache-Control: [max-age=315360000]
       Connection: [close]
       Content-Length: ['110102']
       Content-Type: [text/plain]
-      Date: ['Wed, 10 Apr 2019 19:47:07 GMT']
-      ETag: ['"1ae16-5835f35206300"']
-      Expires: ['Sat, 07 Apr 2029 19:47:07 GMT']
-      Last-Modified: ['Tue, 05 Mar 2019 21:03:40 GMT']
+      Date: ['Mon, 17 Jun 2019 15:45:49 GMT']
+      ETag: ['"1ae16-58966a5ddcf80"']
+      Expires: ['Thu, 14 Jun 2029 15:45:49 GMT']
+      Last-Modified: ['Tue, 21 May 2019 14:27:26 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
       Vary: ['Accept-Encoding,Accept-Encoding']
-      Via: [1.1 824a5d9ed02451bcb68b15ae5991dce0.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [sjAXM-LJqKNCyNG5EU2hFIu9AI7JurxSx-jViKo0Hd5FSXxfVISLrQ==]
+      Via: [1.1 0173aeb09060ae0dd8c77e399d9e5634.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [Z5tP14_J3UlZGk9oECrgf3tmhjJp6fS0AY_3Co2JuNb9yjqeupGoIQ==]
+      X-Amz-Cf-Pop: [IAD79-C1]
       X-Cache: [Hit from cloudfront]
       X-Cache-Status: [MISS]
       X-Content-Type-Options: [nosniff]
@@ -10846,7 +10849,7 @@ interactions:
       Host: [earthquake.usgs.gov]
       User-Agent: [Python-urllib/3.5]
     method: GET
-    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1551819820509/cdi_zip.txt
+    uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1558448846732/cdi_zip.txt
   response:
     body: {string: '# Columns: ZIP/Location,CDI,No. of responses,Hypocentral distance,Latitude,Longitude,Suspect?,Standard
         deviation,City,State[,cityid]
@@ -12417,7 +12420,7 @@ interactions:
 
         "37830",2.4,23,57,35.9675,-84.2843,0,0.000,"Oak Ridge","TN"
 
-        "37840",3.6,8,59,36.0584,-84.3827,0,0.000,"Oliver Springs","TN"
+        "37840",3.5,9,59,36.0584,-84.3827,0,0.000,"Oliver Springs","TN"
 
         "37841",2.2,4,101,36.5206,-84.5883,0,0.000,"Oneida","TN"
 
@@ -12798,20 +12801,21 @@ interactions:
       Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
       Access-Control-Allow-Methods: ['*']
       Access-Control-Allow-Origin: ['*']
-      Age: ['742']
+      Age: ['31']
       Cache-Control: [max-age=315360000]
       Connection: [close]
       Content-Length: ['58259']
       Content-Type: [text/plain]
-      Date: ['Wed, 10 Apr 2019 19:48:06 GMT']
-      ETag: ['"e393-5835f35206300"']
-      Expires: ['Sat, 07 Apr 2029 19:48:06 GMT']
-      Last-Modified: ['Tue, 05 Mar 2019 21:03:40 GMT']
+      Date: ['Mon, 17 Jun 2019 15:46:21 GMT']
+      ETag: ['"e393-58966a5ddcf80"']
+      Expires: ['Thu, 14 Jun 2029 15:46:21 GMT']
+      Last-Modified: ['Tue, 21 May 2019 14:27:26 GMT']
       Server: [nginx]
       Strict-Transport-Security: [max-age=31536000]
       Vary: ['Accept-Encoding,Accept-Encoding']
-      Via: [1.1 c55bfc9d9a95cdee8e23989feddaa4b3.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [PC6Wz5YC_wcPDeY7KfJFk8zHi3-GgPnUUQ4Z39p5oMYn-tiRjHrSkg==]
+      Via: [1.1 8f98a0b4c1a6979299c34e2923b8a5e0.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [2GEEHy05gjI2v3d0h-Wjyo_sX3v2NBXkLbf0ifOP8IUamCWqsmd38g==]
+      X-Amz-Cf-Pop: [IAD79-C1]
       X-Cache: [Hit from cloudfront]
       X-Cache-Status: [MISS]
       X-Content-Type-Options: [nosniff]
