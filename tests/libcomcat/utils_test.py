@@ -15,9 +15,9 @@ from libcomcat.utils import (makedict,
                              get_contributors,
                              check_ccode,
                              get_country_bounds,
-                             get_country_shape,
+                             _get_country_shape,
                              filter_by_country,
-                             get_utm_proj)
+                             _get_utm_proj)
 from libcomcat.search import search, get_event_by_id
 
 
@@ -111,7 +111,7 @@ def test_get_utm_proj():
 
     for tpl in tuples:
         lat, lon, projstr = tpl
-        proj = get_utm_proj(lat, lon)
+        proj = _get_utm_proj(lat, lon)
         assert proj.srs == projstr
 
 
@@ -134,7 +134,7 @@ def test_get_country_bounds():
 
 
 def test_get_country_shape():
-    shape = get_country_shape('JAM')
+    shape = _get_country_shape('JAM')
     assert len(shape.exterior.coords[:]) == 48
 
 
