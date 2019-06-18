@@ -33,7 +33,7 @@ FATALITY_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/da
 ECONOMIC_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/economy.xml'
 
 COUNTRIES_SHP = 'ne_50m_admin_0_countries.shp'
-BUFFER_DISTANCE_METERS = 1e5
+BUFFER_DISTANCE_KM = 100
 KM_PER_DEGREE = 119.191
 
 
@@ -61,8 +61,8 @@ def get_mag_src(mag):
         has_gcmt = mag.resource_id.id.lower().find('gcmt') > -1
         has_at = mag.resource_id.id.lower().find('at') > -1
         has_pt = mag.resource_id.id.lower().find('pt') > -1
-        has_ak = (mag.resource_id.id.lower().find('ak') > -1
-                  or mag.resource_id.id.lower().find('alaska') > -1)
+        has_ak = (mag.resource_id.id.lower().find('ak') > -1 or
+                  mag.resource_id.id.lower().find('alaska') > -1)
         has_pr = mag.resource_id.id.lower().find('pr') > -1
         has_dup = mag.resource_id.id.lower().find('duputel') > -1
         has_us = mag.resource_id.id.lower().find('us') > -1
@@ -229,6 +229,13 @@ def get_contributors():
 
 
 def check_ccode(ccode):
+    """Make sure three letter country code is valid and contained in country bounds.
+
+    Args:
+        ccode (str): Three letter valid ISO 3166 country code.
+    Returns:
+        bool: True if valid country code found in bounds file, False otherwise.
+    """
     ccode = ccode.upper()
     datapath = os.path.join('data', COUNTRIES_SHP)
     shpfile = pkg_resources.resource_filename('libcomcat', datapath)
@@ -242,7 +249,17 @@ def check_ccode(ccode):
     return True
 
 
-def get_country_bounds(ccode):
+def get_country_bounds(ccode, buffer_km=BUFFER_DISTANCE_KM):
+    """Get list of country bounds tuples (one for each sub-polygon in country polygon.)
+
+    Args:
+        ccode (str): Three letter ISO 3166 country code.
+        buffer_km (int): Buffer distance around country boundary.
+
+    Returns:
+        list: List of 4-element tuples (xmin, xmax, ymin, ymax)
+
+    """
     xmin = xmax = ymin = ymax = None
     ccode = ccode.upper()
     datapath = os.path.join('data', COUNTRIES_SHP)
@@ -254,19 +271,19 @@ def get_country_bounds(ccode):
                 country = sShape(shape['geometry'])
                 if isinstance(country, MultiPolygon):
                     for polygon in country:
-                        xmin, ymin, xmax, ymax = _buffer(polygon.bounds)
+                        xmin, ymin, xmax, ymax = _buffer(
+                            polygon.bounds, buffer_km)
                         bounds.append((xmin, xmax, ymin, ymax))
                 else:
-                    xmin, ymin, xmax, ymax = _buffer(country.bounds)
+                    xmin, ymin, xmax, ymax = _buffer(country.bounds, buffer_km)
                     bounds.append((xmin, xmax, ymin, ymax))
                 break
 
     return bounds
 
 
-def _buffer(bounds):
+def _buffer(bounds, buffer_km):
     xmin, ymin, xmax, ymax = bounds
-    buffer_km = (BUFFER_DISTANCE_METERS / 1000)
     km2deg = (1 / KM_PER_DEGREE)
     ymin -= buffer_km * km2deg
     ymax += buffer_km * km2deg
@@ -276,7 +293,7 @@ def _buffer(bounds):
     return (xmin, ymin, xmax, ymax)
 
 
-def get_country_shape(ccode):
+def _get_country_shape(ccode):
     datapath = os.path.join('data', COUNTRIES_SHP)
     shpfile = pkg_resources.resource_filename('libcomcat', datapath)
     country = None
@@ -288,7 +305,7 @@ def get_country_shape(ccode):
     return country
 
 
-def get_utm_proj(lat, lon):
+def _get_utm_proj(lat, lon):
     zone = str((math.floor((lon + 180) / 6) % 60) + 1)
     alphabet = string.ascii_uppercase
     alphabet = alphabet.replace('I', '')
@@ -314,7 +331,7 @@ def get_utm_proj(lat, lon):
     return proj
 
 
-def _get_pshape(polygon):
+def _get_pshape(polygon, buffer_km):
     bounds = polygon.bounds  # xmin, ymin, xmax, ymax
     dlon = bounds[2] - bounds[0]
     if dlon < 0:
@@ -323,26 +340,36 @@ def _get_pshape(polygon):
     if center_lon > 180:
         center_lon -= 360
     center_lat = (bounds[1] + bounds[3]) / 2
-    utmproj = get_utm_proj(center_lat, center_lon)
+    utmproj = _get_utm_proj(center_lat, center_lon)
     project = partial(
         pyproj.transform,
         pyproj.Proj(init='epsg:4326'),
         utmproj)
 
     pshape = transform(project, polygon)
-    pshape = pshape.buffer(BUFFER_DISTANCE_METERS)
+    pshape = pshape.buffer(buffer_km * 1000)
     return (pshape, utmproj)
 
 
-def filter_by_country(df, ccode):
+def filter_by_country(df, ccode, buffer_km=BUFFER_DISTANCE_KM):
+    """Filter earthquake dataframe by country code.
+
+    Args:
+        df (DataFrame): pandas Dataframe containing at least columns (latitude,longitude).
+        ccode (str): Three letter ISO 3166 country code.
+        buffer_km (int): Buffer distance around country boundary.
+
+    Returns:
+        DataFrame: Filtered dataframe.
+    """
     pshapes = []
-    shape = get_country_shape(ccode)
+    shape = _get_country_shape(ccode)
     if isinstance(shape, MultiPolygon):
         for polygon in shape:
-            pshape, utmproj = _get_pshape(polygon)
+            pshape, utmproj = _get_pshape(polygon, buffer_km)
             pshapes.append((pshape, utmproj))
     else:
-        pshape, utmproj = _get_pshape(shape)
+        pshape, utmproj = _get_pshape(shape, buffer_km)
         pshapes.append((pshape, utmproj))
 
     df2 = pd.DataFrame(columns=df.columns)

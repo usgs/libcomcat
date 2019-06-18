@@ -4,7 +4,8 @@ import sys
 
 from libcomcat.search import search, count
 from libcomcat.utils import (maketime, check_ccode,
-                             get_country_bounds, filter_by_country)
+                             get_country_bounds, filter_by_country,
+                             BUFFER_DISTANCE_KM)
 from libcomcat.dataframes import (get_detail_data_frame,
                                   get_summary_data_frame)
 
@@ -103,6 +104,12 @@ def get_parser():
     from inside country polygon (50m resolution) will be returned. Earthquakes 
     in the ocean likely will NOT be returned.'''
     parser.add_argument('--country', help=country_str)
+
+    buffer_str = '''Use in conjunction with --country. Specify a buffer in km
+    around country border where events will be selected.
+    '''
+    parser.add_argument('--buffer', help=buffer_str,
+                        type=int, default=BUFFER_DISTANCE_KM)
 
     helpstr = 'Search radius in KM (use instead of bounding box)'
     parser.add_argument('-r', '--radius', dest='radius',
@@ -220,7 +227,7 @@ def main():
             tpl = (ccode, curl)
             print(fmt % tpl)
             sys.exit(1)
-        bounds = get_country_bounds(ccode)  # this returns a list
+        bounds = get_country_bounds(ccode, args.buffer)  # this returns a list
 
     minmag = 0.0
     maxmag = 9.9
@@ -340,7 +347,7 @@ def main():
     df = df[first_columns + col_list]
 
     if args.country:
-        df = filter_by_country(df, ccode)
+        df = filter_by_country(df, ccode, buffer_km=args.buffer)
 
     if args.verbose:
         sys.stderr.write('Created table...saving %i records to %s.\n' %
