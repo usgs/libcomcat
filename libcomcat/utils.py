@@ -1,24 +1,23 @@
 # stdlib imports
 from xml.dom import minidom
-import sys
 from urllib.request import urlopen
-import warnings
-from datetime import datetime
 import os.path
-import json
+import math
+import string
+from functools import partial
 
 # third party imports
-import numpy as np
 import pandas as pd
-from obspy.io.quakeml.core import Unpickler
-from libcomcat.classes import VersionOption
+from shapely.geometry import shape as sShape, Point, MultiPolygon
+import fiona
 from obspy.clients.fdsn import Client
 from impactutils.time.ancient_time import HistoricTime
 from openpyxl import load_workbook
-import requests
+import pkg_resources
+import pyproj
+import numpy as np
+from shapely.ops import transform
 
-# local imports
-from .classes import VersionOption
 
 # constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
@@ -32,6 +31,10 @@ COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
 # where is the PAGER fatality model found?
 FATALITY_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/fatality.xml'
 ECONOMIC_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/economy.xml'
+
+COUNTRIES_SHP = 'ne_50m_admin_0_countries.shp'
+BUFFER_DISTANCE_KM = 100
+KM_PER_DEGREE = 119.191
 
 
 def get_mag_src(mag):
@@ -109,7 +112,6 @@ def get_all_mags(eventid):
             continue
         row[colname] = magvalue
     return (row, msg)
-
 
 
 def read_phases(filename):
@@ -224,3 +226,166 @@ def get_contributors():
         conlist.append(contributor.firstChild.data)
     root.unlink()
     return conlist
+
+
+def check_ccode(ccode):
+    """Make sure three letter country code is valid and contained in country bounds.
+
+    Args:
+        ccode (str): Three letter valid ISO 3166 country code.
+    Returns:
+        bool: True if valid country code found in bounds file, False otherwise.
+    """
+    ccode = ccode.upper()
+    datapath = os.path.join('data', COUNTRIES_SHP)
+    shpfile = pkg_resources.resource_filename('libcomcat', datapath)
+    ccodes = []
+    with fiona.open(shpfile, 'r') as shapes:
+        for shape in shapes:
+            isocode = shape['properties']['ADM0_A3']
+            ccodes.append(isocode)
+    if ccode not in ccodes:
+        return False
+    return True
+
+
+def get_country_bounds(ccode, buffer_km=BUFFER_DISTANCE_KM):
+    """Get list of country bounds tuples (one for each sub-polygon in country polygon.)
+
+    Args:
+        ccode (str): Three letter ISO 3166 country code.
+        buffer_km (int): Buffer distance around country boundary.
+
+    Returns:
+        list: List of 4-element tuples (xmin, xmax, ymin, ymax)
+
+    """
+    xmin = xmax = ymin = ymax = None
+    ccode = ccode.upper()
+    datapath = os.path.join('data', COUNTRIES_SHP)
+    shpfile = pkg_resources.resource_filename('libcomcat', datapath)
+    bounds = []
+    with fiona.open(shpfile, 'r') as shapes:
+        for shape in shapes:
+            if shape['properties']['ADM0_A3'] == ccode:
+                country = sShape(shape['geometry'])
+                if isinstance(country, MultiPolygon):
+                    for polygon in country:
+                        xmin, ymin, xmax, ymax = _buffer(
+                            polygon.bounds, buffer_km)
+                        bounds.append((xmin, xmax, ymin, ymax))
+                else:
+                    xmin, ymin, xmax, ymax = _buffer(country.bounds, buffer_km)
+                    bounds.append((xmin, xmax, ymin, ymax))
+                break
+
+    return bounds
+
+
+def _buffer(bounds, buffer_km):
+    xmin, ymin, xmax, ymax = bounds
+    km2deg = (1 / KM_PER_DEGREE)
+    ymin -= buffer_km * km2deg
+    ymax += buffer_km * km2deg
+    yav = (ymin + ymax) / 2
+    xmin -= buffer_km * km2deg * np.cos(np.radians(yav))
+    xmax += buffer_km * km2deg * np.cos(np.radians(yav))
+    return (xmin, ymin, xmax, ymax)
+
+
+def _get_country_shape(ccode):
+    datapath = os.path.join('data', COUNTRIES_SHP)
+    shpfile = pkg_resources.resource_filename('libcomcat', datapath)
+    country = None
+    with fiona.open(shpfile, 'r') as shapes:
+        for shape in shapes:
+            if shape['properties']['ADM0_A3'] == ccode:
+                country = sShape(shape['geometry'])
+
+    return country
+
+
+def _get_utm_proj(lat, lon):
+    zone = str((math.floor((lon + 180) / 6) % 60) + 1)
+    alphabet = string.ascii_uppercase
+    alphabet = alphabet.replace('I', '')
+    alphabet = alphabet.replace('O', '')
+    alphabet = alphabet[2:-2]
+    if lat < -80:
+        band = 'C'
+    elif lat > 84:
+        band = 'X'
+    else:
+        band_starts = np.arange(-80, 80, 8)
+        # band_ends = np.append(np.arange(-72, 80, 8), [84])
+        dstarts = lat - band_starts
+        sidx = np.where(dstarts >= 0)[0].max()
+        band = alphabet[sidx]
+    fmt = ("+proj=utm +zone=%s%s, %s +ellps=WGS84 "
+           "+datum=WGS84 +units=m +no_defs")
+    south = ''
+    if lat < 0:
+        south = '+south'
+    tpl = (zone, band, south)
+    proj = pyproj.Proj(fmt % tpl)
+    return proj
+
+
+def _get_pshape(polygon, buffer_km):
+    bounds = polygon.bounds  # xmin, ymin, xmax, ymax
+    dlon = bounds[2] - bounds[0]
+    if dlon < 0:
+        dlon = bounds[2] + 360 - bounds[0]
+    center_lon = bounds[0] + dlon / 2
+    if center_lon > 180:
+        center_lon -= 360
+    center_lat = (bounds[1] + bounds[3]) / 2
+    utmproj = _get_utm_proj(center_lat, center_lon)
+    project = partial(
+        pyproj.transform,
+        pyproj.Proj(init='epsg:4326'),
+        utmproj)
+
+    pshape = transform(project, polygon)
+    pshape = pshape.buffer(buffer_km * 1000)
+    return (pshape, utmproj)
+
+
+def filter_by_country(df, ccode, buffer_km=BUFFER_DISTANCE_KM):
+    """Filter earthquake dataframe by country code.
+
+    Args:
+        df (DataFrame): pandas Dataframe containing at least columns (latitude,longitude).
+        ccode (str): Three letter ISO 3166 country code.
+        buffer_km (int): Buffer distance around country boundary.
+
+    Returns:
+        DataFrame: Filtered dataframe.
+    """
+    pshapes = []
+    shape = _get_country_shape(ccode)
+    if isinstance(shape, MultiPolygon):
+        for polygon in shape:
+            pshape, utmproj = _get_pshape(polygon, buffer_km)
+            pshapes.append((pshape, utmproj))
+    else:
+        pshape, utmproj = _get_pshape(shape, buffer_km)
+        pshapes.append((pshape, utmproj))
+
+    df2 = pd.DataFrame(columns=df.columns)
+    for idx, row in df.iterrows():
+        lat = row['latitude']
+        lon = row['longitude']
+        point_inside = False
+        for pshape, utmproj in pshapes:
+            x, y = utmproj(lon, lat)
+            pxy = Point(x, y)
+            if pshape.contains(pxy):
+                point_inside = True
+                break
+            if point_inside:
+                break
+        if point_inside:
+            df2 = df2.append(row)
+
+    return df2

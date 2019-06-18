@@ -3,7 +3,9 @@ import argparse
 import sys
 
 from libcomcat.search import search, count
-from libcomcat.utils import maketime
+from libcomcat.utils import (maketime, check_ccode,
+                             get_country_bounds, filter_by_country,
+                             BUFFER_DISTANCE_KM)
 from libcomcat.dataframes import (get_detail_data_frame,
                                   get_summary_data_frame)
 
@@ -97,6 +99,18 @@ def get_parser():
                         metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help=helpstr)
+
+    country_str = '''Specify three character country code and earthquakes 
+    from inside country polygon (50m resolution) will be returned. Earthquakes 
+    in the ocean likely will NOT be returned.'''
+    parser.add_argument('--country', help=country_str)
+
+    buffer_str = '''Use in conjunction with --country. Specify a buffer in km
+    around country border where events will be selected.
+    '''
+    parser.add_argument('--buffer', help=buffer_str,
+                        type=int, default=BUFFER_DISTANCE_KM)
+
     helpstr = 'Search radius in KM (use instead of bounding box)'
     parser.add_argument('-r', '--radius', dest='radius',
                         metavar=('lat', 'lon', 'rmax'),
@@ -180,10 +194,17 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    tsum = (args.bounds is not None) + \
+        (args.radius is not None) + (args.country is not None)
+    if tsum != 1:
+        print('Please specify a bounding box, radius, or country code.')
+        sys.exit(1)
+
     latitude = None
     longitude = None
     radiuskm = None
     lonmin = latmin = lonmax = latmax = None
+    bounds = None
     if args.radius:
         latitude = args.radius[0]
         longitude = args.radius[1]
@@ -196,6 +217,17 @@ def main():
             lonmin -= 360
     else:
         lonmin, lonmax, latmin, latmax = None, None, None, None
+        bounds = (lonmin, lonmax, latmin, latmax)
+
+    if args.country:
+        ccode = args.country
+        if not check_ccode(ccode):
+            curl = 'https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2'
+            fmt = '%s is not a valid ISO 3166 country code. See %s for the list.'
+            tpl = (ccode, curl)
+            print(fmt % tpl)
+            sys.exit(1)
+        bounds = get_country_bounds(ccode, args.buffer)  # this returns a list
 
     minmag = 0.0
     maxmag = 9.9
@@ -204,7 +236,46 @@ def main():
         maxmag = args.magRange[1]
 
     if args.getCount:
-        nevents = count(starttime=args.startTime,
+        if isinstance(bounds, tuple) or bounds is None:
+            nevents = count(starttime=args.startTime,
+                            endtime=args.endTime,
+                            updatedafter=args.after,
+                            minlatitude=latmin,
+                            maxlatitude=latmax,
+                            minlongitude=lonmin,
+                            maxlongitude=lonmax,
+                            latitude=latitude,
+                            longitude=longitude,
+                            maxradiuskm=radiuskm,
+                            catalog=args.catalog,
+                            contributor=args.contributor,
+                            maxmagnitude=maxmag,
+                            minmagnitude=minmag,
+                            producttype=args.limitByProductType,
+                            verbose=args.verbose)
+        else:
+            for lonmin, lonmax, latmin, latmax in bounds:
+                nevents = 0
+                nevents += count(starttime=args.startTime,
+                                 endtime=args.endTime,
+                                 updatedafter=args.after,
+                                 minlatitude=latmin,
+                                 maxlatitude=latmax,
+                                 minlongitude=lonmin,
+                                 maxlongitude=lonmax,
+                                 latitude=latitude,
+                                 longitude=longitude,
+                                 maxradiuskm=radiuskm,
+                                 catalog=args.catalog,
+                                 contributor=args.contributor,
+                                 maxmagnitude=maxmag,
+                                 minmagnitude=minmag,
+                                 producttype=args.limitByProductType,
+                                 verbose=args.verbose)
+        print('There are %i events matching input criteria.' % nevents)
+        sys.exit(0)
+    if isinstance(bounds, tuple) or bounds is None:
+        events = search(starttime=args.startTime,
                         endtime=args.endTime,
                         updatedafter=args.after,
                         minlatitude=latmin,
@@ -219,31 +290,34 @@ def main():
                         maxmagnitude=maxmag,
                         minmagnitude=minmag,
                         producttype=args.limitByProductType,
+                        host=args.host,
                         verbose=args.verbose)
-        print('There are %i events matching input criteria.' % nevents)
-        sys.exit(0)
-
-    if args.bounds and args.radius:
-        print('Please specify either a bounding box OR radius search.')
-        sys.exit(1)
-
-    events = search(starttime=args.startTime,
-                    endtime=args.endTime,
-                    updatedafter=args.after,
-                    minlatitude=latmin,
-                    maxlatitude=latmax,
-                    minlongitude=lonmin,
-                    maxlongitude=lonmax,
-                    latitude=latitude,
-                    longitude=longitude,
-                    maxradiuskm=radiuskm,
-                    catalog=args.catalog,
-                    contributor=args.contributor,
-                    maxmagnitude=maxmag,
-                    minmagnitude=minmag,
-                    producttype=args.limitByProductType,
-                    host=args.host,
-                    verbose=args.verbose)
+    else:
+        events = []
+        for i, tbounds in enumerate(bounds):
+            lonmin, lonmax, latmin, latmax = tbounds
+            if args.verbose:
+                fmt = 'Checking bounds %i of %i for %s...\n'
+                tpl = (i + 1, len(bounds), ccode)
+                sys.stderr.write(fmt % tpl)
+            tevents = search(starttime=args.startTime,
+                             endtime=args.endTime,
+                             updatedafter=args.after,
+                             minlatitude=latmin,
+                             maxlatitude=latmax,
+                             minlongitude=lonmin,
+                             maxlongitude=lonmax,
+                             latitude=latitude,
+                             longitude=longitude,
+                             maxradiuskm=radiuskm,
+                             catalog=args.catalog,
+                             contributor=args.contributor,
+                             maxmagnitude=maxmag,
+                             minmagnitude=minmag,
+                             producttype=args.limitByProductType,
+                             host=args.host,
+                             verbose=args.verbose)
+            events += tevents
 
     if not len(events):
         print('No events found matching your search criteria. Exiting.')
@@ -271,6 +345,9 @@ def main():
     for column in first_columns:
         col_list.remove(column)
     df = df[first_columns + col_list]
+
+    if args.country:
+        df = filter_by_country(df, ccode, buffer_km=args.buffer)
 
     if args.verbose:
         sys.stderr.write('Created table...saving %i records to %s.\n' %
