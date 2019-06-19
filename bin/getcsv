@@ -102,7 +102,10 @@ def get_parser():
 
     country_str = '''Specify three character country code and earthquakes 
     from inside country polygon (50m resolution) will be returned. Earthquakes 
-    in the ocean likely will NOT be returned.'''
+    in the ocean likely will NOT be returned.
+
+    See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+    '''
     parser.add_argument('--country', help=country_str)
 
     buffer_str = '''Use in conjunction with --country. Specify a buffer in km
@@ -187,6 +190,15 @@ def get_parser():
                'earthquake.usgs.gov.')
     parser.add_argument('--host',
                         help=helpstr)
+
+    helpstr = """Limit to events with a specific PAGER alert level. The allowed values are:
+              - green; Limit to events with PAGER alert level "green".
+              - yellow; Limit to events with PAGER alert level "yellow".
+              - orange; Limit to events with PAGER alert level "orange".
+              - red; Limit to events with PAGER alert level "red"."""
+    parser.add_argument('--alertlevel', help=helpstr, default=None)
+    
+
     return parser
 
 
@@ -291,7 +303,8 @@ def main():
                         minmagnitude=minmag,
                         producttype=args.limitByProductType,
                         host=args.host,
-                        verbose=args.verbose)
+                        verbose=args.verbose,
+                        alertlevel=args.alertlevel)
     else:
         events = []
         for i, tbounds in enumerate(bounds):
@@ -316,7 +329,8 @@ def main():
                              minmagnitude=minmag,
                              producttype=args.limitByProductType,
                              host=args.host,
-                             verbose=args.verbose)
+                             verbose=args.verbose,
+                             alertlevel=args.alertlevel)
             events += tevents
 
     if not len(events):

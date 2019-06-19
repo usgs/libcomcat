@@ -209,6 +209,15 @@ class SummaryEvent(object):
         """
         return self._jdict['properties']['mag']
 
+    @property
+    def alert(self):
+        """Authoritative origin magnitude.
+
+        Returns:
+            float: Authoritative origin magnitude.
+        """
+        return self._jdict['properties']['alert']
+
     def __repr__(self):
         tpl = (self.id, str(self.time), self.latitude,
                self.longitude, self.depth, self.magnitude)
@@ -319,6 +328,7 @@ class SummaryEvent(object):
         edict['longitude'] = self.longitude
         edict['depth'] = self.depth
         edict['magnitude'] = self.magnitude
+        edict['alert'] = self.alert
         edict['url'] = self.url
         return edict
 
