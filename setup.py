@@ -1,5 +1,5 @@
 from distutils.core import setup
-import glob
+import os.path
 
 setup(name='libcomcat',
       version='0.1dev',
@@ -10,7 +10,12 @@ setup(name='libcomcat',
       packages=['libcomcat'],
       package_data={
           'libcomcat':
-          glob.glob('libcomcat/data/**', recursive=True)
+          [os.path.join('data', 'ne_50m_admin_0_countries.prj'),
+           os.path.join('data', 'ne_50m_admin_0_countries.dbf'),
+           os.path.join('data', 'ne_50m_admin_0_countries.shp'),
+           os.path.join('data', 'ne_50m_admin_0_countries.cpg'),
+           os.path.join('data', 'ne_50m_admin_0_countries.shx'),
+           ]
       },
       scripts=['bin/findid',
                'bin/getcsv',
