@@ -211,10 +211,10 @@ class SummaryEvent(object):
 
     @property
     def alert(self):
-        """Authoritative origin magnitude.
+        """PAGER summary alert level (or '' if not present).
 
         Returns:
-            float: Authoritative origin magnitude.
+            str: PAGER alert level ('green', 'yellow', 'orange', 'red').
         """
         return self._jdict['properties']['alert']
 
@@ -453,6 +453,18 @@ class DetailEvent(object):
         return self._jdict['properties']['mag']
 
     @property
+    def alert(self):
+        """PAGER summary alert, or None if not present.
+
+        Returns:
+            str: PAGER summary alert, one of ('green','yellow','orange','red')
+        """
+        if self.hasProperty('alert'):
+            return self['alert']
+        else:
+            return None
+
+    @property
     def properties(self):
         """List of detail event properties.
 
@@ -546,6 +558,7 @@ class DetailEvent(object):
             edict['magnitude'] = self.magnitude
             edict['magtype'] = self._jdict['properties']['magType']
             edict['url'] = self.url
+            edict['alert'] = self.alert
         else:
             try:
                 phase_sources = []
@@ -575,6 +588,7 @@ class DetailEvent(object):
                 edict['depth'] = float(phasedata['depth'])
                 edict['magnitude'] = float(phasedata['magnitude'])
                 edict['magtype'] = phasedata['magnitude-type']
+                edict['alert'] = self.alert
             except AttributeError as ae:
                 raise ae
 
