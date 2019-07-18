@@ -9,11 +9,20 @@ import textwrap
 import pandas as pd
 from openpyxl import load_workbook
 from obspy.geodetics.base import gps2dist_azimuth
+import numpy as np
 
 # local imports
 from libcomcat.search import search
 from libcomcat.dataframes import (get_history_data_frame, split_history_frame,
                                   PRODUCTS, TIMEFMT, PRODUCT_COLUMNS)
+
+
+DISPLAY_TIME_FMT = '%Y-%m-%d %H:%M:%S'
+
+
+class MyFormatter(argparse.RawTextHelpFormatter,
+                  argparse.ArgumentDefaultsHelpFormatter):
+    pass
 
 
 def get_parser():
@@ -23,9 +32,8 @@ def get_parser():
         geteventhist ci38457511
 
     '''
-    formatter = argparse.RawDescriptionHelpFormatter
     parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=formatter)
+                                     formatter_class=MyFormatter)
     # positional arguments
     parser.add_argument('eventid',
                         metavar='EVENTID', help='ComCat event ID.')
@@ -53,7 +61,7 @@ def get_parser():
     parser.add_argument('-o', '--outdir', help=ohelp,
                         default=None)
 
-    parser.add_argument('-w', '--web', help='Produce HTML output.',
+    parser.add_argument('-w', '--web', help='Print HTML tables to stdout.',
                         default=False, action='store_true')
 
     parser.add_argument('-f', '--format', help='Control output format',
@@ -113,10 +121,10 @@ def save_dataframe(outdir, format, event, dataframe, product=None):
         wb.save(outfile)
     else:
         if product is not None:
-            outfile = os.path.join(args.outdir,
-                                   event.id + '_' + products[0] + '.csv')
+            outfile = os.path.join(outdir,
+                                   event.id + '_' + product + '.csv')
         else:
-            outfile = os.path.join(args.outdir, event.id + '.csv')
+            outfile = os.path.join(outdir, event.id + '.csv')
         dataframe.to_csv(outfile, index=False)
         cdata = open(outfile, 'rt').read()
         with open(outfile, 'wt') as f:
@@ -131,10 +139,43 @@ def save_dataframe(outdir, format, event, dataframe, product=None):
     return outfile
 
 
+def web_print(event, dataframe):
+    etable_fmt = '''
+    <pre>
+    Event ID: %s
+    Origin Time: %s
+    Magnitude: %.1f
+    Latitude: %.4f
+    Longitude: %.4f
+    Depth: %.1f
+    </pre>
+    '''
+    etable_tpl = (event.id,
+                  event.time.strftime(TIMEFMT),
+                  event.magnitude,
+                  event.latitude,
+                  event.longitude,
+                  event.depth)
+    etable = etable_fmt % etable_tpl
+    print(textwrap.dedent(etable))
+    print(dataframe.to_html(index=False, border=0, max_rows=None, max_cols=None))
+
+
+def simplify_times(dataframe):
+    # re-format all time columns to be like: 2019-01-01 17:34:16.1
+    # first figure out all the time-like columns
+    # df['date'] = pd.to_datetime(df["date"].dt.strftime('%Y-%m'))
+    dtypes = dataframe.dtypes
+    for idx, dtype in dtypes.iteritems():
+        if np.issubdtype(dtype, np.datetime64):
+            dataframe[idx] = pd.to_datetime(
+                dataframe[idx].dt.strftime(DISPLAY_TIME_FMT))
+
+
 def main():
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_rows', 1000)
-    pd.set_option('display.max_colwidth', 120)
+    pd.set_option('display.max_colwidth', -1)
     pd.set_option('display.max_columns', 1000)
     pd.set_option("display.colheader_justify", "left")
     parser = get_parser()
@@ -153,6 +194,16 @@ def main():
         fmt = ('The following event products you want to exclude '
                'are not supported: ')
         print(fmt % (','.join(unsupported)))
+        sys.exit(1)
+
+    # web output and directory output are mutually exclusive
+    if args.outdir and args.web:
+        msg = '''The -o and -w options are mutually exclusive, meaning
+        that you cannot choose to write files to a directory and print
+        HTML output to the screen simultaneously. Please choose one of
+        those two options and try again.
+        '''
+        print(msg)
         sys.exit(1)
 
     if args.products:
@@ -196,8 +247,14 @@ def main():
         # now re-sort by update time
         dataframe = dataframe.sort_values('Update Time')
         dataframe = dataframe[PRODUCT_COLUMNS]
+    else:
+        # since "Authoritative Event ID" and "Associated" columns are only applicable when
+        # we're including other events in our results, drop those columns
+        # if we're not doing that.
+        drop_columns = ['Authoritative Event ID', 'Associated']
+        dataframe = dataframe.drop(drop_columns, axis='columns')
 
-    if not os.path.isdir(args.outdir):
+    if args.outdir is not None and not os.path.isdir(args.outdir):
         os.makedirs(args.outdir)
 
     if args.split:
@@ -207,36 +264,23 @@ def main():
         # somehow in this process
         for product in available_products:
             pframe = split_history_frame(dataframe, product=product)
-            outfile = save_dataframe(args.outdir, args.format, event,
-                                     pframe, product=product)
-            print('%i rows saved to %s' % (len(pframe), outfile))
+            simplify_times(pframe)
+            if args.web:
+                web_print(event, pframe)
+            else:
+                outfile = save_dataframe(args.outdir, args.format, event,
+                                         pframe, product=product)
+                print('%i rows saved to %s' % (len(pframe), outfile))
+        sys.exit(0)
+
     if args.outdir:
         outfile = save_dataframe(args.outdir, args.format, event,
                                  dataframe, product=None)
 
         print('%i rows saved to %s' % (len(dataframe), outfile))
     elif args.web:
-        etable_fmt = '''
-        <pre>
-        Event ID: %s
-        Origin Time: %s
-        Magnitude: %.1f
-        Latitude: %.4f
-        Longitude: %.4f
-        Depth: %.1f
-        </pre>
-        '''
-        etable_tpl = (event.id,
-                      event.time.strftime(TIMEFMT),
-                      event.magnitude,
-                      event.latitude,
-                      event.longitude,
-                      event.depth)
-        etable = etable_fmt % etable_tpl
-        print(textwrap.dedent(etable))
-        print(dataframe.to_html(index=False, border=0))
-    else:
-        print(dataframe.to_string(index=False))
+        simplify_times(dataframe)
+        web_print(event, dataframe)
 
     sys.exit(0)
 
