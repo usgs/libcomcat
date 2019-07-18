@@ -6,6 +6,8 @@ from urllib.request import urlopen
 import warnings
 import json
 from io import StringIO
+from datetime import datetime
+import socket
 
 # third party imports
 import numpy as np
@@ -13,9 +15,11 @@ import pandas as pd
 from obspy.io.quakeml.core import Unpickler
 import requests
 from scipy.special import erfcinv
+from obspy.geodetics.base import gps2dist_azimuth
 
 # local imports
 from libcomcat.classes import VersionOption
+from libcomcat.search import get_event_by_id
 
 
 # constants
@@ -30,7 +34,6 @@ COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
 # where is the PAGER fatality model found?
 FATALITY_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/fatality.xml'
 ECONOMIC_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/economy.xml'
-
 
 # what are the DYFI columns and what do we rename them to?
 DYFI_COLUMNS_REPLACE = {
@@ -50,6 +53,21 @@ OLD_DYFI_COLUMNS_REPLACE = {
     'No. of responses': 'nresp',
     'Hypocentral distance': 'distance'
 }
+
+PRODUCT_COLUMNS = ['Product', 'Authoritative Event ID', 'Code', 'Associated',
+                   'Product Source', 'Product Version',
+                   'Update Time', 'Elapsed (min)', 'Description']
+
+SECSPERDAY = 86400
+TIMEFMT = '%Y-%m-%d %H:%M:%S'
+TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%fZ'
+TIMEFMT3 = '%Y-%m-%d %H:%M:%S.%f'
+
+PRODUCTS = ['dyfi', 'finite-fault',
+            'focal-mechanism', 'ground-failure',
+            'losspager', 'moment-tensor',
+            'oaf', 'origin', 'phase-data',
+            'shakemap']
 
 
 def get_phase_dataframe(detail, catalog='preferred'):
@@ -1039,3 +1057,592 @@ def _parse_geojson(bytes_data):
         'name': 'station'
     })
     return df
+
+
+def get_history_data_frame(eventid, products=None):
+    """Retrieve an event history information table given a ComCat Event ID.
+
+    Args:
+        eventid (str): ComCat event ID.
+        products (list): List of ComCat products to retrieve, or None retrieves all.
+    Returns:
+        tuple:
+            - pandas DataFrame containing columns:
+                - Product: 
+                    One of supported products (see
+                    libcomcat.dataframes.PRODUCTS)
+                - Authoritative Event ID:
+                    Authoritative ComCat event ID.
+                - Code:
+                    Event Source + Code, mostly only useful when using
+                    -r flag with geteventhist.
+                - Associated: 
+                    Boolean indicating whether this product is associated
+                    with authoritative event.
+                - Product Source: 
+                    Network that contributed the product.
+                - Product Version:
+                    Either ordinal number created by sorting products from a
+                    given source, or a version property set by the creator
+                    of the product.
+                - Update Time:
+                    Time the product was sent, set either by PDL client or
+                    by the person or software that created the product
+                    (set as a property.)
+                - Elapsed (min):
+                    Elapsed time in minutes between the update time and
+                    the *authoritative* origin time.
+                - Description:
+                    Varies depending on the product, but all description
+                    fields are delineated first by a vertical pipe "|",
+                    and key/value pairs in each field are delineated
+                    by a hash "#". This is so that the split_history_frame()
+                    function can parse the description column into many
+                    columns.
+            - DetailEvent: libcomcat DetailEvent object.
+    """
+    try:
+        event = get_event_by_id(eventid,
+                                includesuperseded=True)
+    except socket.timeout as sot:
+        fmt = '''Timeout error attempting to retrieve detailed information
+        about ComCat event %s. Please try again later. Error message:
+        "%s"
+        '''
+        raise socket.timeout(fmt % (eventid, str(sot)))
+    if products is not None:
+        if not len(set(products) & set(PRODUCTS)):
+            fmt = '''None of the input products "%s" are in the list
+            of supported ComCat products: %s.
+            '''
+            tpl = (','.join(products), ','.join(PRODUCTS))
+            raise KeyError(fmt % tpl)
+    else:
+        products = PRODUCTS
+
+    dataframe = pd.DataFrame(columns=PRODUCT_COLUMNS)
+    for product in products:
+        if not event.hasProduct(product):
+            continue
+        prows = _get_product_rows(event, product)
+        dataframe = dataframe.append(prows, ignore_index=True)
+
+    dataframe = dataframe.sort_values('Update Time')
+    dataframe['Elapsed (min)'] = np.round(dataframe['Elapsed (min)'], 1)
+
+    return (dataframe, event)
+
+
+def _get_product_rows(event, product_name):
+    products = event.getProducts(product_name,
+                                 source='all',
+                                 version=VersionOption.ALL)
+    prows = pd.DataFrame(columns=PRODUCT_COLUMNS)
+    for product in products:
+        if product.name == 'origin':
+            prow = _describe_origin(event, product)
+        elif product.name == 'shakemap':
+            prow = _describe_shakemap(event, product)
+        elif product.name == 'dyfi':
+            prow = _describe_dyfi(event, product)
+        elif product.name == 'losspager':
+            prow = _describe_pager(event, product)
+        elif product.name == 'oaf':
+            prow = _describe_oaf(event, product)
+        elif product.name == 'finite-fault':
+            prow = _describe_finite_fault(event, product)
+        elif product.name == 'focal-mechanism':
+            prow = _describe_focal_mechanism(event, product)
+        elif product.name == 'ground-failure':
+            prow = _describe_ground_failure(event, product)
+        elif product.name == 'moment-tensor':
+            prow = _describe_moment_tensor(event, product)
+        elif product.name == 'phase-data':
+            prow = _describe_origin(event, product)
+        else:
+            continue
+        prows = prows.append(prow, ignore_index=True)
+
+    return prows
+
+
+def _describe_pager(event, product):
+    authtime = event.time
+    maxmmi = int(product['maxmmi'])
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    oid = product['eventsource'] + product['eventsourcecode']
+    productsource = 'us'
+
+    # get pager version from event.json
+    eventinfo_bytes = product.getContentBytes('event.json')[0]
+    eventinfo = json.loads(eventinfo_bytes.decode('utf-8'))
+    pversion = eventinfo['pager']['version_number']
+
+    # get exposure information from exposures.json
+    exp_bytes = product.getContentBytes('exposures.json')[0]
+    expinfo = json.loads(exp_bytes.decode('utf-8'))
+    max_exp = expinfo['population_exposure']['aggregated_exposure'][maxmmi - 1]
+
+    alertlevel = eventinfo['pager']['true_alert_level']
+    fmt = 'AlertLevel# %s| MaxMMI# %i|Population@MaxMMI# %s'
+    tpl = (alertlevel.capitalize(), maxmmi, '{:,}'.format(max_exp))
+    desc = fmt % tpl
+
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_shakemap(event, product):
+    authtime = event.time
+    maxmmi = float(product['maxmmi'])
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    oid = product['eventsource'] + product['eventsourcecode']
+    info, url = product.getContentBytes('info.json')
+    productsource = product.source
+
+    # get from info:
+    # - fault file or reference
+    # - gmpe
+    # - magnitude used
+    # - magnitude type used ?
+    # - depth used
+    infobytes = product.getContentBytes('info.json')[0]
+    infodict = json.loads(infobytes.decode('utf-8'))
+    try:
+        gmpe = ','.join(infodict['multigmpe']['PGA']['gmpes'][0]['gmpes'])
+    except Exception:
+        gmpe = infodict['processing']['ground_motion_modules']['gmpe']['module']
+
+    gmpe = gmpe.replace('()', '')
+
+    fault_ref = infodict['input']['event_information']['fault_ref']
+    fault_file = ''
+    if 'faultfiles' in infodict['input']['event_information']:
+        fault_file = infodict['input']['event_information']['faultfiles']
+    if not len(fault_ref) and len(fault_file):
+        fault_ref = fault_file
+    mag_used = float(infodict['input']['event_information']['magnitude'])
+    depth_used = float(infodict['input']['event_information']['depth'])
+
+    # get from stations
+    # - number instrumented stations
+    # - number dyfi
+    stationbytes = product.getContentBytes('stationlist.json')[0]
+    stationdict = json.loads(stationbytes.decode('utf-8'))
+    ninstrument = 0
+    ndyfi = 0
+    for feature in stationdict['features']:
+        if feature['properties']['source'] == 'DYFI':
+            ndyfi += 1
+        else:
+            ninstrument += 1
+
+    fmt = ('MaxMMI# %.1f|Instrumented# %i|DYFI# %i|Fault# %s|'
+           'GMPE# %s|Mag# %.1f|Depth# %.1f')
+    tpl = (maxmmi, ninstrument, ndyfi, fault_ref, gmpe, mag_used, depth_used)
+    desc = fmt % tpl
+    pversion = int(product['version'])
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_origin(event, product):
+    authtime = event.time
+    authlat = event.latitude
+    authlon = event.longitude
+
+    oid = product['eventsource'] + product['eventsourcecode']
+    omag = np.nan
+    if product.hasProperty('magnitude'):
+        omag = float(product['magnitude'])
+
+    magtype = 'unknown'
+    if product.hasProperty('magnitude-type'):
+        magtype = product['magnitude-type']
+
+    otime = 'unknown'
+    tdiff = np.nan
+    if product.hasProperty('eventtime'):
+        otime_str = product['eventtime']
+        otime = datetime.strptime(otime_str, TIMEFMT2)
+        tdiff = (otime - authtime).total_seconds()
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    olat = np.nan
+    olon = np.nan
+    dist = np.nan
+
+    if product.hasProperty('latitude'):
+        olat = float(product['latitude'])
+        olon = float(product['longitude'])
+        odepth = float(product['depth'])
+        dist_m, _, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
+        dist = dist_m / 1000.0
+
+    loc_method = 'unknown'
+    if product.hasProperty('cube-location-method'):
+        loc_method = product['cube-location-method']
+
+    fmt = ('Magnitude# %.1f|Depth# %.1f|Time# %s |Time Offset (sec)# %.1f|'
+           'Location# (%.3f,%.3f)|Distance from Auth. Origin (km)# %.1f|'
+           'Magnitude Type# %s|Location Method# %s')
+    desc = fmt % (omag, odepth, otime, tdiff,
+                  olat, olon, dist, magtype, loc_method)
+    productsource = product['eventsource']
+    pversion = product.version
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_finite_fault(event, product):
+    authtime = event.time
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    oid = product['eventsource'] + product['eventsourcecode']
+    productsource = product.source
+
+    slip = float(product['maximum-slip'])
+    strike = float(product['segment-1-strike'])
+    dip = float(product['segment-1-dip'])
+
+    fmt = 'Peak Slip# %.3f|Strike# %.0f|Dip# %.0f'
+    tpl = (slip, strike, dip)
+    desc = fmt % tpl
+    pversion = product.version
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_dyfi(event, product):
+    authtime = event.time
+    maxmmi = np.nan
+    if product.hasProperty('maxmmi'):
+        maxmmi = float(product['maxmmi'])
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    oid = product['eventsource'] + product['eventsourcecode']
+    nresp = 0
+    if product.hasProperty('num-responses'):
+        nresp = int(product['num-responses'])
+    productsource = 'us'
+    desc = 'Max MMI# %.1f|NumResponses# %i' % (maxmmi, nresp)
+    pversion = product.version
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_focal_mechanism(event, product):
+    authtime = event.time
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    oid = product['eventsource'] + product['eventsourcecode']
+    productsource = product['eventsource']
+
+    if product.hasProperty('nodal-plane-1-strike'):
+        strike = float(product['nodal-plane-1-strike'])
+        dip = float(product['nodal-plane-1-dip'])
+        rake = float(product['nodal-plane-1-rake'])
+    else:
+        strike = np.nan
+        dip = np.nan
+        rake = np.nan
+
+    method = 'unknown'
+    if len(product.getContentsMatching('quakeml.xml')):
+        cbytes, url = product.getContentBytes('quakeml.xml')
+        unpickler = Unpickler()
+        catalog = unpickler.loads(cbytes)
+        evt = catalog.events[0]
+        fm = evt.focal_mechanisms[0]
+        if hasattr(fm, 'method_id') and hasattr(fm.method_id,'id'):
+            method = fm.method_id.id.split('/')[-1]
+
+
+    fmt = 'Method# %s|NP1 Strike# %.1f|NP1 Dip# %.1f|NP1 Rake# %.1f'
+    tpl = (method, strike, dip, rake)
+    desc = fmt % tpl
+    pversion = product.version
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_ground_failure(event, product):
+    authtime = event.time
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    if product.hasProperty('eventsource'):
+        oid = product['eventsource'] + product['eventsourcecode']
+    else:
+        oid = 'unknown'
+    productsource = 'us'
+
+    slide_alert = product['landslide-alert']
+    liq_alert = product['liquefaction-alert']
+    slide_pop_alert_val = int(product['landslide-population-alert-value'])
+    liq_pop_alert_val = int(product['liquefaction-population-alert-value'])
+
+    # get the shakemap event ID and magnitude from info.json
+    infobytes = product.getContentBytes('info.json')[0]
+    infodict = json.loads(infobytes.decode('utf-8'))
+    sm_net = infodict['Summary']['net']
+    sm_code = infodict['Summary']['code']
+    sm_eventid = sm_net + sm_code
+    sm_mag = infodict['Summary']['magnitude']
+
+    fmt = ('ShakeMap Event ID# %s|ShakeMap Magnitude# %.1f|'
+           'Landslide Pop Alert Value# %i|Liquefaction Pop Alert Value# %i|'
+           'Landslide Alert# %s|Liquefaction Alert# %s')
+    tpl = (sm_eventid, sm_mag, slide_pop_alert_val,
+           liq_pop_alert_val, slide_alert, liq_alert)
+    desc = fmt % tpl
+    pversion = int(product['version'])
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_moment_tensor(event, product):
+    authtime = event.time
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    oid = product['eventsource'] + product['eventsourcecode']
+    productsource = product['eventsource']
+
+    # try to find the method
+    method = 'unknown'
+    if product.hasProperty('derived-magnitude-type'):
+        method = product['derived-magnitude-type']
+
+    # get the derived moment magnitude
+    derived_mag = np.nan
+    if product.hasProperty('derived-magnitude'):
+        derived_mag = float(product['derived-magnitude'])
+
+    # get the derived depth
+    derived_depth = np.nan
+    if product.hasProperty('derived-depth'):
+        derived_depth = float(product['derived-depth'])
+
+    # get the percent double couple
+    double_couple = np.nan
+    if product.hasProperty('percent-double-couple'):
+        double_couple = float(product['percent-double-couple'])
+
+    strike = np.nan
+    dip = np.nan
+    rake = np.nan
+    # get the first nodal plane
+    if product.hasProperty('nodal-plane-1-strike'):
+        strike = float(product['nodal-plane-1-strike'])
+        dip = float(product['nodal-plane-1-dip'])
+        rake = float(product['nodal-plane-1-rake'])
+    else:
+        # try to get NP1 from the quakeml...
+        if len(product.getContentsMatching('quakeml.xml')):
+            cbytes, url = product.getContentBytes('quakeml.xml')
+            unpickler = Unpickler()
+            catalog = unpickler.loads(cbytes)
+            evt = catalog.events[0]
+            fm = evt.focal_mechanisms[0]
+            mt = fm.moment_tensor
+            if method == 'unknown':
+                method = mt.method_id.id.split('/')[-1]
+            if fm.nodal_planes is not None:
+                strike = fm.nodal_planes.nodal_plane_1.strike
+                dip = fm.nodal_planes.nodal_plane_1.dip
+                rake = fm.nodal_planes.nodal_plane_1.rake
+            if np.isnan(derived_mag):
+                derived_mag = evt.magnitudes[0].mag
+            if np.isnan(derived_depth):
+                for origin in evt.origins:
+                    if 'moment' in origin.depth_type:
+                        derived_depth = origin.depth/1000
+            if np.isnan(double_couple):
+                double_couple = mt.double_couple
+
+    desc_fmt = ('Method# %s|Moment Magnitude# %.1f|Depth# %.1d|'
+                'Double Couple# %.2f|NP1 Strike# %.0f|NP1 Dip# %.0f|NP1 Rake# %.0f')
+    desc_tpl = (method, derived_mag, derived_depth, 
+                double_couple, strike, dip, rake)
+    desc = desc_fmt % desc_tpl
+    pversion = product.version
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def _describe_oaf(event, product):
+    authtime = event.time
+    ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
+    elapsed = ptime - authtime
+    elapsed_sec = elapsed.days * SECSPERDAY + \
+        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_min = elapsed_sec / 60
+    oid = product['eventsource'] + product['eventsourcecode']
+    productsource = product['eventsource']
+
+    desc = 'Operational Earthquake Forecast# Info'
+    pversion = product.version
+    row = {'Product': product.name,
+           'Authoritative Event ID': event.id,
+           'Code': oid,
+           'Associated': True,
+           'Product Source': productsource,
+           'Product Version': pversion,
+           'Update Time': ptime,
+           'Elapsed (min)': elapsed_min,
+           'Description': desc}
+    return row
+
+
+def split_history_frame(dataframe, product=None):
+    """Split event history dataframe for a given product.
+
+    The "Description" field will be parsed into separate columns.
+    For example, an origin might have the following description:
+
+    Magnitude# 4.4|Depth# 12.2|Time# 2019-07-16 20:11:01.510000 |\
+    Time Offset (sec)# 0.0|Location# (37.816,-121.766)|\
+    Distance from Auth. Origin (km)# 0.9|Magnitude Type# ml|\
+    Location Method# unknown
+
+    This would be split into 8 separate columns on the "|" character,
+    and the column names and values will be taken by splitting each field
+    on the "#" character.
+
+    Args:
+        dataframe (pandas.DataFrame):
+            Result of calling get_history_data_frame.
+        product (str):
+            One of the products found in the Product column.
+    Returns:
+        pandas.DataFrame: DataFrame containing columns extracted from
+            input Description column, and Description column removed.
+
+
+    """
+    products = dataframe['Product'].unique()
+    if product is not None and product not in products:
+        raise KeyError('%s is not a product found in this dataframe.' % product)
+    if product is None and len(products) > 1:
+        raise KeyError('Dataframe contains many products, '
+                       'you must specify one of them to split.')
+    if product is not None:
+        dataframe = dataframe[dataframe['Product'] == product]
+    parts = dataframe.iloc[0]['Description'].split('|')
+    columns = [p.split('#')[0] for p in parts]
+    df2 = pd.DataFrame(columns=columns)
+    for idx, row in dataframe.iterrows():
+        parts = row['Description'].split('|')
+        columns = [p.split('#')[0].strip() for p in parts]
+        values = [p.split('#')[1].strip() for p in parts]
+        newvalues = []
+        for val in values:
+            try:
+                newval = float(val)
+            except ValueError:
+                try:
+                    newval = datetime.strptime(val, TIMEFMT3)
+                except ValueError:
+                    newval = val
+            newvalues.append(newval)
+        ddict = dict(zip(columns, newvalues))
+        row = pd.Series(ddict)
+        df2 = df2.append(row, ignore_index=True)
+
+    # todo: something weird happening in concat step
+    dataframe = dataframe.reset_index(drop=True)
+    df2 = df2.reset_index(drop=True)
+    dataframe = pd.concat([dataframe, df2], axis=1)
+    dataframe = dataframe.drop(['Description'], axis='columns')
+    dataframe = dataframe.sort_values('Update Time')
+
+    return dataframe

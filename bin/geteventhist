@@ -1,0 +1,245 @@
+#!/usr/bin/env python
+import argparse
+import sys
+import os.path
+from datetime import timedelta
+import textwrap
+
+# third party imports
+import pandas as pd
+from openpyxl import load_workbook
+from obspy.geodetics.base import gps2dist_azimuth
+
+# local imports
+from libcomcat.search import search
+from libcomcat.dataframes import (get_history_data_frame, split_history_frame,
+                                  PRODUCTS, TIMEFMT, PRODUCT_COLUMNS)
+
+
+def get_parser():
+    desc = '''Print out ComCat event history.
+
+    Usage:
+        geteventhist ci38457511
+
+    '''
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=formatter)
+    # positional arguments
+    parser.add_argument('eventid',
+                        metavar='EVENTID', help='ComCat event ID.')
+
+    parser.add_argument('-p', '--products', help='Products to be listed',
+                        nargs='*', default=[])
+
+    shelp = 'Split description of single-product queries into separate columns'
+    parser.add_argument('-s', '--split',
+                        help=shelp,
+                        action='store_true',
+                        default=False)
+
+    parser.add_argument('-x', '--exclude-products',
+                        help='Products to be excluded',
+                        nargs='*', default=[])
+
+    rhelp = '''Search for other unassociated earthquakes
+    inside a search radius (km) and time window (sec).
+    '''
+    parser.add_argument('-r', '--radius', help=rhelp, nargs=2, type=float)
+
+    ohelp = '''Download history table to directory.
+    '''
+    parser.add_argument('-o', '--outdir', help=ohelp,
+                        default=None)
+
+    parser.add_argument('-w', '--web', help='Produce HTML output.',
+                        default=False, action='store_true')
+
+    parser.add_argument('-f', '--format', help='Control output format',
+                        choices=['excel', 'csv'],
+                        default='csv', dest='format')
+    return parser
+
+
+def _mod_tframe(event, tevent, tframe):
+    newframe = pd.DataFrame(columns=tframe.columns)
+    tframe['Authoritative Event ID'] = event.id
+    tframe['Associated'] = False
+    for idx, row in tframe.iterrows():
+        if row['Product'] not in ['origin', 'phase-data']:
+            newframe = newframe.append(row)
+        parts = row['Description'].split('|')
+        authlat = event.latitude
+        authlon = event.longitude
+        authtime = event.time
+        olat = tevent.latitude
+        olon = tevent.longitude
+        otime = tevent.time
+        dist_m, _, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
+        dist = dist_m / 1000.0
+        tdiff = (otime - authtime).total_seconds()
+        dstr = 'Distance from auth. origin(km)# % .1f' % dist
+        tstr = 'Offset from auth. origin (sec)# %.1f' % tdiff
+        newparts = parts[0:-2] + [dstr, tstr]
+        row['Description'] = '|'.join(newparts)
+        newframe = newframe.append(row)
+    return newframe
+
+
+def save_dataframe(outdir, format, event, dataframe, product=None):
+    if format == 'excel':
+        if product is not None:
+            outfile = os.path.join(outdir,
+                                   event.id + '_' + product + '.xlsx')
+        else:
+            outfile = os.path.join(outdir, event.id + '.xlsx')
+        dataframe.to_excel(outfile, index=False)
+        wb = load_workbook(outfile)
+        ws = wb.active
+        ws.insert_rows(0, amount=6)
+        ws.cell(1, 1, value='Event ID')
+        ws.cell(1, 2, value=event.id)
+        ws.cell(2, 1, value='Origin Time')
+        ws.cell(2, 2, value=event.time.strftime(TIMEFMT))
+        ws.cell(3, 1, value='Magnitude')
+        ws.cell(3, 2, value=event.magnitude)
+        ws.cell(4, 1, value='Latitude')
+        ws.cell(4, 2, value=event.latitude)
+        ws.cell(5, 1, value='Longitude')
+        ws.cell(5, 2, value=event.longitude)
+        ws.cell(6, 1, value='Depth')
+        ws.cell(6, 2, value=event.depth)
+        wb.save(outfile)
+    else:
+        if product is not None:
+            outfile = os.path.join(args.outdir,
+                                   event.id + '_' + products[0] + '.csv')
+        else:
+            outfile = os.path.join(args.outdir, event.id + '.csv')
+        dataframe.to_csv(outfile, index=False)
+        cdata = open(outfile, 'rt').read()
+        with open(outfile, 'wt') as f:
+            f.write('# Event ID: %s\n' % event.id)
+            f.write('# Origin Time: %s\n' % event.time.strftime(TIMEFMT))
+            f.write('# Magnitude: %s\n' % event.magnitude)
+            f.write('# Latitude: %s\n' % event.latitude)
+            f.write('# Longitude: %s\n' % event.longitude)
+            f.write('# Depth: %s\n' % event.depth)
+            f.write(cdata)
+
+    return outfile
+
+
+def main():
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_rows', 1000)
+    pd.set_option('display.max_colwidth', 120)
+    pd.set_option('display.max_columns', 1000)
+    pd.set_option("display.colheader_justify", "left")
+    parser = get_parser()
+    args = parser.parse_args()
+
+    # make sure that input products are in the list of supported products
+    if not set(args.products) <= set(PRODUCTS):
+        unsupported = list(set(args.products) - set(PRODUCTS))
+        fmt = 'The following event products are not supported: '
+        print(fmt % (','.join(unsupported)))
+        sys.exit(1)
+
+    # make sure that excluded products are in the list of supported products
+    if not set(args.exclude_products) <= set(PRODUCTS):
+        unsupported = list(set(args.exclude_products) - set(PRODUCTS))
+        fmt = ('The following event products you want to exclude '
+               'are not supported: ')
+        print(fmt % (','.join(unsupported)))
+        sys.exit(1)
+
+    if args.products:
+        products = args.products
+    else:
+        products = PRODUCTS
+
+    if args.exclude_products:
+        products = set(products) - set(args.exclude_products)
+
+    try:
+        dataframe, event = get_history_data_frame(args.eventid, products)
+    except Exception as e:
+        fmt = '''Failed to retrieve event history data for
+        event %s. Error message is as follows. Exiting.
+        "%s"
+        '''
+        tpl = (args.eventid, str(e))
+        print(fmt % tpl)
+        sys.exit(1)
+
+    if args.radius:
+        radius_km = args.radius[0]
+        radius_secs = args.radius[1]
+        stime = event.time - timedelta(seconds=radius_secs)
+        etime = event.time + timedelta(seconds=radius_secs)
+
+        eventlist = search(starttime=stime,
+                           endtime=etime,
+                           latitude=event.latitude,
+                           longitude=event.longitude,
+                           maxradiuskm=radius_km)
+        for tevent in eventlist:
+            if tevent.id == event.id:
+                continue
+            detail = tevent.getDetailEvent(includesuperseded=True)
+            tframe = get_history_data_frame(detail, products)
+            newframe = _mod_tframe(event, tevent, tframe)
+            dataframe = dataframe.append(newframe, ignore_index=True)
+
+        # now re-sort by update time
+        dataframe = dataframe.sort_values('Update Time')
+        dataframe = dataframe[PRODUCT_COLUMNS]
+
+    if not os.path.isdir(args.outdir):
+        os.makedirs(args.outdir)
+
+    if args.split:
+        df_products = dataframe['Product'].unique().tolist()
+        available_products = set(df_products) & set(products)
+        # TODO: Consider merging phase-data and origin products
+        # somehow in this process
+        for product in available_products:
+            pframe = split_history_frame(dataframe, product=product)
+            outfile = save_dataframe(args.outdir, args.format, event,
+                                     pframe, product=product)
+            print('%i rows saved to %s' % (len(pframe), outfile))
+    if args.outdir:
+        outfile = save_dataframe(args.outdir, args.format, event,
+                                 dataframe, product=None)
+
+        print('%i rows saved to %s' % (len(dataframe), outfile))
+    elif args.web:
+        etable_fmt = '''
+        <pre>
+        Event ID: %s
+        Origin Time: %s
+        Magnitude: %.1f
+        Latitude: %.4f
+        Longitude: %.4f
+        Depth: %.1f
+        </pre>
+        '''
+        etable_tpl = (event.id,
+                      event.time.strftime(TIMEFMT),
+                      event.magnitude,
+                      event.latitude,
+                      event.longitude,
+                      event.depth)
+        etable = etable_fmt % etable_tpl
+        print(textwrap.dedent(etable))
+        print(dataframe.to_html(index=False, border=0))
+    else:
+        print(dataframe.to_string(index=False))
+
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
