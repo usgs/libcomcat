@@ -5,16 +5,15 @@ from urllib.error import HTTPError
 from urllib.parse import urlparse
 import json
 from collections import OrderedDict
-import warnings
 import re
 from enum import Enum
 import sys
-from io import StringIO
 import time
 
 # third party imports
 from obspy.core.event import read_events
 import pandas as pd
+import numpy as np
 import dateutil
 
 # constants
@@ -352,12 +351,14 @@ class DetailEvent(object):
             data = fh.read().decode('utf-8')
             fh.close()
             self._jdict = json.loads(data)
+            self._actual_url = url
         except HTTPError:
             try:
                 fh = request.urlopen(url, timeout=TIMEOUT)
                 data = fh.read().decode('utf-8')
                 fh.close()
                 self._jdict = json.loads(data)
+                self._actual_url = url
             except Exception as msg:
                 raise Exception('Could not connect to ComCat server - %s.' %
                                 url).with_traceback(msg.__traceback__)
@@ -392,8 +393,7 @@ class DetailEvent(object):
         Returns:
             str: Earthquake Detailed URL with JSON.
         """
-        url = URL_TEMPLATE.replace('[EVENTID]', self.id)
-        return url
+        return self._actual_url
 
     @property
     def latitude(self):
@@ -677,20 +677,22 @@ class DetailEvent(object):
         df = pd.DataFrame(
             {'weight': weights, 'source': sources,
              'time': times, 'index': indices})
+
+        # add a datetime column for debugging
+        df['datetime'] = (df['time']/1000).apply(datetime.utcfromtimestamp)
+
         # we need to add a version number column here, ordinal
         # sorted by update time, starting at 1
         # for each unique source.
         # first sort the dataframe by source and then time
-        df = df.sort_values(['source', 'time'])
-        df['version'] = 0
-        psources = []
-        pversion = 1
-        for idx, row in df.iterrows():
-            if row['source'] not in psources:
-                psources.append(row['source'])
-                pversion = 1
-            df.loc[idx, 'version'] = pversion
-            pversion += 1
+        psources = df['source'].unique()
+        newframe = pd.DataFrame(columns=df.columns.to_list() + ['version'])
+        for psource in psources:
+            dft = df[df['source'] == psource]
+            dft = dft.sort_values('time')
+            dft['version'] = np.arange(1,len(dft)+1)
+            newframe = newframe.append(dft)
+        df = newframe
 
         if source == 'preferred':
             idx = weights.index(max(weights))
@@ -712,8 +714,8 @@ class DetailEvent(object):
         usources = set(sources)
         tproducts = self._jdict['properties']['products'][product_name]
         if source == 'all':  # dataframe includes all sources
-            for source in usources:
-                df_source = df[df['source'] == source]
+            for usource in usources:
+                df_source = df[df['source'] == usource]
                 df_source = df_source.sort_values('time')
                 if version == VersionOption.PREFERRED:
                     df_source = df_source.sort_values(['weight', 'time'])
@@ -960,6 +962,10 @@ class Product(object):
         if key not in self._product['properties']:
             return False
         return True
+
+    @property
+    def name(self):
+        return self._product_name
 
     @property
     def preferred_weight(self):
