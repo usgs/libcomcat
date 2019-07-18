@@ -16,6 +16,7 @@ from obspy.io.quakeml.core import Unpickler
 import requests
 from scipy.special import erfcinv
 from obspy.geodetics.base import gps2dist_azimuth
+from impactutils.mapping.compass import get_compass_dir_azimuth
 
 # local imports
 from libcomcat.classes import VersionOption
@@ -54,9 +55,9 @@ OLD_DYFI_COLUMNS_REPLACE = {
     'Hypocentral distance': 'distance'
 }
 
-PRODUCT_COLUMNS = ['Product', 'Authoritative Event ID', 'Code', 'Associated',
+PRODUCT_COLUMNS = ['Update Time', 'Product', 'Authoritative Event ID', 'Code', 'Associated',
                    'Product Source', 'Product Version',
-                   'Update Time', 'Elapsed (min)', 'Description']
+                   'Elapsed (min)', 'Description']
 
 SECSPERDAY = 86400
 TIMEFMT = '%Y-%m-%d %H:%M:%S'
@@ -1284,7 +1285,7 @@ def _describe_origin(event, product):
     if product.hasProperty('magnitude-type'):
         magtype = product['magnitude-type']
 
-    otime = 'unknown'
+    otime = 'NaT'
     tdiff = np.nan
     if product.hasProperty('eventtime'):
         otime_str = product['eventtime']
@@ -1295,26 +1296,47 @@ def _describe_origin(event, product):
     elapsed_sec = elapsed.days * SECSPERDAY + \
         elapsed.seconds + elapsed.microseconds / 1e6
     elapsed_min = elapsed_sec / 60
+
     olat = np.nan
     olon = np.nan
+    odepth = np.nan
     dist = np.nan
-
+    az = np.nan
     if product.hasProperty('latitude'):
         olat = float(product['latitude'])
         olon = float(product['longitude'])
         odepth = float(product['depth'])
-        dist_m, _, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
+        dist_m, az, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
         dist = dist_m / 1000.0
+    else:
+        if len(product.getContentsMatching('quakeml.xml')):
+            unpickler = Unpickler()
+            cbytes, url = product.getContentBytes('quakeml.xml')
+            catalog = unpickler.loads(cbytes)
+            evt = catalog.events[0]
+            if hasattr(evt, 'origin'):
+                origin = evt.origin
+                olat = origin.latitude
+                olon = origin.longitude
+                odepth = origin.depth/1000
+                dist_m, az, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
+                dist = dist_m / 1000.0
 
     loc_method = 'unknown'
     if product.hasProperty('cube-location-method'):
         loc_method = product['cube-location-method']
 
-    fmt = ('Magnitude# %.1f|Depth# %.1f|Time# %s |Time Offset (sec)# %.1f|'
+    # convert azimuth to cardinal direction
+    if not np.isnan(az):
+        azstr = get_compass_dir_azimuth(az, resolution='meteorological')
+    else:
+        azstr = ''
+
+    fmt = ('Magnitude# %.1f|Time# %s |Time Offset (sec)# %.1f|'
            'Location# (%.3f,%.3f)|Distance from Auth. Origin (km)# %.1f|'
-           'Magnitude Type# %s|Location Method# %s')
-    desc = fmt % (omag, odepth, otime, tdiff,
-                  olat, olon, dist, magtype, loc_method)
+           'Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s')
+    desc = fmt % (omag, otime, tdiff,
+                  olat, olon, dist, azstr, odepth, magtype, loc_method)
     productsource = product['eventsource']
     pversion = product.version
     row = {'Product': product.name,
@@ -1630,7 +1652,7 @@ def split_history_frame(dataframe, product=None):
                 newval = float(val)
             except ValueError:
                 try:
-                    newval = datetime.strptime(val, TIMEFMT3)
+                    newval = pd.Timestamp(val)
                 except ValueError:
                     newval = val
             newvalues.append(newval)
@@ -1638,7 +1660,6 @@ def split_history_frame(dataframe, product=None):
         row = pd.Series(ddict)
         df2 = df2.append(row, ignore_index=True)
 
-    # todo: something weird happening in concat step
     dataframe = dataframe.reset_index(drop=True)
     df2 = df2.reset_index(drop=True)
     dataframe = pd.concat([dataframe, df2], axis=1)
