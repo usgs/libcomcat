@@ -6,10 +6,11 @@ install:
     - bash install.sh
     - . $HOME/miniconda/etc/profile.d/conda.sh
     - conda activate comcat
+services:
+    - xvfb
 before_script:
     # This is to take care of Invalid DISPLAY variable
     - "export DISPLAY=:99.0"
-    - "sh -e /etc/init.d/xvfb start"
     - sleep 3 # give xvfb some time to start
 script:
     - export PYTHONPATH="."
