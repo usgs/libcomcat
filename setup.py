@@ -23,5 +23,6 @@ setup(name='libcomcat',
                'bin/getmags',
                'bin/getpager',
                'bin/getphases',
+               'bin/geteventhist',
                'bin/getproduct'],
       )
