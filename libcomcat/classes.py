@@ -503,7 +503,9 @@ class DetailEvent(object):
         Returns:
             bool: Indicates whether that key exists or not.
         """
-        if key not in self._jdict['properties']:
+        c1 = 'properties' not in self._jdict
+        c2 = key not in self._jdict['properties']
+        if c1 or c2:
             return False
         return True
 
@@ -959,7 +961,9 @@ class Product(object):
         Returns:
             bool: Indicates whether that key exists or not.
         """
-        if key not in self._product['properties']:
+        c1 = 'properties' not in self._product
+        c2 = c1 or key not in self._product['properties']
+        if c2:
             return False
         return True
 
@@ -1046,7 +1050,9 @@ class Product(object):
         Returns:
             str: Desired property.
         """
-        if key not in self._product['properties']:
+        c1 = 'properties' not in self._product
+        c2 = c1 or key not in self._product['properties']
+        if c2:
             msg = 'No property %s found in %s product.' % (
                 key, self._product_name)
             raise AttributeError(msg)

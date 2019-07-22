@@ -28,8 +28,67 @@ class MyFormatter(argparse.RawTextHelpFormatter,
 def get_parser():
     desc = '''Print out ComCat event history.
 
-    Usage:
-        geteventhist ci38457511
+    This program summarizes the history of an event through the
+    products found in ComCat. The products that can be described are:
+    'dyfi', 'finite-fault', 'focal-mechanism', 'ground-failure',
+    'losspager', 'moment-tensor', 'oaf', 'origin', 'phase-data',
+    and 'shakemap'.
+
+    In the summary output (see below), all products will have the following
+    columns:
+    - Product: 
+        One of supported products (see above)
+    - Authoritative Event ID:
+        Authoritative ComCat event ID, mostly only useful when using -r flag.
+    - Code:
+        Event Source + Code, mostly only useful when using
+        -r flag with geteventhist.
+    - Associated:
+        Boolean indicating whether this product is associated
+        with authoritative event. (only appears when using -r flag).
+    - Product Source:
+        Network that contributed the product.
+    - Product Version:
+        Either ordinal number created by sorting products from a
+        given source, or a version property set by the creator
+        of the product.
+    - Update Time:
+        Time the product was sent, set either by PDL client or
+        by the person or software that created the product
+        (set as a property.)
+    - Elapsed (min):
+        Elapsed time in minutes between the update time and
+        the *authoritative* origin time.
+    - Description:
+        Varies depending on the product, but all description
+        fields are delineated first by a vertical pipe "|",
+        and key/value pairs in each field are delineated
+        by a hash "#". This is so that the -s option
+        can parse the description column into many
+        columns.
+
+    To get one summary spreadsheet in Excel format listing all products
+    for the M7.1 event from the 2019 Ridgecrest Sequence:
+
+    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel
+
+    To get one summary spreadhsheet as above, *excluding* DYFI products:
+
+    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -x dyfi
+
+    To split out the "description" column into separate columns, and
+    the products into separate spreadsheets:
+
+    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -s
+
+    To retrieve summary information for only origins and shakemaps:
+
+    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -p origin shakemap
+
+    To retrieve information for only origins and shakemaps, and split them
+    into separate spreadsheets:
+
+    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -p origin shakemap -s
 
     '''
     parser = argparse.ArgumentParser(description=desc,

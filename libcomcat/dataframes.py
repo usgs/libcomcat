@@ -1169,7 +1169,7 @@ def _get_product_rows(event, product_name):
 
 def _describe_pager(event, product):
     authtime = event.time
-    maxmmi = int(product['maxmmi'])
+
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
     elapsed_sec = elapsed.days * SECSPERDAY + \
@@ -1178,19 +1178,50 @@ def _describe_pager(event, product):
     oid = product['eventsource'] + product['eventsourcecode']
     productsource = 'us'
 
-    # get pager version from event.json
-    eventinfo_bytes = product.getContentBytes('event.json')[0]
-    eventinfo = json.loads(eventinfo_bytes.decode('utf-8'))
-    pversion = eventinfo['pager']['version_number']
+    # get pager version, alert level, and max exposure from JSON
+    # or xml files.
+    pversion = 0
+    alertlevel = ''
+    max_exp = 0
+    maxmmi = 0
+    if product.hasProperty('maxmmi'):
+        maxmmi = int(float(product['maxmmi']))
 
-    # get exposure information from exposures.json
-    exp_bytes = product.getContentBytes('exposures.json')[0]
-    expinfo = json.loads(exp_bytes.decode('utf-8'))
-    max_exp = expinfo['population_exposure']['aggregated_exposure'][maxmmi - 1]
+        has_json = len(product.getContentsMatching('event.json')) == 1
+        has_xml = len(product.getContentsMatching('pager.xml'))
+        if has_json:
+            eventinfo_bytes = product.getContentBytes('event.json')[0]
+            eventinfo = json.loads(eventinfo_bytes.decode('utf-8'))
+            pversion = eventinfo['pager']['version_number']
+            alertlevel = eventinfo['pager']['true_alert_level']
 
-    alertlevel = eventinfo['pager']['true_alert_level']
-    fmt = 'AlertLevel# %s| MaxMMI# %i|Population@MaxMMI# %s'
-    tpl = (alertlevel.capitalize(), maxmmi, '{:,}'.format(max_exp))
+            exp_bytes = product.getContentBytes('exposures.json')[0]
+            expinfo = json.loads(exp_bytes.decode('utf-8'))
+            max_exp = expinfo['population_exposure']['aggregated_exposure'][maxmmi - 1]
+        elif has_xml:
+            xmlbytes = product.getContentBytes('pager.xml')[0]
+            root = minidom.parseString(xmlbytes.decode('utf-8'))
+            eventobj = root.getElementsByTagName('event')[0]
+            pversion = int(eventobj.getAttribute('number'))
+            alerts = root.getElementsByTagName('alert')
+            for alert in alerts:
+                if alert.getAttribute('summary') == 'no':
+                    continue
+                alertlevel = alert.getAttribute('level')
+
+            exposures = []
+            for exposure in root.getElementsByTagName('exposure'):
+                try:
+                    expval = int(float(exposure.getAttribute('exposure')))
+                except ValueError:
+                    expval = 0
+                exposures.append(expval)
+            exposures = np.array(exposures)
+            max_exp = exposures[maxmmi - 1]
+            root.unlink()
+
+    fmt = 'AlertLevel# %s| MaxMMI# %i|Population@MaxMMI# %i'
+    tpl = (alertlevel.capitalize(), maxmmi, max_exp)
     desc = fmt % tpl
 
     row = {'Product': product.name,
@@ -1207,15 +1238,17 @@ def _describe_pager(event, product):
 
 def _describe_shakemap(event, product):
     authtime = event.time
-    maxmmi = float(product['maxmmi'])
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
     elapsed_sec = elapsed.days * SECSPERDAY + \
         elapsed.seconds + elapsed.microseconds / 1e6
     elapsed_min = elapsed_sec / 60
-    oid = product['eventsource'] + product['eventsourcecode']
-    info, url = product.getContentBytes('info.json')
-    productsource = product.source
+
+    oid = 'unknown'
+    productsource = 'unknown'
+    if product.hasProperty('eventsource'):
+        oid = product['eventsource'] + product['eventsourcecode']
+        productsource = product.source
 
     # get from info:
     # - fault file or reference
@@ -1223,42 +1256,26 @@ def _describe_shakemap(event, product):
     # - magnitude used
     # - magnitude type used ?
     # - depth used
-    infobytes = product.getContentBytes('info.json')[0]
-    infodict = json.loads(infobytes.decode('utf-8'))
-    try:
-        gmpe = ','.join(infodict['multigmpe']['PGA']['gmpes'][0]['gmpes'])
-    except Exception:
-        gmpe = infodict['processing']['ground_motion_modules']['gmpe']['module']
-
-    gmpe = gmpe.replace('()', '')
-
-    fault_ref = infodict['input']['event_information']['fault_ref']
-    fault_file = ''
-    if 'faultfiles' in infodict['input']['event_information']:
-        fault_file = infodict['input']['event_information']['faultfiles']
-    if not len(fault_ref) and len(fault_file):
-        fault_ref = fault_file
-    mag_used = float(infodict['input']['event_information']['magnitude'])
-    depth_used = float(infodict['input']['event_information']['depth'])
-
-    # get from stations
-    # - number instrumented stations
-    # - number dyfi
-    stationbytes = product.getContentBytes('stationlist.json')[0]
-    stationdict = json.loads(stationbytes.decode('utf-8'))
+    maxmmi = 0
     ninstrument = 0
     ndyfi = 0
-    for feature in stationdict['features']:
-        if feature['properties']['source'] == 'DYFI':
-            ndyfi += 1
-        else:
-            ninstrument += 1
+    fault_ref = ''
+    gmpe = ''
+    mag_used = np.nan
+    depth_used = np.nan
+    pversion = 0
+    if product.hasProperty('maxmmi'):
+        maxmmi = float(product['maxmmi'])
+        pversion = int(product['version'])
+
+        (ninstrument, ndyfi, mag_used,
+         depth_used, fault_file, gmpe) = _get_shakemap_info(product)
 
     fmt = ('MaxMMI# %.1f|Instrumented# %i|DYFI# %i|Fault# %s|'
            'GMPE# %s|Mag# %.1f|Depth# %.1f')
     tpl = (maxmmi, ninstrument, ndyfi, fault_ref, gmpe, mag_used, depth_used)
     desc = fmt % tpl
-    pversion = int(product['version'])
+
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1271,12 +1288,93 @@ def _describe_shakemap(event, product):
     return row
 
 
+def _get_shakemap_info(product):
+    if len(product.getContentsMatching('info.json')):
+        infobytes = product.getContentBytes('info.json')[0]
+        infodict = json.loads(infobytes.decode('utf-8'))
+        try:
+            gmpe = ','.join(infodict['multigmpe']['PGA']['gmpes'][0]['gmpes'])
+        except Exception:
+            gmpe = infodict['processing']['ground_motion_modules']['gmpe']['module']
+
+        gmpe = gmpe.replace('()', '')
+
+        fault_ref = infodict['input']['event_information']['fault_ref']
+        fault_file = ''
+        if 'faultfiles' in infodict['input']['event_information']:
+            fault_file = infodict['input']['event_information']['faultfiles']
+        if not len(fault_ref) and len(fault_file):
+            fault_ref = fault_file
+        mag_used = float(infodict['input']['event_information']['magnitude'])
+        depth_used = float(infodict['input']['event_information']['depth'])
+
+        # get from stations
+        # - number instrumented stations
+        # - number dyfi
+        stationbytes = product.getContentBytes('stationlist.json')[0]
+        stationdict = json.loads(stationbytes.decode('utf-8'))
+        ninstrument = 0
+        ndyfi = 0
+        for feature in stationdict['features']:
+            if feature['properties']['source'] == 'DYFI':
+                ndyfi += 1
+            else:
+                ninstrument += 1
+    elif len(product.getContentsMatching('info.xml')):
+        infobytes = product.getContentBytes('info.xml')[0]
+        root = minidom.parseString(infobytes.decode('utf-8'))
+        fault_ref = ''
+        fault_file = ''
+        gmpe = ''
+        for tag in root.getElementsByTagName('tag'):
+            ttype = tag.getAttribute('name')
+            if ttype == 'GMPE':
+                gmpe = tag.getAttribute('value')
+            elif ttype == 'fault_ref':
+                fault_ref = tag.getAttribute('value')
+            elif ttype == 'fault_files':
+                fault_file = tag.getAttribute('value')
+            else:
+                continue
+        if len(fault_ref) and not len(fault_file):
+            fault_file = fault_ref
+        root.unlink()
+        if len(product.getContentsMatching('stationlist.xml')):
+            stationbytes = product.getContentBytes('stationlist.xml')[0]
+            root = minidom.parseString(stationbytes.decode('utf-8'))
+            ndyfi = 0
+            ninstrument = 0
+            for station in root.getElementsByTagName('station'):
+                netid = station.getAttribute('netid')
+                if netid.lower() in ['dyfi','ciim','intensity','mmi']:
+                    ndyfi += 1
+                else:
+                    ninstrument += 1
+            eq = root.getElementsByTagName('earthquake')[0]
+            mag_used = float(eq.getAttribute('mag'))
+            depth_used = float(eq.getAttribute('depth'))
+            root.unlink()
+    else:
+        ninstrument = 0
+        ndyfi = 0
+        mag_used = np.nan
+        depth_used = np.nan
+        fault_file = ''
+        gmpe = ''
+
+    return (ninstrument, ndyfi, mag_used, depth_used, fault_file, gmpe)
+
+
 def _describe_origin(event, product):
     authtime = event.time
     authlat = event.latitude
     authlon = event.longitude
 
-    oid = product['eventsource'] + product['eventsourcecode']
+    oid = 'unknown'
+    productsource = product.source
+    if product.hasProperty('eventsource'):
+        oid = product['eventsource'] + product['eventsourcecode']
+        productsource = product['eventsource']
     omag = np.nan
     if product.hasProperty('magnitude'):
         omag = float(product['magnitude'])
@@ -1318,7 +1416,7 @@ def _describe_origin(event, product):
                 origin = evt.origin
                 olat = origin.latitude
                 olon = origin.longitude
-                odepth = origin.depth/1000
+                odepth = origin.depth / 1000
                 dist_m, az, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
                 dist = dist_m / 1000.0
 
@@ -1337,7 +1435,7 @@ def _describe_origin(event, product):
            'Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s')
     desc = fmt % (omag, otime, tdiff,
                   olat, olon, dist, azstr, odepth, magtype, loc_method)
-    productsource = product['eventsource']
+    
     pversion = product.version
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
@@ -1361,9 +1459,13 @@ def _describe_finite_fault(event, product):
     oid = product['eventsource'] + product['eventsourcecode']
     productsource = product.source
 
-    slip = float(product['maximum-slip'])
-    strike = float(product['segment-1-strike'])
-    dip = float(product['segment-1-dip'])
+    slip = np.nan
+    strike = np.nan
+    dip = np.nan
+    if product.hasProperty('maximum-slip'):
+        slip = float(product['maximum-slip'])
+        strike = float(product['segment-1-strike'])
+        dip = float(product['segment-1-dip'])
 
     fmt = 'Peak Slip# %.3f|Strike# %.0f|Dip# %.0f'
     tpl = (slip, strike, dip)
@@ -1436,9 +1538,8 @@ def _describe_focal_mechanism(event, product):
         catalog = unpickler.loads(cbytes)
         evt = catalog.events[0]
         fm = evt.focal_mechanisms[0]
-        if hasattr(fm, 'method_id') and hasattr(fm.method_id,'id'):
+        if hasattr(fm, 'method_id') and hasattr(fm.method_id, 'id'):
             method = fm.method_id.id.split('/')[-1]
-
 
     fmt = 'Method# %s|NP1 Strike# %.1f|NP1 Dip# %.1f|NP1 Rake# %.1f'
     tpl = (method, strike, dip, rake)
@@ -1559,13 +1660,13 @@ def _describe_moment_tensor(event, product):
             if np.isnan(derived_depth):
                 for origin in evt.origins:
                     if 'moment' in origin.depth_type:
-                        derived_depth = origin.depth/1000
+                        derived_depth = origin.depth / 1000
             if np.isnan(double_couple):
                 double_couple = mt.double_couple
 
     desc_fmt = ('Method# %s|Moment Magnitude# %.1f|Depth# %.1d|'
                 'Double Couple# %.2f|NP1 Strike# %.0f|NP1 Dip# %.0f|NP1 Rake# %.0f')
-    desc_tpl = (method, derived_mag, derived_depth, 
+    desc_tpl = (method, derived_mag, derived_depth,
                 double_couple, strike, dip, rake)
     desc = desc_fmt % desc_tpl
     pversion = product.version
@@ -1633,7 +1734,8 @@ def split_history_frame(dataframe, product=None):
     """
     products = dataframe['Product'].unique()
     if product is not None and product not in products:
-        raise KeyError('%s is not a product found in this dataframe.' % product)
+        raise KeyError(
+            '%s is not a product found in this dataframe.' % product)
     if product is None and len(products) > 1:
         raise KeyError('Dataframe contains many products, '
                        'you must specify one of them to split.')
