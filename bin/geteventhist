@@ -7,7 +7,7 @@ import textwrap
 
 # third party imports
 import pandas as pd
-from openpyxl import load_workbook
+from openpyxl import load_workbook, styles
 from obspy.geodetics.base import gps2dist_azimuth
 import numpy as np
 
@@ -23,6 +23,19 @@ DISPLAY_TIME_FMT = '%Y-%m-%d %H:%M:%S'
 class MyFormatter(argparse.RawTextHelpFormatter,
                   argparse.ArgumentDefaultsHelpFormatter):
     pass
+
+
+COLORS = {'dyfi': 'FADBD8',
+          'finite-fault': 'CD6155',
+          'focal-mechanism': 'EC7063',
+          'ground-failure': 'D1F2EB',
+          'losspager': 'FCF3CF',
+          'moment-tensor': 'F7DC6F',
+          'oaf': '7FB3D5',
+          'origin': 'C39BD3',
+          'phase-data': 'E59866',
+          'shakemap': '58D68D',
+          'default': '99A3A4'}
 
 
 def get_parser():
@@ -177,6 +190,25 @@ def save_dataframe(outdir, format, event, dataframe, product=None):
         ws.cell(5, 2, value=event.longitude)
         ws.cell(6, 1, value='Depth')
         ws.cell(6, 2, value=event.depth)
+
+        fills = {}
+        for product, color in COLORS.items():
+            my_color = styles.colors.Color(rgb=color)
+            my_fill = styles.fills.PatternFill(patternType='solid',
+                                               fgColor=my_color)
+            fills[product] = my_fill
+
+        # color rows by product type
+        for row in ws.iter_rows(min_row=8, min_col=2, max_col=2):
+            mycell = row[0]
+            if mycell.value in fills:
+                fill = fills[mycell.value]
+            else:
+                fill = fills['default']
+            row_range = '%i:%i' % (mycell.row, mycell.row)
+            for cell in ws[row_range]:
+                cell.fill = fill
+
         wb.save(outfile)
     else:
         if product is not None:

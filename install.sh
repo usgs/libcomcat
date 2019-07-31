@@ -87,6 +87,7 @@ package_list=(
       "numpy"
       "obspy"
       "pandas"
+      "pip"
       "pytest"
       "pytest-cov"
       "vcrpy"

@@ -3,7 +3,6 @@
 import os.path
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 
 import vcr
@@ -18,7 +17,6 @@ from libcomcat.utils import (makedict,
                              _get_country_shape,
                              filter_by_country,
                              _get_utm_proj)
-from libcomcat.search import search, get_event_by_id
 
 
 def get_datadir():
@@ -101,12 +99,12 @@ def test_contributors():
 
 
 def test_get_utm_proj():
-    tuples = [(36, -76, '+proj=utm +zone=18S, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
-              (-66, 0, '+proj=utm +zone=31D, +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
-              (-81, 0, '+proj=utm +zone=31C, +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
-              (85, 0, '+proj=utm +zone=31X, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
-              (76, 178, '+proj=utm +zone=60X, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
-              (4, 122, '+proj=utm +zone=51N, +ellps=WGS84 +datum=WGS84 +units=m +no_defs '),
+    tuples = [(36, -76, '+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs'),
+              (-66, 0, '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs'),
+              (-81, 0, '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs'),
+              (85, 0, '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs'),
+              (76, 178, '+proj=utm +zone=60 +datum=WGS84 +units=m +no_defs'),
+              (4, 122, '+proj=utm +zone=51 +datum=WGS84 +units=m +no_defs'),
               ]
 
     for tpl in tuples:
