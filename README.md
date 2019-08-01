@@ -31,7 +31,7 @@ libcomcat has been tested most often with Python 3.5, but *should*
 work with other Python 3.x versions. It will *not* work with Python
 2.7!  Fortunately, it is easy to install a 3.X version of Python within Anaconda:
 
-`conda create -n comcat --channel conda-forge python=3.5`
+`conda create -n comcat --channel conda-forge python=3`
 
 Then, in your Python 3.X environment do the following:
 
