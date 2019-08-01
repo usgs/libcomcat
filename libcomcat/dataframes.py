@@ -1430,11 +1430,18 @@ def _describe_origin(event, product):
     else:
         azstr = ''
 
+    # get the origin weight - this should help us determine which
+    # origin is authoritative
+    weight = product.preferred_weight
+
     fmt = ('Magnitude# %.1f|Time# %s |Time Offset (sec)# %.1f|'
            'Location# (%.3f,%.3f)|Distance from Auth. Origin (km)# %.1f|'
-           'Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s')
+           'Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s|'
+           'Preferred Weight#%i')
     desc = fmt % (omag, otime, tdiff,
-                  olat, olon, dist, azstr, odepth, magtype, loc_method)
+                  olat, olon, dist, azstr, 
+                  odepth, magtype, loc_method,
+                  weight)
     
     pversion = product.version
     row = {'Product': product.name,
