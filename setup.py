@@ -17,12 +17,16 @@ setup(name='libcomcat',
            os.path.join('data', 'ne_50m_admin_0_countries.shx'),
            ]
       },
-      scripts=['bin/findid',
-               'bin/getcsv',
-               'bin/getimpact',
-               'bin/getmags',
-               'bin/getpager',
-               'bin/getphases',
-               'bin/geteventhist',
-               'bin/getproduct'],
+      entry_points={
+          'console_scripts': [
+              'findid = libcomcat.bin.findid:main',
+              'getcsv = libcomcat.bin.getcsv:main',
+              'geteventhist = libcomcat.bin.geteventhist:main',
+              'getimpact = libcomcat.bin.getimpact:main',
+              'getmags = libcomcat.bin.getmags:main',
+              'getpager = libcomcat.bin.getpager:main',
+              'getphases = libcomcat.bin.getphases:main',
+              'getproduct = libcomcat.bin.getproduct:main'
+          ]
+      }
       )

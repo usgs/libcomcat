@@ -37,7 +37,7 @@ def get_command_output(cmd):
 
 def test_get_impact():
     filedir = os.path.dirname(os.path.abspath(__file__))
-    getimpact = os.path.join(filedir, '..', '..', 'bin', 'getimpact')
+    getimpact = os.path.join('getimpact')
 
     print('iscgem910478 limited sources')
     targetfile = os.path.join(filedir, '..', 'data', 'impact_iscgem910478.csv')
@@ -62,7 +62,7 @@ def test_get_impact():
 
     print('iscgem910478 all sources')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_iscgem910478_allsources.csv')
+                              'impact_iscgem910478_allsources.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -85,7 +85,7 @@ def test_get_impact():
 
     print('iscgem910478 limited sources and shaking')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_iscgem910478_shaking.csv')
+                              'impact_iscgem910478_shaking.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -108,7 +108,7 @@ def test_get_impact():
 
     print('usp0005rcg without contributing')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_usp0005rcg.csv')
+                              'impact_usp0005rcg.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -130,7 +130,7 @@ def test_get_impact():
 
     print('usp0005rcg without contributing all sources')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_usp0005rcg_allsources.csv')
+                              'impact_usp0005rcg_allsources.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -153,7 +153,7 @@ def test_get_impact():
 
     print('usp0005rcg with contributing all sources')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_usp0005rcg_allsources_contributing.csv')
+                              'impact_usp0005rcg_allsources_contributing.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -176,7 +176,7 @@ def test_get_impact():
 
     print('usp0005rcg with contributing')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_usp0005rcg_contributing.csv')
+                              'impact_usp0005rcg_contributing.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -199,7 +199,7 @@ def test_get_impact():
 
     print('usp0005rcg landslide and shaking')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_usp0005rcg_landslide_shaking.csv')
+                              'impact_usp0005rcg_landslide_shaking.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -222,7 +222,7 @@ def test_get_impact():
 
     print('usp0005rcg destroyed')
     targetfile = os.path.join(filedir, '..', 'data',
-            'impact_usp0005rcg_destroyed.csv')
+                              'impact_usp0005rcg_destroyed.csv')
     parameters = '--host dev01-earthquake.cr.usgs.gov'
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
@@ -242,6 +242,7 @@ def test_get_impact():
         shutil.rmtree(tmpdir)
     targetexcel = pd.read_csv(targetfile)
     pd.util.testing.assert_frame_equal(excel, targetexcel)
+
 
 if __name__ == '__main__':
     test_get_impact()
