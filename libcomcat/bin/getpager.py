@@ -8,6 +8,7 @@ import openpyxl
 from openpyxl.styles import Font, colors
 
 # local imports
+import libcomcat
 from libcomcat.search import search, get_event_by_id
 from libcomcat.classes import SummaryEvent
 from libcomcat.utils import maketime
@@ -92,6 +93,8 @@ def get_parser():
     parser.add_argument('filename',
                         metavar='FILENAME', help='Output filename.')
     # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     helpstr = ('Bounds to constrain event search '
                '[lonmin lonmax latmin latmax]')
     parser.add_argument('-b', '--bounds',

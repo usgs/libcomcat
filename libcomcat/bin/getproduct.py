@@ -7,6 +7,7 @@ import sys
 from datetime import datetime, timedelta
 
 # local imports
+import libcomcat
 from libcomcat.search import search, get_event_by_id
 from libcomcat.utils import (maketime, makedict, check_ccode,
                              get_country_bounds, filter_by_country,
@@ -89,7 +90,7 @@ def get_parser():
 
     Note: Some product content files do not always have the same name, usually because they incorporate the event ID
     into the file name, such as with most of the files associated with the finite-fault product.  To download these files,
-    you will need to input a unique fragment of the file name that can be matched in a search.  
+    you will need to input a unique fragment of the file name that can be matched in a search.
 
     For example, to retrieve all of the coulomb input files for the finite-fault product, you would construct your
     search like this:
@@ -106,14 +107,16 @@ def get_parser():
     parser.add_argument('contents', metavar='CONTENTLIST', nargs='*',
                         help='The names of the product contents (grid.xml, stationlist.txt, etc.) ')
     # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     parser.add_argument('-o', '--output-folder', dest='outputFolder', default=os.getcwd(),
                         help='Folder where output files should be written (must exist).')
     parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
 
-    country_str = '''Specify three character country code and earthquakes 
-    from inside country polygon (50m resolution) will be returned. Earthquakes 
+    country_str = '''Specify three character country code and earthquakes
+    from inside country polygon (50m resolution) will be returned. Earthquakes
     in the ocean likely will NOT be returned.'''
     parser.add_argument('--country', help=country_str)
 

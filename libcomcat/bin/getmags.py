@@ -2,6 +2,8 @@
 import argparse
 import sys
 
+# Third party imports
+import libcomcat
 from libcomcat.search import search, count
 from libcomcat.utils import (maketime, get_all_mags)
 from obspy.clients.fdsn import Client
@@ -22,20 +24,20 @@ def get_parser():
     time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s): %(prog)s -s
     2015-01-01T00:00:00 -e 2015-01-01T01:15:00
 
-    NOTES: 
+    NOTES:
 
     Any start or end time where only date is specified (YYYY-mm-dd) will
     be translated to the beginning of that day.  Thus, a start time of
     "2015-01-01" becomes "2015-01-01T:00:00:00" and an end time of "2015-01-02"
     becomes ""2015-01-02T:00:00:00".
-    
+
     Events which do not have a value for a given magnitude will be empty.
 
     Note that when specifying a search box that crosses the -180/180 meridian,
     you simply specify longitudes as you would if you were not crossing that
     meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
     discrepancy.
-   
+
     The ComCat API has a returned event limit of 20,000.  Queries
     that exceed this ComCat limit ARE supported by this software,
     by breaking up one large request into a number of smaller
@@ -52,6 +54,8 @@ def get_parser():
     parser.add_argument('filename',
                         metavar='FILENAME', help='Output filename.')
     # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')

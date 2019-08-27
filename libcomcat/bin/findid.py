@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 
 # local imports
+import libcomcat
 from libcomcat.search import search
 from libcomcat.utils import maketime
 from libcomcat.dataframes import get_summary_data_frame
@@ -68,6 +69,8 @@ def get_parser():
     parser.add_argument('lon', type=float, help='Longitude of earthquake')
 
     # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     parser.add_argument('-r', '--radius', type=float,
                         help='Change search radius from default of %.0f km.' % SEARCH_RADIUS)
     parser.add_argument('-w', '--window', type=float,
