@@ -1,12 +1,15 @@
 from distutils.core import setup
 import os.path
+import versioneer
+
 
 setup(name='libcomcat',
-      version='0.1dev',
       description='USGS ComCat search API in Python',
       author='Mike Hearne',
       author_email='mhearne@usgs.gov',
-      url='',
+      url='https://github.com/usgs/libcomcat',
+      version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),
       packages=['libcomcat'],
       package_data={
           'libcomcat':

@@ -2,6 +2,8 @@
 import argparse
 import sys
 
+
+import libcomcat
 from libcomcat.search import search, count
 from libcomcat.utils import (maketime, check_ccode,
                              get_country_bounds, filter_by_country,
@@ -93,6 +95,8 @@ def get_parser():
     parser.add_argument('filename',
                         metavar='FILENAME', help='Output filename.')
     # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     helpstr = ('Bounds to constrain event search '
                '[lonmin lonmax latmin latmax]')
     parser.add_argument('-b', '--bounds',
@@ -100,8 +104,8 @@ def get_parser():
                         dest='bounds', type=float, nargs=4,
                         help=helpstr)
 
-    country_str = '''Specify three character country code and earthquakes 
-    from inside country polygon (50m resolution) will be returned. Earthquakes 
+    country_str = '''Specify three character country code and earthquakes
+    from inside country polygon (50m resolution) will be returned. Earthquakes
     in the ocean likely will NOT be returned.
 
     See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
@@ -197,7 +201,6 @@ def get_parser():
               - orange; Limit to events with PAGER alert level "orange".
               - red; Limit to events with PAGER alert level "red"."""
     parser.add_argument('--alertlevel', help=helpstr, default=None)
-    
 
     return parser
 

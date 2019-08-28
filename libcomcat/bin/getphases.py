@@ -11,6 +11,7 @@ import os.path
 import pandas as pd
 
 # local imports
+import libcomcat
 from libcomcat.utils import maketime
 from libcomcat.dataframes import get_phase_dataframe
 from libcomcat.search import search, get_event_by_id
@@ -69,6 +70,8 @@ def get_parser():
     parser.add_argument('directory',
                         metavar='DIRECTORY', help='Output directory.')
     # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help='Bounds to constrain event search [lonmin lonmax latmin latmax]')

@@ -12,6 +12,7 @@ from obspy.geodetics.base import gps2dist_azimuth
 import numpy as np
 
 # local imports
+import libcomcat
 from libcomcat.search import search
 from libcomcat.dataframes import (get_history_data_frame, split_history_frame,
                                   PRODUCTS, TIMEFMT, PRODUCT_COLUMNS)
@@ -49,7 +50,7 @@ def get_parser():
 
     In the summary output (see below), all products will have the following
     columns:
-    - Product: 
+    - Product:
         One of supported products (see above)
     - Authoritative Event ID:
         Authoritative ComCat event ID, mostly only useful when using -r flag.
@@ -110,6 +111,9 @@ def get_parser():
     parser.add_argument('eventid',
                         metavar='EVENTID', help='ComCat event ID.')
 
+    # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     parser.add_argument('-p', '--products', help='Products to be listed',
                         nargs='*', default=[])
 

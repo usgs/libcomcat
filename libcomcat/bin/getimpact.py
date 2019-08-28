@@ -8,6 +8,7 @@ import sys
 import pandas as pd
 
 # local imports
+import libcomcat
 from libcomcat.classes import SummaryEvent, VersionOption
 from libcomcat.utils import maketime
 from libcomcat.dataframes import get_impact_data_frame
@@ -51,6 +52,8 @@ def get_parser():
     parser.add_argument('filename',
                         metavar='FILENAME', help='Output filename.')
     # optional arguments
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__)
     id = 'Retrieve information from a single PAGER event'
     parser.add_argument('-i', '--eventid', help=id,
                         metavar='EVENTID')
@@ -110,15 +113,15 @@ def get_parser():
     parser.add_argument('--source', dest='source', help=source,
                         default='preferred')
     version = "Specify product version. (PREFERRED, FIRST, ALL)."
-    parser.add_argument('-v', '--version', dest='version', help=version,
+    parser.add_argument('-o', '--output-version', dest='version', help=version,
                         default='PREFERRED')
     helpstr = ('Specify a different comcat *search* host than '
                'earthquake.usgs.gov.')
     parser.add_argument('--host',
                         help=helpstr)
     helpstr = ('Segment search to exceede the 20,000 event limit.'
-            ' This will slow down the search process.')
-    parser.add_argument('--disable_limit',help=helpstr, action='store_false',
+               ' This will slow down the search process.')
+    parser.add_argument('--disable_limit', help=helpstr, action='store_false',
                         default=True)
     return parser
 
@@ -224,7 +227,7 @@ def main():
             else:
                 dataframe = pd.concat([dataframe, df])
         except AttributeError as e:
-            sys.stderr.write(str(e)+'\n')
+            sys.stderr.write(str(e) + '\n')
             sys.stderr.write("Skipping this event.\n")
 
     if dataframe is not None:
