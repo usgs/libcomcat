@@ -254,7 +254,14 @@ def test_dyfi():
             dfzip['intensity'].sum(), 2348.1000000000004)
 
 
+def test_nan_mags():
+    detail = get_event_by_id('us2000arrw')
+    df = get_phase_dataframe(detail)
+    x = 1
+
+
 if __name__ == '__main__':
+    test_nan_mags()
     print('Testing DYFI extraction...')
     test_dyfi()
     print('Testing pager extraction...')

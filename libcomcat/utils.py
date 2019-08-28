@@ -18,10 +18,20 @@ import pyproj
 import numpy as np
 from shapely.ops import transform
 
+# local imports
+from libcomcat.exceptions import (ConnectionError,
+                                  ParsingError,
+                                  ProductNotFoundError,
+                                  ProductNotSpecifiedError,
+                                  ContentNotFoundError,
+                                  ArgumentConflictError,
+                                  UndefinedVersionError)
+
 
 # constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
-CONTRIBUTORS_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/contributors'
+CONTRIBUTORS_SEARCH_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/'
+                                '1/contributors')
 TIMEOUT = 60
 TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
@@ -29,8 +39,10 @@ DATEFMT = '%Y-%m-%d'
 COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
 
 # where is the PAGER fatality model found?
-FATALITY_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/fatality.xml'
-ECONOMIC_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/economy.xml'
+FATALITY_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
+                'losspager/data/fatality.xml')
+ECONOMIC_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
+                'losspager/data/economy.xml')
 
 COUNTRIES_SHP = 'ne_50m_admin_0_countries.shp'
 BUFFER_DISTANCE_KM = 100
@@ -169,7 +181,7 @@ def makedict(dictstring):
         key = parts[0]
         value = parts[1]
         return {key: value}
-    except:
+    except Exception:
         raise Exception(
             'Could not create a single key dictionary out of %s' % dictstring)
 
@@ -178,13 +190,13 @@ def maketime(timestring):
     outtime = None
     try:
         outtime = HistoricTime.strptime(timestring, TIMEFMT1)
-    except:
+    except Exception:
         try:
             outtime = HistoricTime.strptime(timestring, TIMEFMT2)
-        except:
+        except Exception:
             try:
                 outtime = HistoricTime.strptime(timestring, DATEFMT)
-            except:
+            except Exception:
                 raise Exception(
                     'Could not parse time or date from %s' % timestring)
     return outtime
@@ -229,7 +241,7 @@ def get_contributors():
 
 
 def check_ccode(ccode):
-    """Make sure three letter country code is valid and contained in country bounds.
+    """Ensure three letter country code is valid and contained in country bounds.
 
     Args:
         ccode (str): Three letter valid ISO 3166 country code.

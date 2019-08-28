@@ -16,6 +16,11 @@ import pandas as pd
 import numpy as np
 import dateutil
 
+# local imports
+from libcomcat.exceptions import (ConnectionError, ProductNotFoundError,
+                                  ArgumentConflictError, UndefinedVersionError,
+                                  ContentNotFoundError)
+
 # constants
 # the detail event URL template
 URL_TEMPLATE = ('https://earthquake.usgs.gov/earthquakes/feed'
@@ -227,7 +232,7 @@ class SummaryEvent(object):
         """List of summary event properties.
 
         Returns:
-            list: List of summary event properties (retrievable 
+            list: List of summary event properties (retrievable
                   from object with [] operator).
         """
         return list(self._jdict['properties'].keys())
@@ -249,7 +254,7 @@ class SummaryEvent(object):
 
         Args:
             key (str): Property to search for.
-        Returns: 
+        Returns:
           bool: Indicates whether that key exists or not.
         """
         if key not in self._jdict['properties']:
@@ -282,12 +287,12 @@ class SummaryEvent(object):
         """Instantiate a DetailEvent object from the URL found in the summary.
 
         Args:
-            includedeleted (bool): Boolean indicating wheather to return 
+            includedeleted (bool): Boolean indicating wheather to return
                 versions of products that have
-                been deleted. Cannot be used with 
+                been deleted. Cannot be used with
                 includesuperseded.
             includesuperseded (bool):
-                Boolean indicating wheather to return versions of products 
+                Boolean indicating wheather to return versions of products
                 that have been replaced by newer versions.
                 Cannot be used with includedeleted.
         Returns:
@@ -296,7 +301,7 @@ class SummaryEvent(object):
         if includesuperseded and includedeleted:
             msg = ('includedeleted and includesuperseded '
                    'cannot be used together.')
-            raise RuntimeError(msg)
+            raise ArgumentConflictError(msg)
         if not includedeleted and not includesuperseded:
             durl = self._jdict['properties']['detail']
             return DetailEvent(durl)
@@ -344,7 +349,8 @@ class DetailEvent(object):
         https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson_detail.php
 
         Args:
-            url (str): String indicating a URL pointing to a detailed GeoJSON event.
+            url (str): String indicating a URL pointing to a detailed GeoJSON
+                       event.
         """
         try:
             fh = request.urlopen(url, timeout=TIMEOUT)
@@ -360,8 +366,9 @@ class DetailEvent(object):
                 self._jdict = json.loads(data)
                 self._actual_url = url
             except Exception as msg:
-                raise Exception('Could not connect to ComCat server - %s.' %
-                                url).with_traceback(msg.__traceback__)
+                fmt = 'Could not connect to ComCat server - %s.'
+                raise ConnectionError(
+                    fmt % url).with_traceback(msg.__traceback__)
 
     def __repr__(self):
         tpl = (self.id, str(self.time), self.latitude,
@@ -469,7 +476,8 @@ class DetailEvent(object):
         """List of detail event properties.
 
         Returns:
-            list: List of summary event properties (retrievable from object with [] operator).
+            list: List of summary event properties (retrievable from object
+                  with [] operator).
         """
         return list(self._jdict['properties'].keys())
 
@@ -478,13 +486,14 @@ class DetailEvent(object):
         """List of detail event properties.
 
         Returns:
-            list: List of detail event products (retrievable from object with 
+            list: List of detail event products (retrievable from object with
                 getProducts() method).
         """
         return list(self._jdict['properties']['products'].keys())
 
     def hasProduct(self, product):
-        """Return a boolean indicating whether given product can be extracted from DetailEvent.
+        """Return a boolean indicating whether given product can be extracted
+        from DetailEvent.
 
         Args:
             product (str): Product to search for.
@@ -496,7 +505,7 @@ class DetailEvent(object):
         return False
 
     def hasProperty(self, key):
-        """Test to see whether a property with a given key is present in list of properties.
+        """Test to see whether a property with a given key is present property list.
 
         Args:
             key (str): Property to search for.
@@ -530,23 +539,25 @@ class DetailEvent(object):
         """Return origin, focal mechanism, and tensor information for a DetailEvent.
 
         Args:
-            catalog (str): Retrieve the primary event information (time,lat,lon...) from the
-                catalog given. If no source for this information exists, an
-                AttributeError will be raised.
-            get_all_magnitudes (bool): Indicates whether all known magnitudes for this event
-                should be returned. NOTE: The ComCat phase-data product's
-                QuakeML file will be downloaded and parsed, which takes extra time.
+            catalog (str): Retrieve the primary event information (time,lat,
+                lon...) from the catalog given. If no source for this
+                information exists, an AttributeError will be raised.
+            get_all_magnitudes (bool): Indicates whether all known magnitudes
+                for this event should be returned. NOTE: The ComCat phase-data
+                product's QuakeML file will be downloaded and parsed, which
+                takes extra time.
             get_tensors (str): Option of 'none', 'preferred', or 'all'.
-            get_moment_supplement (bool): Boolean indicating whether derived origin and
-                double-couple/source time information should be extracted
-                (when available.)
+            get_moment_supplement (bool): Boolean indicating whether derived
+            origin and double-couple/source time information should be
+            extracted (when available.)
             get_focals (str): String option of 'none', 'preferred', or 'all'.
         Returns:
             dict: OrderedDict with the same fields as returned by
                 SummaryEvent.toDict(), *preferred* moment tensor and focal
                 mechanism data.  If all magnitudes are requested, then
                 those will be returned as well. Generally speaking, the
-                number and name of the fields will vary by what data is available.
+                number and name of the fields will vary by what data is 
+                available.
         """
         edict = OrderedDict()
 
@@ -580,7 +591,7 @@ class DetailEvent(object):
                 else:
                     msg = ('DetailEvent %s has no phase-data or origin '
                            'products for source %s')
-                    raise AttributeError(msg % (self.id, catalog))
+                    raise ProductNotFoundError(msg % (self.id, catalog))
                 edict['id'] = phasedata['eventsource'] + \
                     phasedata['eventsourcecode']
                 edict['time'] = dateutil.parser.parse(phasedata['eventtime'])
@@ -648,7 +659,7 @@ class DetailEvent(object):
             int: Number of versions of a given product.
         """
         if not self.hasProduct(product_name):
-            raise AttributeError(
+            raise ProductNotFoundError(
                 'Event %s has no product of type %s' % (self.id, product_name))
         return len(self._jdict['properties']['products'][product_name])
 
@@ -657,7 +668,8 @@ class DetailEvent(object):
         """Retrieve a Product object from this DetailEvent.
 
         Args:
-            product_name (str): Name of product (origin, shakemap, etc.) to retrieve.
+            product_name (str): Name of product (origin, shakemap, etc.) to
+                                retrieve.
             version (enum): A value from VersionOption (PREFERRED,FIRST,ALL).
             source (str): Any one of:
                 - 'preferred' Get version(s) of products from preferred source.
@@ -668,7 +680,7 @@ class DetailEvent(object):
           list: List of Product objects.
         """
         if not self.hasProduct(product_name):
-            raise AttributeError(
+            raise ProductNotFoundError(
                 'Event %s has no product of type %s' % (self.id, product_name))
 
         products = self._jdict['properties']['products'][product_name]
@@ -681,7 +693,7 @@ class DetailEvent(object):
              'time': times, 'index': indices})
 
         # add a datetime column for debugging
-        df['datetime'] = (df['time']/1000).apply(datetime.utcfromtimestamp)
+        df['datetime'] = (df['time'] / 1000).apply(datetime.utcfromtimestamp)
 
         # we need to add a version number column here, ordinal
         # sorted by update time, starting at 1
@@ -692,7 +704,7 @@ class DetailEvent(object):
         for psource in psources:
             dft = df[df['source'] == psource]
             dft = dft.sort_values('time')
-            dft['version'] = np.arange(1,len(dft)+1)
+            dft['version'] = np.arange(1, len(dft) + 1)
             newframe = newframe.append(dft)
         df = newframe
 
@@ -710,7 +722,8 @@ class DetailEvent(object):
 
         # if we don't have any versions of products, raise an exception
         if not len(df):
-            raise AttributeError('No products found for source "%s".' % source)
+            raise ProductNotFoundError(
+                'No products found for source "%s".' % source)
 
         products = []
         usources = set(sources)
@@ -743,7 +756,7 @@ class DetailEvent(object):
                             product_name, pversion, tproducts[idx])
                         products.append(product)
                 else:
-                    raise(AttributeError(
+                    raise(UndefinedVersionError(
                         'No VersionOption defined for %s' % version))
         else:  # dataframe only includes one source
             if version == VersionOption.PREFERRED:
@@ -774,7 +787,7 @@ class DetailEvent(object):
                     products.append(product)
             else:
                 msg = 'No VersionOption defined for %s' % version
-                raise(AttributeError(msg))
+                raise(UndefinedVersionError(msg))
 
         return products
 
@@ -799,8 +812,8 @@ class Product(object):
         """Find all contents that match the input regex, shortest to longest.
 
         Args:
-            regexp (str): Regular expression which should match one of the content files
-                in the Product.
+            regexp (str): Regular expression which should match one of the
+                          content files in the Product.
         Returns:
             list: List of contents matching input regex.
         """
@@ -886,7 +899,7 @@ class Product(object):
         """Download the shortest file name matching the input regular expression.
 
         Args:
-            regexp (str): Regular expression which should match one of the 
+            regexp (str): Regular expression which should match one of the
                 content files
                 in the Product.
         filename (str): Filename to which content should be downloaded.
@@ -909,7 +922,7 @@ class Product(object):
 
 
         Args:
-            regexp (str): Regular expression which should match one of the 
+            regexp (str): Regular expression which should match one of the
                 content files in
                 the Product.
         Returns:
@@ -933,7 +946,8 @@ class Product(object):
                 content_name = fname
                 content_url = url
         if content_url is None:
-            raise AttributeError(
+            # TODO make better exception
+            raise ContentNotFoundError(
                 'Could not find any content matching input %s' % regexp)
 
         try:
@@ -948,8 +962,8 @@ class Product(object):
                 data = fh.read()
                 fh.close()
             except Exception:
-                raise Exception('Could not download %s from %s.' %
-                                (content_name, url))
+                raise ConnectionError('Could not download %s from %s.' %
+                                      (content_name, url))
 
         return (data, url)
 
@@ -994,7 +1008,7 @@ class Product(object):
         """The timestamp for this product.
 
         Returns:
-            int: The timestamp for this product (effectively used as 
+            int: The timestamp for this product (effectively used as
                 version number by ComCat).
         """
         time_in_msec = self._product['updateTime']
