@@ -113,7 +113,7 @@ def get_parser():
     parser.add_argument('--source', dest='source', help=source,
                         default='preferred')
     version = "Specify product version. (PREFERRED, FIRST, ALL)."
-    parser.add_argument('-v', '--version', dest='version', help=version,
+    parser.add_argument('-o', '--output-version', dest='version', help=version,
                         default='PREFERRED')
     helpstr = ('Specify a different comcat *search* host than '
                'earthquake.usgs.gov.')
