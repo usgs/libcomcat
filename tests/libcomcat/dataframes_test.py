@@ -13,9 +13,9 @@ from libcomcat.dataframes import (get_summary_data_frame,
                                   get_pager_data_frame,
                                   get_phase_dataframe,
                                   get_magnitude_data_frame,
-                                  get_dyfi_data_frame,
-                                  get_impact_data_frame)
+                                  get_dyfi_data_frame)
 from libcomcat.search import search, get_event_by_id
+from libcomcat.exceptions import ParsingError
 
 
 def get_datadir():
@@ -108,130 +108,130 @@ def test_get_pager_data_frame():
     v7fats = 16
     assert version_7['predicted_fatalities'] == v7fats
 
+# TODO - revive this when we bring impact products back to comcat
+# def test_impact_data_frame():
+#     datadir = get_datadir()
+#     print('iscgem910478 limited sources')
+#     iscgem910478_file = os.path.join(datadir, 'impact_iscgem910478.csv')
+#     event = get_event_by_id('iscgem910478',
+#                             host="dev01-earthquake.cr.usgs.gov")
+#     iscgem910478 = get_impact_data_frame(event).reset_index(drop=True)
+#     target_iscgem910478 = pd.read_csv(
+#         iscgem910478_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         iscgem910478[column] = iscgem910478[column].astype(str)
+#         target_iscgem910478[column] = target_iscgem910478[column].astype(str)
+#     pd.util.testing.assert_frame_equal(iscgem910478, target_iscgem910478)
 
-def test_impact_data_frame():
-    datadir = get_datadir()
-    print('iscgem910478 limited sources')
-    iscgem910478_file = os.path.join(datadir, 'impact_iscgem910478.csv')
-    event = get_event_by_id('iscgem910478',
-                            host="dev01-earthquake.cr.usgs.gov")
-    iscgem910478 = get_impact_data_frame(event).reset_index(drop=True)
-    target_iscgem910478 = pd.read_csv(
-        iscgem910478_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        iscgem910478[column] = iscgem910478[column].astype(str)
-        target_iscgem910478[column] = target_iscgem910478[column].astype(str)
-    pd.util.testing.assert_frame_equal(iscgem910478, target_iscgem910478)
+#     print('iscgem910478 all sources')
+#     iscgem910478_file = os.path.join(
+#         datadir, 'impact_iscgem910478_allsources.csv')
+#     event = get_event_by_id('iscgem910478',
+#                             host="dev01-earthquake.cr.usgs.gov")
+#     iscgem910478 = get_impact_data_frame(
+#         event, all_sources=True).reset_index(drop=True)
+#     target_iscgem910478 = pd.read_csv(
+#         iscgem910478_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         iscgem910478[column] = iscgem910478[column].astype(str)
+#         target_iscgem910478[column] = target_iscgem910478[column].astype(str)
+#     pd.util.testing.assert_frame_equal(iscgem910478, target_iscgem910478)
 
-    print('iscgem910478 all sources')
-    iscgem910478_file = os.path.join(
-        datadir, 'impact_iscgem910478_allsources.csv')
-    event = get_event_by_id('iscgem910478',
-                            host="dev01-earthquake.cr.usgs.gov")
-    iscgem910478 = get_impact_data_frame(
-        event, all_sources=True).reset_index(drop=True)
-    target_iscgem910478 = pd.read_csv(
-        iscgem910478_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        iscgem910478[column] = iscgem910478[column].astype(str)
-        target_iscgem910478[column] = target_iscgem910478[column].astype(str)
-    pd.util.testing.assert_frame_equal(iscgem910478, target_iscgem910478)
+#     print('iscgem910478 limited sources and shaking')
+#     iscgem910478_file = os.path.join(
+#         datadir, 'impact_iscgem910478_shaking.csv')
+#     event = get_event_by_id('iscgem910478',
+#                             host="dev01-earthquake.cr.usgs.gov")
+#     iscgem910478 = get_impact_data_frame(
+#         event, effect_types='shaking').reset_index(drop=True)
+#     target_iscgem910478 = pd.read_csv(
+#         iscgem910478_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         iscgem910478[column] = iscgem910478[column].astype(str)
+#         target_iscgem910478[column] = target_iscgem910478[column].astype(str)
+#     pd.util.testing.assert_frame_equal(iscgem910478, target_iscgem910478)
 
-    print('iscgem910478 limited sources and shaking')
-    iscgem910478_file = os.path.join(
-        datadir, 'impact_iscgem910478_shaking.csv')
-    event = get_event_by_id('iscgem910478',
-                            host="dev01-earthquake.cr.usgs.gov")
-    iscgem910478 = get_impact_data_frame(
-        event, effect_types='shaking').reset_index(drop=True)
-    target_iscgem910478 = pd.read_csv(
-        iscgem910478_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        iscgem910478[column] = iscgem910478[column].astype(str)
-        target_iscgem910478[column] = target_iscgem910478[column].astype(str)
-    pd.util.testing.assert_frame_equal(iscgem910478, target_iscgem910478)
+#     print('usp0005rcg without contributing')
+#     usp0005rcg_file = os.path.join(datadir, 'impact_usp0005rcg.csv')
+#     event = get_event_by_id('usp0005rcg',
+#                             host="dev02-earthquake.cr.usgs.gov")
+#     usp0005rcg = get_impact_data_frame(event).reset_index(drop=True)
+#     target_usp0005rcg = pd.read_csv(
+#         usp0005rcg_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         usp0005rcg[column] = usp0005rcg[column].astype(str)
+#         target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
+#     pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
 
-    print('usp0005rcg without contributing')
-    usp0005rcg_file = os.path.join(datadir, 'impact_usp0005rcg.csv')
-    event = get_event_by_id('usp0005rcg',
-                            host="dev02-earthquake.cr.usgs.gov")
-    usp0005rcg = get_impact_data_frame(event).reset_index(drop=True)
-    target_usp0005rcg = pd.read_csv(
-        usp0005rcg_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        usp0005rcg[column] = usp0005rcg[column].astype(str)
-        target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
-    pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
+#     print('usp0005rcg without contributing all sources')
+#     usp0005rcg_file = os.path.join(datadir,
+#                                    'impact_usp0005rcg_allsources.csv')
+#     event = get_event_by_id('usp0005rcg',
+#                             host="dev02-earthquake.cr.usgs.gov")
+#     usp0005rcg = get_impact_data_frame(event,
+#                                        all_sources=True).reset_index(drop=True)
+#     target_usp0005rcg = pd.read_csv(
+#         usp0005rcg_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         usp0005rcg[column] = usp0005rcg[column].astype(str)
+#         target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
+#     pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
 
-    print('usp0005rcg without contributing all sources')
-    usp0005rcg_file = os.path.join(datadir,
-                                   'impact_usp0005rcg_allsources.csv')
-    event = get_event_by_id('usp0005rcg',
-                            host="dev02-earthquake.cr.usgs.gov")
-    usp0005rcg = get_impact_data_frame(event,
-                                       all_sources=True).reset_index(drop=True)
-    target_usp0005rcg = pd.read_csv(
-        usp0005rcg_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        usp0005rcg[column] = usp0005rcg[column].astype(str)
-        target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
-    pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
+#     print('usp0005rcg with contributing all sources')
+#     usp0005rcg_file = os.path.join(datadir,
+#                                    'impact_usp0005rcg_allsources_contributing.csv')
+#     event = get_event_by_id('usp0005rcg',
+#                             host="dev02-earthquake.cr.usgs.gov")
+#     usp0005rcg = get_impact_data_frame(event,
+#                                        include_contributing=True, all_sources=True).reset_index(drop=True)
+#     target_usp0005rcg = pd.read_csv(
+#         usp0005rcg_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         usp0005rcg[column] = usp0005rcg[column].astype(str)
+#         target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
+#     pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
 
-    print('usp0005rcg with contributing all sources')
-    usp0005rcg_file = os.path.join(datadir,
-                                   'impact_usp0005rcg_allsources_contributing.csv')
-    event = get_event_by_id('usp0005rcg',
-                            host="dev02-earthquake.cr.usgs.gov")
-    usp0005rcg = get_impact_data_frame(event,
-                                       include_contributing=True, all_sources=True).reset_index(drop=True)
-    target_usp0005rcg = pd.read_csv(
-        usp0005rcg_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        usp0005rcg[column] = usp0005rcg[column].astype(str)
-        target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
-    pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
+#     print('usp0005rcg with contributing')
+#     usp0005rcg_file = os.path.join(datadir,
+#                                    'impact_usp0005rcg_contributing.csv')
+#     event = get_event_by_id('usp0005rcg',
+#                             host="dev02-earthquake.cr.usgs.gov")
+#     usp0005rcg = get_impact_data_frame(event,
+#                                        include_contributing=True).reset_index(drop=True)
+#     target_usp0005rcg = pd.read_csv(
+#         usp0005rcg_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         usp0005rcg[column] = usp0005rcg[column].astype(str)
+#         target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
+#     pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
 
-    print('usp0005rcg with contributing')
-    usp0005rcg_file = os.path.join(datadir,
-                                   'impact_usp0005rcg_contributing.csv')
-    event = get_event_by_id('usp0005rcg',
-                            host="dev02-earthquake.cr.usgs.gov")
-    usp0005rcg = get_impact_data_frame(event,
-                                       include_contributing=True).reset_index(drop=True)
-    target_usp0005rcg = pd.read_csv(
-        usp0005rcg_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        usp0005rcg[column] = usp0005rcg[column].astype(str)
-        target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
-    pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
+#     print('usp0005rcg landslide and shaking')
+#     usp0005rcg_file = os.path.join(datadir,
+#                                    'impact_usp0005rcg_landslide_shaking.csv')
+#     event = get_event_by_id('usp0005rcg',
+#                             host="dev02-earthquake.cr.usgs.gov")
+#     usp0005rcg = get_impact_data_frame(event,
+#                                        effect_types=['landslide', 'shaking']).reset_index(drop=True)
+#     target_usp0005rcg = pd.read_csv(
+#         usp0005rcg_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         usp0005rcg[column] = usp0005rcg[column].astype(str)
+#         target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
+#     pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
 
-    print('usp0005rcg landslide and shaking')
-    usp0005rcg_file = os.path.join(datadir,
-                                   'impact_usp0005rcg_landslide_shaking.csv')
-    event = get_event_by_id('usp0005rcg',
-                            host="dev02-earthquake.cr.usgs.gov")
-    usp0005rcg = get_impact_data_frame(event,
-                                       effect_types=['landslide', 'shaking']).reset_index(drop=True)
-    target_usp0005rcg = pd.read_csv(
-        usp0005rcg_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        usp0005rcg[column] = usp0005rcg[column].astype(str)
-        target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
-    pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
-
-    print('usp0005rcg destroyed')
-    usp0005rcg_file = os.path.join(datadir,
-                                   'impact_usp0005rcg_destroyed.csv')
-    event = get_event_by_id('usp0005rcg',
-                            host="dev02-earthquake.cr.usgs.gov")
-    usp0005rcg = get_impact_data_frame(event,
-                                       loss_extents=['destroyed']).reset_index(drop=True)
-    target_usp0005rcg = pd.read_csv(
-        usp0005rcg_file).reset_index(drop=True).fillna('')
-    for column in iscgem910478.columns:
-        usp0005rcg[column] = usp0005rcg[column].astype(str)
-        target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
-    pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
+#     print('usp0005rcg destroyed')
+#     usp0005rcg_file = os.path.join(datadir,
+#                                    'impact_usp0005rcg_destroyed.csv')
+#     event = get_event_by_id('usp0005rcg',
+#                             host="dev02-earthquake.cr.usgs.gov")
+#     usp0005rcg = get_impact_data_frame(event,
+#                                        loss_extents=['destroyed']).reset_index(drop=True)
+#     target_usp0005rcg = pd.read_csv(
+#         usp0005rcg_file).reset_index(drop=True).fillna('')
+#     for column in iscgem910478.columns:
+#         usp0005rcg[column] = usp0005rcg[column].astype(str)
+#         target_usp0005rcg[column] = target_usp0005rcg[column].astype(str)
+#     pd.util.testing.assert_frame_equal(usp0005rcg, target_usp0005rcg)
 
 
 def test_dyfi():
@@ -254,7 +254,16 @@ def test_dyfi():
             dfzip['intensity'].sum(), 2348.1000000000004)
 
 
+def test_nan_mags():
+    detail = get_event_by_id('us2000arrw')
+    try:
+        df = get_phase_dataframe(detail)
+    except ParsingError:
+        pass
+
+
 if __name__ == '__main__':
+    test_nan_mags()
     print('Testing DYFI extraction...')
     test_dyfi()
     print('Testing pager extraction...')
@@ -267,5 +276,3 @@ if __name__ == '__main__':
     test_get_detail_data_frame()
     print('Testing magnitude frame...')
     test_magnitude_dataframe()
-    print('Testing impact frame...')
-    test_impact_data_frame()

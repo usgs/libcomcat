@@ -1,5 +1,4 @@
 # stdlib imports
-from collections import OrderedDict
 from xml.dom import minidom
 import sys
 from urllib.request import urlopen
@@ -21,11 +20,14 @@ from impactutils.mapping.compass import get_compass_dir_azimuth
 # local imports
 from libcomcat.classes import VersionOption
 from libcomcat.search import get_event_by_id
-
+from libcomcat.exceptions import (ConnectionError, ParsingError,
+                                  ProductNotFoundError,
+                                  ProductNotSpecifiedError)
 
 # constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
-CONTRIBUTORS_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/contributors'
+CONTRIBUTORS_SEARCH_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/1/'
+                                'contributors')
 TIMEOUT = 60
 TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
@@ -33,8 +35,10 @@ DATEFMT = '%Y-%m-%d'
 COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
 
 # where is the PAGER fatality model found?
-FATALITY_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/fatality.xml'
-ECONOMIC_URL = 'https://raw.githubusercontent.com/usgs/pager/master/losspager/data/economy.xml'
+FATALITY_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
+                'losspager/data/fatality.xml')
+ECONOMIC_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
+                'losspager/data/economy.xml')
 
 # what are the DYFI columns and what do we rename them to?
 DYFI_COLUMNS_REPLACE = {
@@ -55,7 +59,8 @@ OLD_DYFI_COLUMNS_REPLACE = {
     'Hypocentral distance': 'distance'
 }
 
-PRODUCT_COLUMNS = ['Update Time', 'Product', 'Authoritative Event ID', 'Code', 'Associated',
+PRODUCT_COLUMNS = ['Update Time', 'Product', 'Authoritative Event ID', 'Code',
+                   'Associated',
                    'Product Source', 'Product Version',
                    'Elapsed (min)', 'Description']
 
@@ -111,7 +116,12 @@ def get_phase_dataframe(detail, catalog='preferred'):
     unpickler = Unpickler()
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=UserWarning)
-        catalog = unpickler.loads(data)
+        try:
+            catalog = unpickler.loads(data)
+        except Exception as e:
+            fmt = 'Could not parse QuakeML from %s due to error: %s'
+            msg = fmt % (quakeurl, str(e))
+            raise ParsingError(msg)
         catevent = catalog.events[0]
         for pick in catevent.picks:
             phaserow = _get_phaserow(pick, catevent)
@@ -122,8 +132,9 @@ def get_phase_dataframe(detail, catalog='preferred'):
 
 
 def _get_phaserow(pick, catevent):
-    """Return a dictionary containing Phase data matching that found on ComCat event page.
-    Example: https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin
+    """Return a dictionary containing Phase data matching ComCat event page.
+    Example:
+    https://earthquake.usgs.gov/earthquakes/eventpage/us2000ahv0#origin
     (Click on the Phases tab).
 
     Args:
@@ -250,7 +261,12 @@ def get_magnitude_data_frame(detail, catalog, magtype):
     unpickler = Unpickler()
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=UserWarning)
-        catalog = unpickler.loads(data)
+        try:
+            catalog = unpickler.loads(data)
+        except Exception as e:
+            fmt = 'Could not parse QuakeML from %s due to error: %s'
+            msg = fmt % (quakeurl, str(e))
+            raise ParsingError(msg)
         catevent = catalog.events[0]  # match this to input catalog
         for magnitude in catevent.magnitudes:
             if magnitude.magnitude_type.lower() != magtype.lower():
@@ -309,7 +325,8 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
       TODO
 
     Args:
-        events (list): List of SummaryEvent objects as returned by search() function.
+        events (list): List of SummaryEvent objects as returned by search()
+                       function.
         get_all_magnitudes (bool): Boolean indicating whether to return all
             magnitudes in results for each event.
         get_tensors (str): String option of 'none', 'preferred', or 'all'.
@@ -331,7 +348,7 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
     for event in events:
         try:
             detail = event.getDetailEvent()
-        except Exception as e:
+        except Exception:
             print('Failed to get detailed version of event %s' % event.id)
             continue
         edict = detail.toDict(get_all_magnitudes=get_all_magnitudes,
@@ -354,7 +371,7 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
 
 
 def get_summary_data_frame(events):
-    """Take the results of a search and extract the summary event informat in a pandas DataFrame.
+    """Extract the summary event information from search results into DataFrame.
 
     Usage:
       TODO
@@ -390,8 +407,8 @@ def get_pager_data_frame(detail, get_losses=False,
             and dollar losses and uncertainties.
         get_country_exposures (bool): Indicates whether to retrieve per-country
             shaking exposures.
-        get_all_versions (bool): Indicates whether to retrieve PAGER results for
-            all versions.
+        get_all_versions (bool): Indicates whether to retrieve PAGER results
+                                 for all versions.
     Returns:
         (DataFrame): DataFrame whose columns will vary depending on input:
             (all):
@@ -404,7 +421,8 @@ def get_pager_data_frame(detail, get_losses=False,
             magnitude - Event magnitude.
             mmi1 - Estimated population exposed to shaking at MMI intensity 1.
             ...
-            mmi10 - Estimated population exposed to shaking at MMI intensity 10.
+            mmi10 - Estimated population exposed to shaking at MMI intensity
+                    10.
     """
     default_columns = ['id', 'location', 'time',
                        'latitude', 'longitude',
@@ -602,7 +620,8 @@ def _get_json_exposure(total_row, pager, get_country_exposures, default):
     Args:
         total_row (dict): Dictionary to be filled in with exposures.
         pager (Product): PAGER ComCat Product.
-        get_country_exposures (bool): Extract exposures for each affected country.
+        get_country_exposures (bool): Extract exposures for each affected
+                                      country.
     Returns:
         tuple: (total_row, country_rows)
     """
@@ -664,7 +683,8 @@ def get_g_values(ccodes):
     Args:
         ccodes (list): Sequence of two-letter country codes.
     Returns:
-        tuple: (Dictionary of fatality G values, Dictionary of economic G values)
+        tuple: (Dictionary of fatality G values, Dictionary of economic G
+                values)
 
     """
     res = requests.get(FATALITY_URL)
@@ -693,272 +713,30 @@ def get_g_values(ccodes):
     return (fatmodels, ecomodels)
 
 
-def get_impact_data_frame(detail, effect_types=None, loss_types=None,
-                          loss_extents=None, all_sources=False, include_contributing=False,
-                          source='preferred', version=VersionOption.PREFERRED):
-    """Return a Pandas DataFrame consisting of impact data.
-
-    Args:
-        detail (DetailEvent): DetailEvent object.
-        effect_types (list): List of requested effect types. Default is None.
-        loss_types (list): List of requested loss types. Default is None.
-        loss_extents (list): List of requested loss extents. Default is None.
-        all_sources (bool): Include all sources including those that are
-                not the most recent or authoritative. Default is False.
-        include_contributing (bool): Include contributing features, not
-                just the total summary. Default is False.
-        source (str): Default is 'preferred'. Can be any one of:
-                - 'preferred' Get version(s) of products from preferred source.
-                - 'all' Get version(s) of products from all sources.
-                - Any valid source network for this type of product ('us','ak',etc.)
-        version (VersionOption): Product version. Default is VersionOption.PREFERRED.
-
-    Returns:
-        dataframe: Dataframe of the impact information.
-
-    Raises:
-        Exception: If the impact.json file cannot be read. Likely do to one
-                not existing.
-    """
-    # Define spreadsheet columns and equivalent geojson keys
-    columns = ['Source Network', 'ID', 'EventID', 'Time',
-               'Magnitude', 'EffectType', 'LossType',
-               'LossExtent', 'LossValue', 'LossMin',
-               'LossMax', 'CollectionTime',
-               'CollectionAuthor', 'CollectionSource',
-               'Authoritative', 'Lat', 'Lon',
-               'LossQuantifier', 'Comment']
-    geojson_equivalent = {'EffectType': 'effect-type',
-                          'LossType': 'loss-type',
-                          'LossExtent': 'loss-extent',
-                          'LossValue': 'loss-value',
-                          'LossMin': 'loss-min',
-                          'LossMax': 'loss-max',
-                          'CollectionTime': 'collection-time',
-                          'CollectionAuthor': 'collection-author',
-                          'CollectionSource': 'collection-source',
-                          'Authoritative': 'authoritative',
-                          'LossQuantifier': 'loss-quantifier',
-                          'Comment': 'comment'
-                          }
-    # Define valid parameters
-    valid_effects = ['all', 'coal bump', 'dam failure', 'faulting', 'fire',
-                     'geyser activity', 'ground cracking', 'landslide', 'lights', 'liquefaction',
-                     'mine blast', 'mine collapse', 'odors', 'other', 'rockburst',
-                     'sandblows', 'seiche', 'shaking', 'subsidence', 'tsunami',
-                     'undifferentiated', 'uplift', 'volcanic activity']
-    valid_loss_extents = ['damaged', 'damaged or destroyed', 'destroyed',
-                          'displaced', 'injured', 'killed', 'missing']
-    valid_loss_types = ['bridges', 'buildings', 'dollars', 'electricity',
-                        'livestock', 'people', 'railroads', 'roads', 'telecommunications', 'water']
-
-    # Convert arguments to lists
-    if isinstance(effect_types, str):
-        effect_types = [effect_types]
-    if isinstance(loss_types, str):
-        loss_types = [loss_types]
-    if isinstance(loss_extents, str):
-        loss_extents = [loss_extents]
-    # Set defaults if no user input and validate options
-    if effect_types is None:
-        effect_types = valid_effects
-    else:
-        for effect in effect_types:
-            if effect not in valid_effects:
-                raise Exception('%r is not a valid effect type.' % effect)
-    if loss_types is None:
-        loss_types = valid_loss_types
-        loss_types += ['']
-    else:
-        for loss in valid_loss_types:
-            if loss not in valid_loss_types:
-                raise Exception('%r is not a valid loss type.' % loss)
-    if loss_extents is None:
-        loss_extents = valid_loss_extents
-        loss_extents += ['']
-    else:
-        for extent in loss_extents:
-            if extent not in valid_loss_extents:
-                raise Exception('%r is not a valid loss extent.' % extent)
-
-    # Get the product(s)
-    impacts = detail.getProducts('impact', source=source, version=version)
-    table = OrderedDict()
-    for col in columns:
-        table[col] = []
-    # Each product append to the OrderedDict
-    for impact in impacts:
-        # Attempt to read the json file
-        impact_url = impact.getContentURL('impact.json')
-        # Look for previous naming scheme
-        if impact_url is None:
-            impact_url = impact.getContentURL('.geojson')
-        try:
-            fh = urlopen(impact_url, timeout=TIMEOUT)
-            file_text = fh.read().decode("utf-8")
-            impact_data = json.loads(file_text)
-            fh.close()
-        except Exception as e:
-            raise Exception('Unable to read impact.json for %s '
-                            'which includes the file(s): %r' % (impact, impact.contents))
-        features = impact_data['features']
-        main_properties = {}
-        # Get total feature lines
-        for feature in features:
-            # Impact-totals denotes the summary/total feature
-            # This only considers summary/total features
-            if 'impact-totals' in feature['properties']:
-                main_properties['Time'] = feature['properties']['time']
-                main_properties['ID'] = feature['properties']['id']
-                main_properties['Source Network'] = feature['properties']['eventsource']
-                main_properties['EventID'] = main_properties['Source Network'] + \
-                    main_properties['ID']
-                main_properties['Magnitude'] = feature['properties']['magnitude']
-                for impact_total in feature['properties']['impact-totals']:
-                        # Ensure that the "row" is valid
-                    for column in columns:
-                            # for totals the lat/lon fields are always empty
-                        if column == 'Lat':
-                            table['Lat'] += ['']
-                        elif column == 'Lon':
-                            table['Lon'] += ['']
-                        elif column not in geojson_equivalent:
-                            table[column] += [main_properties[column]]
-                        else:
-                            key = geojson_equivalent[column]
-                            if key in impact_total:
-                                table[column] += [impact_total[key]]
-                            else:
-                                table[column] += ['']
-                break
-        features.remove(feature)
-        # Get contributing feature lines
-        if include_contributing:
-            for feature in features:
-                # Ensure that the "row" is valid
-                for column in columns:
-                    if column == 'Lat':
-                        lat = feature['geometry']['coordinates'][1]
-                        table['Lat'] += [lat]
-                    elif column == 'Lon':
-                        lon = feature['geometry']['coordinates'][0]
-                        table['Lon'] += [lon]
-                    elif column not in geojson_equivalent:
-                        table[column] += [main_properties[column]]
-                    else:
-                        key = geojson_equivalent[column]
-                        if key in feature['properties']:
-                            table[column] += [feature['properties'][key]]
-                        else:
-                            table[column] += ['']
-    # Create the dataframe
-    df = pd.DataFrame.from_dict(table)
-    df = df[(df.LossExtent.isin(loss_extents))]
-    df = df[(df.LossType.isin(loss_types))]
-    df = df[(df.EffectType.isin(effect_types))]
-    # Get most recent sources
-    if not all_sources:
-        df = df[(df.Authoritative == 1)]
-    if not all_sources and len(df) > 1:
-        df = _get_most_recent(df, effect_types, loss_extents, loss_types)
-    return df
-
-
-def _get_most_recent(df, effect_types, loss_extents, loss_types):
-    """Get the most recent (most "trusted") source.
-
-    Args:
-        effect_types (list): List of requested effect types.
-        loss_types (list): List of requested loss types.
-        loss_extents (list): List of requested loss extents.
-    Returns:
-        dataframe: Dataframe without older sources.
-    """
-    drop_list = []
-    for effect in effect_types:
-        for loss in loss_types:
-            for extent in loss_extents:
-                boolean_df = df[(df.EffectType == effect) & (
-                    df.LossType == loss) & (df.LossExtent == extent)]
-                if len(boolean_df) > 0:
-                    max_date = max(boolean_df['CollectionTime'])
-                    idx = df.index[(df.EffectType == effect) & (df.LossType == loss) & (
-                        df.LossExtent == extent) & (df.CollectionTime != max_date)].tolist()
-                    drop_list += idx
-    df = df.drop(set(drop_list))
-    return df
-
-
-def _validate_row(feature, feature_type, effect_types, loss_types, loss_extents,
-                  all_sources, valid_effects, valid_loss_extents, valid_loss_types):
-    """Validate that the row is valid based upon the requested parameters.
-
-    Args:
-        feature (dictionary): feature dictionary.
-        feature_type (dictionary): Dictionary of the data row.
-        effect_types (list): List of requested effect types. Default is None.
-        loss_types (list): List of requested loss types. Default is None.
-        loss_extents (list): List of requested loss extents. Default is None.
-        all_sources (bool): Include all sources including those that are
-                not the most recent or authoritative. Default is False.
-        valid_effects (list): Valid effect types.
-        valid_loss_types (list): Valid loss types.
-        valid_loss_extents (list): Valid loss extents.
-
-    Returns:
-        bool: Whether or not the row is valid.
-    """
-    valid_row = True
-    if feature_type == 'total':
-        row = feature
-    else:
-        row = feature['properties']
-    # Check source criteria
-    if not all_sources and row['authoritative'] == 0:
-        valid_row = False
-
-    # Check loss_extent criteria
-    if loss_extents != valid_loss_extents:
-        if 'loss-extent' not in row:
-            valid_row = False
-        elif row['loss-extent'] not in loss_extents:
-            valid_row = False
-
-    # Check loss_type criteria
-    if loss_types != valid_loss_types:
-        if 'loss-type' not in row:
-            valid_row = False
-        elif row['loss-type'] not in loss_types:
-            valid_row = False
-
-    # Check loss_type criteria
-    if effect_types != valid_effects:
-        if 'effect-type' not in row:
-            valid_row = False
-        elif row['effect-type'] not in effect_types:
-            valid_row = False
-    return valid_row
-
-
-def get_dyfi_data_frame(detail, dyfi_file=None, version=VersionOption.PREFERRED):
+def get_dyfi_data_frame(detail, dyfi_file=None,
+                        version=VersionOption.PREFERRED):
     """Retrieve a pandas DataFrame containing DYFI responses.
 
     Args:
         detail (DetailEvent): DetailEvent object.
-        dyfi_file (str or None): If None, the file is chosen from the following list,
-                                 in the order presented.
+        dyfi_file (str or None): If None, the file is chosen from the
+                                 following list, in the order presented.
                                 - utm_1km: UTM aggregated at 1km resolution.
                                 - utm_10km: UTM aggregated at 10km resolution.
-                                - utm_var: UTM aggregated "best" resolution for map.
+                                - utm_var: UTM aggregated "best" resolution
+                                           for map.
                                 - zip: ZIP/city aggregated.
-        version (VersionOption): DYFI version. Default is VersionOption.PREFERRED.
+        version (VersionOption): DYFI version. Default is
+                                 VersionOption.PREFERRED.
 
     Returns:
         DataFrame or None: Pandas DataFrame containing columns:
-            - station: Name of the location where aggregated responses are located.
+            - station: Name of the location where aggregated responses are
+                       located.
             - lat: Latitude of responses.
             - lon: Longitude of responses.
-            - distance: Distance from epicenter to location of aggregated responses.
+            - distance: Distance from epicenter to location of aggregated
+                        responses.
             - intensity: Modified Mercalli Intensity
             - nresp: Number of DYFI responses at aggregated location.
 
@@ -1065,11 +843,12 @@ def get_history_data_frame(eventid, products=None):
 
     Args:
         eventid (str): ComCat event ID.
-        products (list): List of ComCat products to retrieve, or None retrieves all.
+        products (list): List of ComCat products to retrieve, or None
+                         retrieves all.
     Returns:
         tuple:
             - pandas DataFrame containing columns:
-                - Product: 
+                - Product:
                     One of supported products (see
                     libcomcat.dataframes.PRODUCTS)
                 - Authoritative Event ID:
@@ -1077,10 +856,10 @@ def get_history_data_frame(eventid, products=None):
                 - Code:
                     Event Source + Code, mostly only useful when using
                     -r flag with geteventhist.
-                - Associated: 
+                - Associated:
                     Boolean indicating whether this product is associated
                     with authoritative event.
-                - Product Source: 
+                - Product Source:
                     Network that contributed the product.
                 - Product Version:
                     Either ordinal number created by sorting products from a
@@ -1110,14 +889,14 @@ def get_history_data_frame(eventid, products=None):
         about ComCat event %s. Please try again later. Error message:
         "%s"
         '''
-        raise socket.timeout(fmt % (eventid, str(sot)))
+        raise ConnectionError(fmt % (eventid, str(sot)))
     if products is not None:
         if not len(set(products) & set(PRODUCTS)):
             fmt = '''None of the input products "%s" are in the list
             of supported ComCat products: %s.
             '''
             tpl = (','.join(products), ','.join(PRODUCTS))
-            raise KeyError(fmt % tpl)
+            raise ProductNotFoundError(fmt % tpl)
     else:
         products = PRODUCTS
 
@@ -1197,7 +976,8 @@ def _describe_pager(event, product):
 
             exp_bytes = product.getContentBytes('exposures.json')[0]
             expinfo = json.loads(exp_bytes.decode('utf-8'))
-            max_exp = expinfo['population_exposure']['aggregated_exposure'][maxmmi - 1]
+            expdict = expinfo['population_exposure']
+            max_exp = expdict['aggregated_exposure'][maxmmi - 1]
         elif has_xml:
             xmlbytes = product.getContentBytes('pager.xml')[0]
             root = minidom.parseString(xmlbytes.decode('utf-8'))
@@ -1295,7 +1075,8 @@ def _get_shakemap_info(product):
         try:
             gmpe = ','.join(infodict['multigmpe']['PGA']['gmpes'][0]['gmpes'])
         except Exception:
-            gmpe = infodict['processing']['ground_motion_modules']['gmpe']['module']
+            gmpedict = infodict['processing']['ground_motion_modules']
+            gmpe = gmpedict['gmpe']['module']
 
         gmpe = gmpe.replace('()', '')
 
@@ -1346,7 +1127,7 @@ def _get_shakemap_info(product):
             ninstrument = 0
             for station in root.getElementsByTagName('station'):
                 netid = station.getAttribute('netid')
-                if netid.lower() in ['dyfi','ciim','intensity','mmi']:
+                if netid.lower() in ['dyfi', 'ciim', 'intensity', 'mmi']:
                     ndyfi += 1
                 else:
                     ninstrument += 1
@@ -1410,7 +1191,12 @@ def _describe_origin(event, product):
         if len(product.getContentsMatching('quakeml.xml')):
             unpickler = Unpickler()
             cbytes, url = product.getContentBytes('quakeml.xml')
-            catalog = unpickler.loads(cbytes)
+            try:
+                catalog = unpickler.loads(cbytes)
+            except Exception as e:
+                fmt = 'Could not parse QuakeML from %s due to error: %s'
+                msg = fmt % (url, str(e))
+                raise ParsingError(msg)
             evt = catalog.events[0]
             if hasattr(evt, 'origin'):
                 origin = evt.origin
@@ -1439,10 +1225,10 @@ def _describe_origin(event, product):
            'Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s|'
            'Preferred Weight#%i')
     desc = fmt % (omag, otime, tdiff,
-                  olat, olon, dist, azstr, 
+                  olat, olon, dist, azstr,
                   odepth, magtype, loc_method,
                   weight)
-    
+
     pversion = product.version
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
@@ -1542,7 +1328,12 @@ def _describe_focal_mechanism(event, product):
     if len(product.getContentsMatching('quakeml.xml')):
         cbytes, url = product.getContentBytes('quakeml.xml')
         unpickler = Unpickler()
-        catalog = unpickler.loads(cbytes)
+        try:
+            catalog = unpickler.loads(cbytes)
+        except Exception as e:
+            fmt = 'Could not parse QuakeML from %s due to error: %s'
+            msg = fmt % (url, str(e))
+            raise ParsingError(msg)
         evt = catalog.events[0]
         fm = evt.focal_mechanisms[0]
         if hasattr(fm, 'method_id') and hasattr(fm.method_id, 'id'):
@@ -1652,7 +1443,12 @@ def _describe_moment_tensor(event, product):
         if len(product.getContentsMatching('quakeml.xml')):
             cbytes, url = product.getContentBytes('quakeml.xml')
             unpickler = Unpickler()
-            catalog = unpickler.loads(cbytes)
+            try:
+                catalog = unpickler.loads(cbytes)
+            except Exception as e:
+                fmt = 'Could not parse QuakeML from %s due to error: %s'
+                msg = fmt % (url, str(e))
+                raise ParsingError(msg)
             evt = catalog.events[0]
             fm = evt.focal_mechanisms[0]
             mt = fm.moment_tensor
@@ -1672,7 +1468,8 @@ def _describe_moment_tensor(event, product):
                 double_couple = mt.double_couple
 
     desc_fmt = ('Method# %s|Moment Magnitude# %.1f|Depth# %.1d|'
-                'Double Couple# %.2f|NP1 Strike# %.0f|NP1 Dip# %.0f|NP1 Rake# %.0f')
+                'Double Couple# %.2f|NP1 Strike# %.0f|NP1 Dip# %.0f|'
+                'NP1 Rake# %.0f')
     desc_tpl = (method, derived_mag, derived_depth,
                 double_couple, strike, dip, rake)
     desc = desc_fmt % desc_tpl
@@ -1741,11 +1538,12 @@ def split_history_frame(dataframe, product=None):
     """
     products = dataframe['Product'].unique()
     if product is not None and product not in products:
-        raise KeyError(
+        raise ProductNotFoundError(
             '%s is not a product found in this dataframe.' % product)
     if product is None and len(products) > 1:
-        raise KeyError('Dataframe contains many products, '
-                       'you must specify one of them to split.')
+        raise ProductNotSpecifiedError('Dataframe contains many products, '
+                                       'you must specify one of them to '
+                                       'split.')
     if product is not None:
         dataframe = dataframe[dataframe['Product'] == product]
     parts = dataframe.iloc[0]['Description'].split('|')

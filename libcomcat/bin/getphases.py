@@ -101,11 +101,17 @@ def main():
     args = parser.parse_args()
     if args.eventid:
         detail = get_event_by_id(args.eventid, catalog=args.catalog)
-        df = get_phase_dataframe(detail, args.catalog)
-        filename = save_dataframe(
-            df, args.directory, detail, args.format, catalog=args.catalog)
-        print('Saved phase data for %s to %s' % (detail.id, filename))
-        sys.exit(0)
+        try:
+            df = get_phase_dataframe(detail, args.catalog)
+            filename = save_dataframe(
+                df, args.directory, detail, args.format, catalog=args.catalog)
+            print('Saved phase data for %s to %s' % (detail.id, filename))
+            sys.exit(0)
+        except Exception as e:
+            fmt = ('Could not extract the phase data due to the '
+                   'following error: \n"%s"\n\nExiting.')
+            print(fmt % (str(e)))
+            sys.exit(1)
 
     if args.bounds and args.radius:
         print('Please specify either a bounding box OR radius search.')
@@ -160,7 +166,13 @@ def main():
             continue
         try:
             detail = event.getDetailEvent()
-            df = get_phase_dataframe(detail, args.catalog)
+            try:
+                df = get_phase_dataframe(detail, args.catalog)
+            except Exception as e:
+                fmt = ('Could not get phase dataframe for '
+                       'event %. Error "%s". Continuing.')
+                tpl = (detail.id, str(e))
+                print(fmt % tpl)
             filename = save_dataframe(
                 df, args.directory, detail, args.format, catalog=args.catalog)
 
@@ -193,8 +205,8 @@ def save_dataframe(df, directory, event, file_format, catalog=None):
         for key, value in edict.items():
             keyidx = 'A%i' % rowidx
             validx = 'B%i' % rowidx
-            #ws[keyidx] = key
-            #ws[validx] = value
+            # ws[keyidx] = key
+            # ws[validx] = value
             ws.write(keyidx, key)
             if key == 'time':
                 if value.tzinfo is not None:
