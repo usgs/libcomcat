@@ -9,6 +9,9 @@ import vcr
 
 from libcomcat.classes import DetailEvent, Product, VersionOption
 from libcomcat.search import search, get_event_by_id
+from libcomcat.exceptions import (ArgumentConflictError,
+                                  ProductNotFoundError,
+                                  ContentNotFoundError)
 
 
 def get_datadir():
@@ -52,7 +55,7 @@ def test_summary():
             detail = event.getDetailEvent(includedeleted=True,
                                           includesuperseded=True)
             assert 1 == 2
-        except RuntimeError:
+        except ArgumentConflictError:
             pass
 
         # find an event that has multiple versions of shakemap to test
@@ -152,19 +155,19 @@ def test_detail():
         try:
             event.getNumVersions('foo')
             assert 1 == 2
-        except AttributeError as ae:
+        except ProductNotFoundError as ae:
             pass
 
         try:
             event.getProducts('foo')
             assert 1 == 2
-        except AttributeError as ae:
+        except ProductNotFoundError as ae:
             pass
 
         try:
             event.getProducts('shakemap', source='foo')
             assert 1 == 2
-        except AttributeError as ae:
+        except ProductNotFoundError as ae:
             pass
 
         assert event.toDict()['magnitude'] == 6.7
@@ -184,7 +187,7 @@ def test_detail():
         try:
             event.toDict(catalog='foo')
             assert 1 == 2
-        except AttributeError as ae:
+        except ProductNotFoundError as ae:
             pass
 
         assert ncdict['depth'] == 11.12
@@ -283,7 +286,7 @@ def test_product():
         try:
             product.getContent('foo', filename=None)
             assert 1 == 2
-        except AttributeError as ae:
+        except ContentNotFoundError as ae:
             pass
 
         try:
