@@ -1,0 +1,518 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection: [close]
+      Host: [earthquake.usgs.gov]
+      User-Agent: [Python-urllib/3.5]
+    method: GET
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&maxdepth=1000&limit=20000&minmagnitude=6.6&maxmagnitude=10.0&orderby=time-asc&eventtype=earthquake
+  response:
+    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1541795248000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&maxdepth=1000&limit=20000&minmagnitude=6.6&maxmagnitude=10.0&orderby=time-asc&eventtype=earthquake","title":"USGS
+        Earthquakes","status":200,"api":"1.5.8","limit":20000,"offset":1,"count":1},"features":[{"type":"Feature","properties":{"mag":6.7,"place":"1km
+        NNW of Reseda, CA","time":758809855390,"updated":1518716430169,"tz":null,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ci3144585","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ci3144585&format=geojson","felt":10955,"cdi":8.6,"mmi":8.6,"alert":null,"status":"reviewed","tsunami":0,"sig":1551,"net":"ci","code":"3144585","ids":",cinorthrid,choy19940117123055,gcmtc011794b,ci3144585,usp00066k9,gcmt19940117123055,duputel011794b,atlas19940117123055,iscgem189275,","sources":",ci,choy,gcmt,ci,us,gcmt,duputel,atlas,iscgem,","types":",associate,dyfi,focal-mechanism,general-link,impact-text,moment-tensor,nearby-cities,origin,phase-data,shakemap,trump-shakemap,","nst":0,"dmin":null,"rms":0.31,"gap":29.7,"magType":"mw","type":"earthquake","title":"M
+        6.7 - 1km NNW of Reseda, CA"},"geometry":{"type":"Point","coordinates":[-118.537,34.213,18.202]},"id":"ci3144585"}]}'}
+    headers:
+      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
+      Access-Control-Allow-Methods: ['*']
+      Access-Control-Allow-Origin: ['*']
+      Age: ['45']
+      Cache-Control: ['public, max-age=900']
+      Connection: [close]
+      Content-Length: ['1376']
+      Content-Type: [application/json; charset=utf-8]
+      Date: ['Fri, 09 Nov 2018 20:27:28 GMT']
+      Expires: ['Fri, 09 Nov 2018 20:42:28 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 20:27:28 GMT']
+      Server: [nginx]
+      Strict-Transport-Security: [max-age=31536000]
+      Vary: ['Accept-Encoding,Accept-Encoding']
+      Via: [1.1 08905871043ac5aeb0ec57f59d339cc4.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [7dCW_xEJYziUAJP1tqJm49Obhh90x_pm369T3pdthbA5KJZTPkUKEQ==]
+      X-Cache: [Hit from cloudfront]
+      X-Cache-Status: [MISS]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: [1; mode=block]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Connection: [close]
+      Host: [earthquake.usgs.gov]
+      User-Agent: [Python-urllib/3.5]
+    method: GET
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&updatedafter=2010-01-01T00%3A00%3A00&mindepth=-100&offset=1&limit=20000&endtime=2010-02-01T00%3A00%3A00&maxdepth=1000&starttime=2008-01-01T00%3A00%3A00&minmagnitude=9.0&maxmagnitude=9.9&orderby=time-asc&eventtype=earthquake
+  response:
+    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1541795293000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&updatedafter=2010-01-01T00%3A00%3A00&mindepth=-100&offset=1&limit=20000&endtime=2010-02-01T00%3A00%3A00&maxdepth=1000&starttime=2008-01-01T00%3A00%3A00&minmagnitude=9.0&maxmagnitude=9.9&orderby=time-asc&eventtype=earthquake","title":"USGS
+        Earthquakes","status":200,"api":"1.5.8","limit":20000,"offset":1,"count":0},"features":[]}'}
+    headers:
+      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
+      Access-Control-Allow-Methods: ['*']
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['public, max-age=900']
+      Connection: [close]
+      Content-Length: ['466']
+      Content-Type: [application/json; charset=utf-8]
+      Date: ['Fri, 09 Nov 2018 20:28:14 GMT']
+      Expires: ['Fri, 09 Nov 2018 20:43:13 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 20:28:13 GMT']
+      Server: [nginx]
+      Strict-Transport-Security: [max-age=31536000]
+      Vary: [Accept-Encoding]
+      Via: [1.1 e672a9473bd80174ece54114220b84e0.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [YexQOqkHGnSeFm9VAMYlohKFBaqPvKWr_dUPZkzvHq-KONwZ8TIGVA==]
+      X-Cache: [Miss from cloudfront]
+      X-Cache-Status: [MISS]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: [1; mode=block]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Connection: [close]
+      Host: [earthquake.usgs.gov]
+      User-Agent: [Python-urllib/3.5]
+    method: GET
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=2017-01-01T00%3A00%3A00&endtime=2017-01-30T00%3A00%3A00&maxdepth=1000&limit=20000&minmagnitude=0&maxmagnitude=0.1&orderby=time-asc&eventtype=earthquake
+  response:
+    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1541795294000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&mindepth=-100&offset=1&starttime=2017-01-01T00%3A00%3A00&endtime=2017-01-30T00%3A00%3A00&maxdepth=1000&limit=20000&minmagnitude=0&maxmagnitude=0.1&orderby=time-asc&eventtype=earthquake","title":"USGS
+        Earthquakes","status":200,"api":"1.5.8","limit":20000,"offset":1,"count":124},"features":[{"type":"Feature","properties":{"mag":0.02,"place":"4km
+        E of Mammoth Lakes, California","time":1483258080330,"updated":1483474614054,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72746875","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72746875&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72746875","ids":",nc72746875,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":12,"dmin":0.01571,"rms":0.04,"gap":80,"magType":"md","type":"earthquake","title":"M
+        0.0 - 4km E of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.9253333,37.6525,1.59]},"id":"nc72746875"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"56km N of Pahrump, Nevada","time":1483286834488,"updated":1530555460735,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00571904","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00571904&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00571904","ids":",nn00571904,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":14,"dmin":0.028,"rms":0.1353,"gap":81.88,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 56km N of Pahrump, Nevada"},"geometry":{"type":"Point","coordinates":[-116.0154,36.714,3.3]},"id":"nn00571904"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"15km N of North Nenana,
+        Alaska","time":1483296490932,"updated":1483732036882,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak14878512","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak14878512&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"14878512","ids":",ak14878512,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.34,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 15km N of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.0744,64.7168,13.3]},"id":"ak14878512"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"27km SW of Hawthorne, Nevada","time":1483321611514,"updated":1530555501943,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00579257","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00579257&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00579257","ids":",nn00579257,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.023,"rms":0.109,"gap":186.72,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 27km SW of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.8762,38.374,6.5]},"id":"nn00579257"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"24km NE of Hawthorne, Nevada","time":1483323626069,"updated":1530555495929,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00571983","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00571983&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00571983","ids":",nn00571983,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.086,"rms":0.0691,"gap":170.62,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 24km NE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.4624,38.7005,8.2]},"id":"nn00571983"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"24km NE of Hawthorne, Nevada","time":1483340019254,"updated":1530555505038,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572004","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572004&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572004","ids":",nn00572004,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.091,"rms":0.0297,"gap":253.27,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 24km NE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.4609,38.7053,9]},"id":"nn00572004"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"23km NNE of North Nenana,
+        Alaska","time":1483349384111,"updated":1483667039459,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak14887458","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak14887458&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"14887458","ids":",ak14887458,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.23,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 23km NNE of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-148.8827,64.7614,10.8]},"id":"ak14887458"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"22km NNE of Hawthorne, Nevada","time":1483355002423,"updated":1530555497701,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572025","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572025&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572025","ids":",nn00572025,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.074,"rms":0.0561,"gap":201.9,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 22km NNE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.4915,38.6982,12]},"id":"nn00572025"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"19km SSW of Badger, Alaska","time":1483365623289,"updated":1483667056300,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak14892709","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak14892709&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"14892709","ids":",ak14892709,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.52,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 19km SSW of Badger, Alaska"},"geometry":{"type":"Point","coordinates":[-147.6827,64.6379,6.6]},"id":"ak14892709"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"30km NW of Chester, California","time":1483369893310,"updated":1483659242167,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72748500","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72748500&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72748500","ids":",nc72748500,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":6,"dmin":0.005472,"rms":0.03,"gap":128,"magType":"md","type":"earthquake","title":"M
+        0.0 - 30km NW of Chester, California"},"geometry":{"type":"Point","coordinates":[-121.515,40.4691667,2.13]},"id":"nc72748500"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"27km SSW of Hawthorne,
+        Nevada","time":1483442594304,"updated":1530555538072,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00580664","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00580664&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00580664","ids":",nn00580664,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.132,"rms":0.0408,"gap":111.87,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 27km SSW of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.7477,38.2945,6.7]},"id":"nn00580664"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"59km SSW of Goldfield, Nevada","time":1483498567369,"updated":1530555542321,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572414","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572414&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572414","ids":",nn00572414,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.189,"rms":0.142,"gap":171.63,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 59km SSW of Goldfield, Nevada"},"geometry":{"type":"Point","coordinates":[-117.3747,37.1848,12.3]},"id":"nn00572414"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"31km N of North Nenana,
+        Alaska","time":1483531954308,"updated":1484013381869,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak14937641","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak14937641&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"14937641","ids":",ak14937641,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.37,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 31km N of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.0877,64.8623,22.5]},"id":"ak14937641"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"9km NW of North Nenana,
+        Alaska","time":1483533458677,"updated":1484013382619,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak14937642","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak14937642&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"14937642","ids":",ak14937642,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.52,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 9km NW of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.2751,64.6276,22.1]},"id":"ak14937642"},
+
+        {"type":"Feature","properties":{"mag":0.01,"place":"13km SE of Mammoth Lakes,
+        California","time":1483536612500,"updated":1483551634268,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72747780","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72747780&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72747780","ids":",nc72747780,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":6,"dmin":0.01994,"rms":0.01,"gap":230,"magType":"md","type":"earthquake","title":"M
+        0.0 - 13km SE of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.8515,37.581,2.38]},"id":"nc72747780"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"21km N of North Nenana,
+        Alaska","time":1483571721232,"updated":1484013406418,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak14953410","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak14953410&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"14953410","ids":",ak14953410,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.33,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 21km N of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.0794,64.7677,19.8]},"id":"ak14953410"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"24km NE of Hawthorne, Nevada","time":1483617898458,"updated":1530555559030,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576594","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576594&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576594","ids":",nn00576594,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.091,"rms":0.1247,"gap":169.04,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 24km NE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.4376,38.6899,6.4]},"id":"nn00576594"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"37km N of Beatty, Nevada","time":1483633871059,"updated":1530555559330,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576639","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576639&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576639","ids":",nn00576639,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.1,"rms":0.1243,"gap":226.67,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 37km N of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.6813,37.2386,2.6]},"id":"nn00576639"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"50km NNW of Pahrump, Nevada","time":1483663058635,"updated":1530555578435,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576610","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576610&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576610","ids":",nn00576610,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":10,"dmin":0.072,"rms":0.1584,"gap":105.14,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 50km NNW of Pahrump, Nevada"},"geometry":{"type":"Point","coordinates":[-116.2839,36.5891,10.5]},"id":"nn00576610"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"32km S of Morton, Washington","time":1483681457160,"updated":1483729349490,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/uw61227582","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=uw61227582&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"uw","code":"61227582","ids":",uw61227582,","sources":",uw,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.0367,"rms":0.1,"gap":168,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 32km S of Morton, Washington"},"geometry":{"type":"Point","coordinates":[-122.213,46.2735,2.36]},"id":"uw61227582"},
+
+        {"type":"Feature","properties":{"mag":0.09,"place":"3km ESE of Mammoth Lakes,
+        California","time":1483695430950,"updated":1483723334341,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72748835","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72748835&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72748835","ids":",nc72748835,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":14,"dmin":0.02803,"rms":0.04,"gap":76,"magType":"md","type":"earthquake","title":"M
+        0.1 - 3km ESE of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.9335,37.6375,4.57]},"id":"nc72748835"},
+
+        {"type":"Feature","properties":{"mag":0.05,"place":"29km NW of Chester, California","time":1483708542780,"updated":1483731298969,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72749250","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72749250&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72749250","ids":",nc72749250,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":5,"dmin":0.04216,"rms":0.02,"gap":141,"magType":"md","type":"earthquake","title":"M
+        0.1 - 29km NW of Chester, California"},"geometry":{"type":"Point","coordinates":[-121.5186667,40.4635,1.83]},"id":"nc72749250"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"30km NW of Chester, California","time":1483708579800,"updated":1483731480189,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc71105469","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc71105469&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"71105469","ids":",nc71105469,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":6,"dmin":0.0377,"rms":0.02,"gap":139,"magType":"md","type":"earthquake","title":"M
+        0.1 - 30km NW of Chester, California"},"geometry":{"type":"Point","coordinates":[-121.5113333,40.4743333,4.19]},"id":"nc71105469"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"45km ESE of Beatty, Nevada","time":1483716960381,"updated":1530555579257,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00577877","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00577877&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00577877","ids":",nn00577877,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":14,"dmin":0.065,"rms":0.1079,"gap":60.25,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.2859,36.7539,8.8]},"id":"nn00577877"},
+
+        {"type":"Feature","properties":{"mag":0.04,"place":"30km NW of Chester, California","time":1483734693940,"updated":1483738350751,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72749320","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72749320&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72749320","ids":",nc72749320,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":6,"dmin":0.005203,"rms":0.04,"gap":127,"magType":"md","type":"earthquake","title":"M
+        0.0 - 30km NW of Chester, California"},"geometry":{"type":"Point","coordinates":[-121.5168333,40.4693333,2.47]},"id":"nc72749320"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"45km ESE of Beatty, Nevada","time":1483736501212,"updated":1530555575463,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572741","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572741&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572741","ids":",nn00572741,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":17,"dmin":0.055,"rms":0.0992,"gap":75.52,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3208,36.6988,8.6]},"id":"nn00572741"},
+
+        {"type":"Feature","properties":{"mag":0.06,"place":"30km NW of Chester, California","time":1483739720430,"updated":1483980666872,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72749335","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72749335&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72749335","ids":",nc72749335,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":5,"dmin":0.006284,"rms":0.05,"gap":147,"magType":"md","type":"earthquake","title":"M
+        0.1 - 30km NW of Chester, California"},"geometry":{"type":"Point","coordinates":[-121.5148333,40.47,2.13]},"id":"nc72749335"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"4km NNW of Badger, Alaska","time":1483755334151,"updated":1484688557104,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak14998202","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak14998202&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"14998202","ids":",ak14998202,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.44,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 4km NNW of Badger, Alaska"},"geometry":{"type":"Point","coordinates":[-147.5612,64.838,4.4]},"id":"ak14998202"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"30km NW of Chester, California","time":1483762320560,"updated":1484156839520,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc71105509","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc71105509&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"71105509","ids":",nc71105509,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":6,"dmin":0.01129,"rms":0.04,"gap":139,"magType":"md","type":"earthquake","title":"M
+        0.1 - 30km NW of Chester, California"},"geometry":{"type":"Point","coordinates":[-121.5136667,40.475,2.15]},"id":"nc71105509"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"12km ESE of Anza, CA","time":1483802145430,"updated":1486589974477,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ci37149948","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ci37149948&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ci","code":"37149948","ids":",ci37149948,","sources":",ci,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":14,"dmin":0.04742,"rms":0.06,"gap":108,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 12km ESE of Anza, CA"},"geometry":{"type":"Point","coordinates":[-116.5493333,33.512,7.37]},"id":"ci37149948"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"49km ESE of Beatty, Nevada","time":1483805047824,"updated":1530555602345,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00578382","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00578382&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00578382","ids":",nn00578382,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":12,"dmin":0.045,"rms":0.1436,"gap":72.67,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 49km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.266,36.714,7.1]},"id":"nn00578382"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"48km ESE of Beatty, Nevada","time":1483808684438,"updated":1530555600834,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572863","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572863&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572863","ids":",nn00572863,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":21,"dmin":0.056,"rms":0.1325,"gap":74.04,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 48km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.2793,36.7121,7.2]},"id":"nn00572863"},
+
+        {"type":"Feature","properties":{"mag":0.02,"place":"3km ESE of Mammoth Lakes,
+        California","time":1483856283030,"updated":1483985155352,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72749790","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72749790&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72749790","ids":",nc72749790,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":11,"dmin":0.02586,"rms":0.02,"gap":102,"magType":"md","type":"earthquake","title":"M
+        0.0 - 3km ESE of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.9338333,37.6341667,5.29]},"id":"nc72749790"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"45km ESE of Beatty, Nevada","time":1483874898041,"updated":1530555616199,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572954","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572954&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572954","ids":",nn00572954,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":18,"dmin":0.064,"rms":0.1271,"gap":78,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.288,36.7486,7.9]},"id":"nn00572954"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"4km ENE of Fairbanks, Alaska","time":1483891256920,"updated":1484340553071,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15030849","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15030849&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15030849","ids":",ak15030849,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.24,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 4km ENE of Fairbanks, Alaska"},"geometry":{"type":"Point","coordinates":[-147.624,64.8457,14.8]},"id":"ak15030849"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"60km ENE of Beatty, Nevada","time":1483892474316,"updated":1530555616536,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572971","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572971&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572971","ids":",nn00572971,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":24,"dmin":0.048,"rms":0.1795,"gap":84.5,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 60km ENE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.1064,37.0608,7.9]},"id":"nn00572971"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"27km N of North Nenana,
+        Alaska","time":1483893173906,"updated":1484340554870,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15030852","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15030852&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15030852","ids":",ak15030852,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.41,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 27km N of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.0643,64.8211,19.7]},"id":"ak15030852"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"45km ESE of Beatty, Nevada","time":1483893258606,"updated":1530555618333,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00573275","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00573275&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00573275","ids":",nn00573275,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":16,"dmin":0.054,"rms":0.1123,"gap":96.31,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3213,36.6976,7.9]},"id":"nn00573275"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"46km ESE of Beatty, Nevada","time":1483906246965,"updated":1530555617070,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00572994","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00572994&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00572994","ids":",nn00572994,","sources":",nn,","types":",focal-mechanism,geoserve,origin,phase-data,","nst":19,"dmin":0.056,"rms":0.1305,"gap":76.61,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 46km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3154,36.6975,8.7]},"id":"nn00572994"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"13km S of Badger, Alaska","time":1483948359135,"updated":1484354970396,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15044915","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15044915&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15044915","ids":",ak15044915,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.54,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 13km S of Badger, Alaska"},"geometry":{"type":"Point","coordinates":[-147.5706,64.6813,15.2]},"id":"ak15044915"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"45km ESE of Beatty, Nevada","time":1483951018252,"updated":1530555631380,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00573059","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00573059&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00573059","ids":",nn00573059,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":14,"dmin":0.055,"rms":0.0975,"gap":77.82,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3209,36.6981,9]},"id":"nn00573059"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"13km ESE of Anza, CA","time":1483956039100,"updated":1486584405993,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ci37782856","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ci37782856&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ci","code":"37782856","ids":",ci37782856,","sources":",ci,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":18,"dmin":0.04851,"rms":0.13,"gap":122,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 13km ESE of Anza, CA"},"geometry":{"type":"Point","coordinates":[-116.5448333,33.5021667,8.78]},"id":"ci37782856"},
+
+        {"type":"Feature","properties":{"mag":0.08,"place":"25km WNW of Virginia City,
+        Montana","time":1484053314360,"updated":1484071873330,"tz":-420,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/mb80196299","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=mb80196299&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"mb","code":"80196299","ids":",mb80196299,","sources":",mb,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.217,"rms":0.07,"gap":121,"magType":"md","type":"earthquake","title":"M
+        0.1 - 25km WNW of Virginia City, Montana"},"geometry":{"type":"Point","coordinates":[-112.2228333,45.4086667,8.93]},"id":"mb80196299"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"14km N of North Nenana,
+        Alaska","time":1484107702163,"updated":1484702602390,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15060567","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15060567&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15060567","ids":",ak15060567,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.31,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 14km N of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.081,64.711,20.3]},"id":"ak15060567"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"18km SSW of Ester, Alaska","time":1484111288121,"updated":1484702605450,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15060577","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15060577&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15060577","ids":",ak15060577,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.22,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 18km SSW of Ester, Alaska"},"geometry":{"type":"Point","coordinates":[-148.2221,64.7025,8.7]},"id":"ak15060577"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"9km NW of North Nenana, Alaska","time":1484121918912,"updated":1484702612437,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15060686","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15060686&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15060686","ids":",ak15060686,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.46,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 9km NW of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.2456,64.6461,19.6]},"id":"ak15060686"},
+
+        {"type":"Feature","properties":{"mag":0.05,"place":"5km SSE of Mammoth Lakes,
+        California","time":1484184868460,"updated":1484240032046,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72751185","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72751185&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72751185","ids":",nc72751185,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":8,"dmin":0.01884,"rms":0.01,"gap":187,"magType":"md","type":"earthquake","title":"M
+        0.1 - 5km SSE of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.938,37.6066667,1.11]},"id":"nc72751185"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"67km N of Pahrump, Nevada","time":1484203037467,"updated":1530555653717,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00573613","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00573613&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00573613","ids":",nn00573613,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":15,"dmin":0.086,"rms":0.1185,"gap":156.16,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 67km N of Pahrump, Nevada"},"geometry":{"type":"Point","coordinates":[-116.0011,36.8134,5.1]},"id":"nn00573613"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"59km SSW of Goldfield,
+        Nevada","time":1484208927846,"updated":1530555654610,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00573694","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00573694&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00573694","ids":",nn00573694,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.226,"rms":0.171,"gap":166.69,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 59km SSW of Goldfield, Nevada"},"geometry":{"type":"Point","coordinates":[-117.3688,37.1867,12.2]},"id":"nn00573694"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"16km N of North Nenana,
+        Alaska","time":1484224830214,"updated":1484962813037,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15063538","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15063538&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15063538","ids":",ak15063538,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.5,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 16km N of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.1598,64.7261,19.8]},"id":"ak15063538"},
+
+        {"type":"Feature","properties":{"mag":0.06,"place":"7km NNW of West Yellowstone,
+        Montana","time":1484227009100,"updated":1484244205560,"tz":-420,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/uu60181492","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=uu60181492&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"uu","code":"60181492","ids":",uu60181492,","sources":",uu,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.05202,"rms":0.06,"gap":127,"magType":"md","type":"earthquake","title":"M
+        0.1 - 7km NNW of West Yellowstone, Montana"},"geometry":{"type":"Point","coordinates":[-111.1335,44.7241667,7.99]},"id":"uu60181492"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"56km WNW of Ester, Alaska","time":1484231215177,"updated":1485454772221,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15063945","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15063945&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15063945","ids":",ak15063945,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.51,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 56km WNW of Ester, Alaska"},"geometry":{"type":"Point","coordinates":[-149.0222,65.1247,4.9]},"id":"ak15063945"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"45km ESE of Beatty, Nevada","time":1484238229259,"updated":1530555656980,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00579030","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00579030&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00579030","ids":",nn00579030,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":16,"dmin":0.058,"rms":0.1058,"gap":75.65,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3179,36.7008,8]},"id":"nn00579030"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"13km SSE of Ester, Alaska","time":1484279888115,"updated":1484961455094,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15066107","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15066107&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15066107","ids":",ak15066107,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.27,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 13km SSE of Ester, Alaska"},"geometry":{"type":"Point","coordinates":[-147.9277,64.7333,11.3]},"id":"ak15066107"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"9km NNE of North Nenana,
+        Alaska","time":1484281273577,"updated":1484961455811,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15066112","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15066112&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15066112","ids":",ak15066112,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.26,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 9km NNE of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.0384,64.6555,10.7]},"id":"ak15066112"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"28km SSW of Hawthorne,
+        Nevada","time":1484302450643,"updated":1530555684470,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00584451","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00584451&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00584451","ids":",nn00584451,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.136,"rms":0.0391,"gap":199.9,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 28km SSW of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.7465,38.2875,6.7]},"id":"nn00584451"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"27km WSW of Hawthorne,
+        Nevada","time":1484306683711,"updated":1530555684683,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00584494","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00584494&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00584494","ids":",nn00584494,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.076,"rms":0.1078,"gap":251.46,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 27km WSW of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.9189,38.4304,7.4]},"id":"nn00584494"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"66km ENE of Beatty, Nevada","time":1484361812685,"updated":1530555691756,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574028","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574028&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574028","ids":",nn00574028,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":20,"dmin":0.01,"rms":0.2078,"gap":106.86,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 66km ENE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.0274,37.0241,9.6]},"id":"nn00574028"},
+
+        {"type":"Feature","properties":{"mag":0.03,"place":"8km SE of Three Forks,
+        Montana","time":1484389212930,"updated":1484676300100,"tz":-420,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/mb80196954","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=mb80196954&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"mb","code":"80196954","ids":",mb80196954,","sources":",mb,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.263,"rms":0.03,"gap":173,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 8km SE of Three Forks, Montana"},"geometry":{"type":"Point","coordinates":[-111.482,45.8388333,5.95]},"id":"mb80196954"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"53km WNW of Beatty, Nevada","time":1484428753799,"updated":1530555692488,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575633","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575633&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575633","ids":",nn00575633,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.111,"rms":0.1406,"gap":147.14,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 53km WNW of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-117.3105,37.0973,19.1]},"id":"nn00575633"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"39km S of Gabbs, Nevada","time":1484437222519,"updated":1530555710766,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00584947","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00584947&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00584947","ids":",nn00584947,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.095,"rms":0.0956,"gap":117.08,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 39km S of Gabbs, Nevada"},"geometry":{"type":"Point","coordinates":[-117.8425,38.5149,9.2]},"id":"nn00584947"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"46km ESE of Beatty, Nevada","time":1484492650224,"updated":1530555712868,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575257","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575257&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575257","ids":",nn00575257,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":10,"dmin":0.069,"rms":0.1242,"gap":99.19,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 46km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.2967,36.7161,5.9]},"id":"nn00575257"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"42km SE of Goldfield, Nevada","time":1484493440280,"updated":1530555713108,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575263","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575263&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575263","ids":",nn00575263,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.336,"rms":0.1929,"gap":277.83,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 42km SE of Goldfield, Nevada"},"geometry":{"type":"Point","coordinates":[-116.8771,37.4561,15.5]},"id":"nn00575263"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"28km ESE of Hawthorne, Nevada","time":1484494660757,"updated":1530555713206,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575264","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575264&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575264","ids":",nn00575264,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.015,"rms":0.0057,"gap":143.17,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 28km ESE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.3368,38.4011,5.3]},"id":"nn00575264"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"61km W of Pahrump, Nevada","time":1484533691614,"updated":1530555729210,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574265","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574265&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574265","ids":",nn00574265,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.085,"rms":0.0905,"gap":191.42,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 61km W of Pahrump, Nevada"},"geometry":{"type":"Point","coordinates":[-116.6542,36.1018,9.1]},"id":"nn00574265"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"6km NE of Fairbanks, Alaska","time":1484560585178,"updated":1485204676387,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15078893","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15078893&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15078893","ids":",ak15078893,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.39,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 6km NE of Fairbanks, Alaska"},"geometry":{"type":"Point","coordinates":[-147.6068,64.8698,17.7]},"id":"ak15078893"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"55km ESE of Beatty, Nevada","time":1484599243850,"updated":1530555730147,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574323","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574323&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574323","ids":",nn00574323,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.052,"rms":0.1338,"gap":274.5,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 55km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.1627,36.7662,5.7]},"id":"nn00574323"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"33km SSW of Hawthorne,
+        Nevada","time":1484612620999,"updated":1530555743107,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574344","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574344&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574344","ids":",nn00574344,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.138,"rms":0.0979,"gap":142.33,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 33km SSW of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.785,38.2489,8]},"id":"nn00574344"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"9km E of Mammoth Lakes,
+        California","time":1484628736440,"updated":1484682637534,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72753155","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72753155&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72753155","ids":",nc72753155,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":10,"dmin":0.0241,"rms":0.03,"gap":142,"magType":"md","type":"earthquake","title":"M
+        0.1 - 9km E of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.8703333,37.6561667,0.86]},"id":"nc72753155"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"45km ESE of Beatty, Nevada","time":1484631306991,"updated":1530555741924,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574441","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574441&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574441","ids":",nn00574441,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":10,"dmin":0.052,"rms":0.0656,"gap":150.7,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3206,36.6956,8.6]},"id":"nn00574441"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"59km SSW of Goldfield, Nevada","time":1484696681270,"updated":1530555743007,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575211","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575211&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575211","ids":",nn00575211,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":8,"dmin":0.185,"rms":0.117,"gap":105.66,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 59km SSW of Goldfield, Nevada"},"geometry":{"type":"Point","coordinates":[-117.3741,37.1804,8.5]},"id":"nn00575211"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"18km NNW of North Nenana,
+        Alaska","time":1484704571833,"updated":1485471275417,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15088769","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15088769&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15088769","ids":",ak15088769,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.44,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 18km NNW of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.2392,64.7381,20.2]},"id":"ak15088769"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"10km NNW of North Nenana,
+        Alaska","time":1484722938511,"updated":1485471286372,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15089695","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15089695&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15089695","ids":",ak15089695,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.3,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 10km NNW of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.1621,64.6725,19.3]},"id":"ak15089695"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"2km ENE of The Geysers,
+        California","time":1484728165960,"updated":1485470343024,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72753675","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72753675&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72753675","ids":",nc72753675,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":17,"dmin":0.003648,"rms":0.07,"gap":60,"magType":"md","type":"earthquake","title":"M
+        0.1 - 2km ENE of The Geysers, California"},"geometry":{"type":"Point","coordinates":[-122.7323333,38.782,2.2]},"id":"nc72753675"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"Central California","time":1484740041999,"updated":1530555757241,"tz":null,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574864","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574864&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574864","ids":",nn00574864,","sources":",nn,","types":",origin,phase-data,","nst":6,"dmin":0.088,"rms":0.0523,"gap":184.57,"magType":"ml","type":"earthquake","title":"M
+        0.0 - Central California"},"geometry":{"type":"Point","coordinates":[-117.5363,37.2289,9.6]},"id":"nn00574864"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"46km ESE of Beatty, Nevada","time":1484747395302,"updated":1530555757647,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575168","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575168&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575168","ids":",nn00575168,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.066,"rms":0.0876,"gap":161.02,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 46km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.2999,36.7034,4.6]},"id":"nn00575168"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"13km N of North Nenana, Alaska","time":1484839955667,"updated":1485372073781,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15102992","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15102992&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15102992","ids":",ak15102992,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.34,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 13km N of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.0781,64.6969,13.4]},"id":"ak15102992"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"4km NNE of Beatty, Nevada","time":1484892195448,"updated":1530555775705,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574823","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574823&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574823","ids":",nn00574823,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":8,"dmin":0.145,"rms":0.1491,"gap":84.41,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 4km NNE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.7357,36.9441,0]},"id":"nn00574823"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"5km WSW of Mammoth Lakes,
+        California","time":1484946879180,"updated":1484951144310,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72754405","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72754405&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72754405","ids":",nc72754405,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":7,"dmin":0.002587,"rms":0.05,"gap":95,"magType":"md","type":"earthquake","title":"M
+        0.1 - 5km WSW of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-119.035,37.6305,2.21]},"id":"nc72754405"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"36km SSW of Three Forks,
+        Montana","time":1484957258190,"updated":1484958352830,"tz":-420,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/mb80197404","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=mb80197404&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"mb","code":"80197404","ids":",mb80197404,","sources":",mb,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.038,"rms":0.08,"gap":162,"magType":"md","type":"earthquake","title":"M
+        0.0 - 36km SSW of Three Forks, Montana"},"geometry":{"type":"Point","coordinates":[-111.6753333,45.5756667,3.86]},"id":"mb80197404"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"46km E of Beatty, Nevada","time":1484968468566,"updated":1530555782256,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574869","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574869&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574869","ids":",nn00574869,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":25,"dmin":0.036,"rms":0.1699,"gap":58.64,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 46km E of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.2362,36.8686,8.7]},"id":"nn00574869"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"67km N of Pahrump, Nevada","time":1484971841503,"updated":1530555783104,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574938","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574938&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574938","ids":",nn00574938,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":18,"dmin":0.089,"rms":0.1331,"gap":155.36,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 67km N of Pahrump, Nevada"},"geometry":{"type":"Point","coordinates":[-116.0023,36.8159,6.2]},"id":"nn00574938"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"45km ESE of Beatty, Nevada","time":1484977887865,"updated":1530555783314,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574953","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574953&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574953","ids":",nn00574953,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":10,"dmin":0.057,"rms":0.0843,"gap":100.95,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 45km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3182,36.6996,8.1]},"id":"nn00574953"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"56km N of Pahrump, Nevada","time":1484994030525,"updated":1530555783636,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00574959","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00574959&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00574959","ids":",nn00574959,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":12,"dmin":0.034,"rms":0.0891,"gap":110.99,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 56km N of Pahrump, Nevada"},"geometry":{"type":"Point","coordinates":[-116.0648,36.7158,5.4]},"id":"nn00574959"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"22km S of Ester, Alaska","time":1485022418041,"updated":1485806666992,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15118180","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15118180&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15118180","ids":",ak15118180,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":1,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 22km S of Ester, Alaska"},"geometry":{"type":"Point","coordinates":[-147.9584,64.6428,17.1]},"id":"ak15118180"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"17km NNE of Fairbanks,
+        Alaska","time":1485027014655,"updated":1485806668027,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15118866","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15118866&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15118866","ids":",ak15118866,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.39,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 17km NNE of Fairbanks, Alaska"},"geometry":{"type":"Point","coordinates":[-147.5556,64.9755,4.2]},"id":"ak15118866"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"32km W of North Nenana,
+        Alaska","time":1485037951961,"updated":1485806672389,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15120264","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15120264&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15120264","ids":",ak15120264,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.54,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 32km W of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.7773,64.6185,16.6]},"id":"ak15120264"},
+
+        {"type":"Feature","properties":{"mag":0.05,"place":"39km SW of Whitehall,
+        Montana","time":1485053703850,"updated":1485274480030,"tz":-420,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/mb80197599","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=mb80197599&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"mb","code":"80197599","ids":",mb80197599,","sources":",mb,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.236,"rms":0.09,"gap":182,"magType":"md","type":"earthquake","title":"M
+        0.1 - 39km SW of Whitehall, Montana"},"geometry":{"type":"Point","coordinates":[-112.4046667,45.5885,5.93]},"id":"mb80197599"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"9km E of Mammoth Lakes, California","time":1485067378590,"updated":1485196210448,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72754880","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72754880&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72754880","ids":",nc72754880,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":9,"dmin":0.0265,"rms":0.04,"gap":159,"magType":"md","type":"earthquake","title":"M
+        0.0 - 9km E of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.8681667,37.658,0.78]},"id":"nc72754880"},
+
+        {"type":"Feature","properties":{"mag":0.02,"place":"9km E of Mammoth Lakes,
+        California","time":1485069752100,"updated":1485196722536,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72754905","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72754905&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72754905","ids":",nc72754905,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":10,"dmin":0.02548,"rms":0.02,"gap":92,"magType":"md","type":"earthquake","title":"M
+        0.0 - 9km E of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.8691667,37.6573333,1.46]},"id":"nc72754905"},
+
+        {"type":"Feature","properties":{"mag":0.01,"place":"9km E of Mammoth Lakes,
+        California","time":1485071799960,"updated":1485196933724,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72754915","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72754915&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72754915","ids":",nc72754915,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,","nst":10,"dmin":0.02497,"rms":0.03,"gap":92,"magType":"md","type":"earthquake","title":"M
+        0.0 - 9km E of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.8696667,37.657,0.88]},"id":"nc72754915"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"49km ESE of Beatty, Nevada","time":1485072860870,"updated":1530555790058,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575045","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575045&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575045","ids":",nn00575045,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":8,"dmin":0.043,"rms":0.0512,"gap":163.28,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 49km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.2918,36.6653,6.5]},"id":"nn00575045"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"28km WSW of Salcha, Alaska","time":1485105282267,"updated":1485821176837,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15129740","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15129740&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15129740","ids":",ak15129740,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.46,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 28km WSW of Salcha, Alaska"},"geometry":{"type":"Point","coordinates":[-147.4414,64.4278,10.1]},"id":"ak15129740"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"5km WSW of North Nenana,
+        Alaska","time":1485119846862,"updated":1485994480666,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15131261","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15131261&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15131261","ids":",ak15131261,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.44,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 5km WSW of North Nenana, Alaska"},"geometry":{"type":"Point","coordinates":[-149.2132,64.5595,15.6]},"id":"ak15131261"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"29km SW of Ester, Alaska","time":1485172993086,"updated":1485450606198,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15135136","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15135136&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15135136","ids":",ak15135136,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.2,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 29km SW of Ester, Alaska"},"geometry":{"type":"Point","coordinates":[-148.4347,64.6535,3]},"id":"ak15135136"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"44km ESE of Beatty, Nevada","time":1485207947400,"updated":1530555796113,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575255","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575255&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575255","ids":",nn00575255,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":11,"dmin":0.076,"rms":0.1235,"gap":68.16,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 44km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.3195,36.7194,5.1]},"id":"nn00575255"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"58km NNW of Pahrump, Nevada","time":1485218516458,"updated":1530555801436,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575276","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575276&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575276","ids":",nn00575276,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":8,"dmin":0.02,"rms":0.1286,"gap":102.24,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 58km NNW of Pahrump, Nevada"},"geometry":{"type":"Point","coordinates":[-116.1536,36.7175,0.1]},"id":"nn00575276"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"23km NE of Hawthorne, Nevada","time":1485230521575,"updated":1530555802206,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575356","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575356&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575356","ids":",nn00575356,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":9,"dmin":0.081,"rms":0.0693,"gap":97.69,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 23km NE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.471,38.6985,8.9]},"id":"nn00575356"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"39km SSW of Beatty, Nevada","time":1485259589745,"updated":1530555802558,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575374","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575374&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575374","ids":",nn00575374,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.232,"rms":0.1737,"gap":254.57,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 39km SSW of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.9754,36.5973,0]},"id":"nn00575374"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"53km ESE of Beatty, Nevada","time":1485276810356,"updated":1530555805655,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575381","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575381&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575381","ids":",nn00575381,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":14,"dmin":0.066,"rms":0.1087,"gap":81.74,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 53km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.1775,36.7872,1]},"id":"nn00575381"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"50km SSE of Beatty, Nevada","time":1485282406722,"updated":1530555803304,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575396","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575396&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575396","ids":",nn00575396,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":14,"dmin":0.119,"rms":0.0908,"gap":103.67,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 50km SSE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.5832,36.4806,4.3]},"id":"nn00575396"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"24km NE of Hawthorne, Nevada","time":1485311307056,"updated":1530555808943,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575558","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575558&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575558","ids":",nn00575558,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":3,"dmin":0.091,"rms":0.0042,"gap":307.38,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 24km NE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.46,38.7051,8.7]},"id":"nn00575558"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"7km ENE of Carson City,
+        Nevada","time":1485314225394,"updated":1530555809264,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575563","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575563&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575563","ids":",nn00575563,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.112,"rms":0.1078,"gap":190.8,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 7km ENE of Carson City, Nevada"},"geometry":{"type":"Point","coordinates":[-119.6867,39.1786,5.7]},"id":"nn00575563"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"63km ENE of Beatty, Nevada","time":1485324649661,"updated":1530555808064,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575521","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575521&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575521","ids":",nn00575521,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":18,"dmin":0.028,"rms":0.1707,"gap":88.76,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 63km ENE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.0721,37.0678,9.5]},"id":"nn00575521"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"24km NE of Hawthorne, Nevada","time":1485328505392,"updated":1530555809929,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575578","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575578&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575578","ids":",nn00575578,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.086,"rms":0.0607,"gap":163.75,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 24km NE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.4529,38.6951,8.4]},"id":"nn00575578"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"38km SSE of Morton, Washington","time":1485356216070,"updated":1485371602110,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/uw61230432","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=uw61230432&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"uw","code":"61230432","ids":",uw61230432,","sources":",uw,","types":",geoserve,origin,phase-data,","nst":4,"dmin":0.01934,"rms":0.12,"gap":247,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 38km SSE of Morton, Washington"},"geometry":{"type":"Point","coordinates":[-122.1163333,46.2315,7.03]},"id":"uw61230432"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"23km S of Ester, Alaska","time":1485387958538,"updated":1485989760429,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15160680","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15160680&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15160680","ids":",ak15160680,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.17,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 23km S of Ester, Alaska"},"geometry":{"type":"Point","coordinates":[-148.0911,64.6396,20]},"id":"ak15160680"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"36km SSE of Goldfield,
+        Nevada","time":1485392364406,"updated":1530555821049,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576440","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576440&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576440","ids":",nn00576440,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":7,"dmin":0.378,"rms":0.1685,"gap":138.67,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 36km SSE of Goldfield, Nevada"},"geometry":{"type":"Point","coordinates":[-117.0938,37.4004,6.9]},"id":"nn00576440"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"46km SSE of Goldfield,
+        Nevada","time":1485426440895,"updated":1530555821246,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576447","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576447&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576447","ids":",nn00576447,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.331,"rms":0.2213,"gap":216.09,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 46km SSE of Goldfield, Nevada"},"geometry":{"type":"Point","coordinates":[-117.1197,37.3038,13.2]},"id":"nn00576447"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"4km W of Seabeck, Washington","time":1485434105980,"updated":1485462245890,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/uw61246796","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=uw61246796&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"uw","code":"61246796","ids":",uw61246796,","sources":",uw,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.09148,"rms":0.18,"gap":148,"magType":"md","type":"earthquake","title":"M
+        0.1 - 4km W of Seabeck, Washington"},"geometry":{"type":"Point","coordinates":[-122.8903333,47.6441667,18.1]},"id":"uw61246796"},
+
+        {"type":"Feature","properties":{"mag":0.09,"place":"7km ESE of Mammoth Lakes,
+        California","time":1485564405570,"updated":1485577682681,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72756945","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72756945&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72756945","ids":",nc72756945,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":9,"dmin":0.01237,"rms":0.02,"gap":100,"magType":"md","type":"earthquake","title":"M
+        0.1 - 7km ESE of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.8883333,37.6305,2.5]},"id":"nc72756945"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"5km WSW of Mammoth Lakes,
+        California","time":1485569782930,"updated":1486165021700,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc71105704","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc71105704&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"71105704","ids":",nc71105704,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":8,"dmin":0.007294,"rms":0.01,"gap":97,"magType":"md","type":"earthquake","title":"M
+        0.0 - 5km WSW of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-119.0323333,37.6376667,0.6]},"id":"nc71105704"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"57km ESE of Beatty, Nevada","time":1485573450960,"updated":1530555835419,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575902","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575902&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575902","ids":",nn00575902,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":16,"dmin":0.083,"rms":0.0771,"gap":83.06,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 57km ESE of Beatty, Nevada"},"geometry":{"type":"Point","coordinates":[-116.1236,36.8041,8.5]},"id":"nn00575902"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"49km NE of Big Pine, California","time":1485580622173,"updated":1530555835681,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575909","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575909&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575909","ids":",nn00575909,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.122,"rms":0.1294,"gap":156.53,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 49km NE of Big Pine, California"},"geometry":{"type":"Point","coordinates":[-117.8307,37.4161,5.1]},"id":"nn00575909"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"47km E of Manley Hot Springs,
+        Alaska","time":1485591219377,"updated":1486174065030,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15174240","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15174240&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15174240","ids":",ak15174240,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.29,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 47km E of Manley Hot Springs, Alaska"},"geometry":{"type":"Point","coordinates":[-149.6186,65.0022,12.9]},"id":"ak15174240"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"59km ENE of Lone Pine,
+        California","time":1485618013147,"updated":1530555837021,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576017","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576017&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576017","ids":",nn00576017,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.222,"rms":0.1142,"gap":197.11,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 59km ENE of Lone Pine, California"},"geometry":{"type":"Point","coordinates":[-117.4507,36.8216,5.1]},"id":"nn00576017"},
+
+        {"type":"Feature","properties":{"mag":0.03,"place":"38km NNE of Amboy, Washington","time":1485618842070,"updated":1485635489040,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/uw61247261","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=uw61247261&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"uw","code":"61247261","ids":",uw61247261,","sources":",uw,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.01964,"rms":0.17,"gap":152,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 38km NNE of Amboy, Washington"},"geometry":{"type":"Point","coordinates":[-122.17,46.1998333,5.16]},"id":"uw61247261"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"15km SSW of Badger, Alaska","time":1485621932737,"updated":1486174077221,"tz":-540,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/ak15174668","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak15174668&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"ak","code":"15174668","ids":",ak15174668,","sources":",ak,","types":",geoserve,origin,phase-data,","nst":null,"dmin":null,"rms":0.24,"gap":null,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 15km SSW of Badger, Alaska"},"geometry":{"type":"Point","coordinates":[-147.6198,64.6678,9.1]},"id":"ak15174668"},
+
+        {"type":"Feature","properties":{"mag":0.04,"place":"39km NE of Amboy, Washington","time":1485627491900,"updated":1485635014270,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/uw61247266","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=uw61247266&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"uw","code":"61247266","ids":",uw61247266,","sources":",uw,","types":",geoserve,origin,phase-data,","nst":7,"dmin":0.03081,"rms":0.12,"gap":178,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 39km NE of Amboy, Washington"},"geometry":{"type":"Point","coordinates":[-122.1536667,46.1958333,5.1]},"id":"uw61247266"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"23km ESE of Hawthorne,
+        Nevada","time":1485631584927,"updated":1530555836608,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00575978","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00575978&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00575978","ids":",nn00575978,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.044,"rms":0.0537,"gap":144.92,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 23km ESE of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.3597,38.476,3.8]},"id":"nn00575978"},
+
+        {"type":"Feature","properties":{"mag":0.1,"place":"20km E of Hawthorne, Nevada","time":1485659709549,"updated":1530555842288,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576045","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576045&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576045","ids":",nn00576045,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":5,"dmin":0.07,"rms":0.0553,"gap":146.39,"magType":"ml","type":"earthquake","title":"M
+        0.1 - 20km E of Hawthorne, Nevada"},"geometry":{"type":"Point","coordinates":[-118.3874,38.4934,3.1]},"id":"nn00576045"},
+
+        {"type":"Feature","properties":{"mag":0,"place":"8km N of Truckee, California","time":1485698597519,"updated":1530555843806,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nn00576278","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nn00576278&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nn","code":"00576278","ids":",nn00576278,","sources":",nn,","types":",geoserve,origin,phase-data,","nst":6,"dmin":0.123,"rms":0.1038,"gap":139.45,"magType":"ml","type":"earthquake","title":"M
+        0.0 - 8km N of Truckee, California"},"geometry":{"type":"Point","coordinates":[-120.1748,39.4002,11.5]},"id":"nn00576278"},
+
+        {"type":"Feature","properties":{"mag":0.09,"place":"24km SSW of Coalinga,
+        California","time":1485710524840,"updated":1486168922868,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72757670","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72757670&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72757670","ids":",nc72757670,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":15,"dmin":0.01228,"rms":0.04,"gap":94,"magType":"md","type":"earthquake","title":"M
+        0.1 - 24km SSW of Coalinga, California"},"geometry":{"type":"Point","coordinates":[-120.4961667,35.9441667,3.37]},"id":"nc72757670"},
+
+        {"type":"Feature","properties":{"mag":0.03,"place":"3km E of Mammoth Lakes,
+        California","time":1485717197360,"updated":1485811683553,"tz":-480,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/nc72757690","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72757690&format=geojson","felt":null,"cdi":null,"mmi":null,"alert":null,"status":"reviewed","tsunami":0,"sig":0,"net":"nc","code":"72757690","ids":",nc72757690,","sources":",nc,","types":",geoserve,nearby-cities,origin,phase-data,scitech-link,","nst":15,"dmin":0.01667,"rms":0.06,"gap":79,"magType":"md","type":"earthquake","title":"M
+        0.0 - 3km E of Mammoth Lakes, California"},"geometry":{"type":"Point","coordinates":[-118.9298333,37.6513333,4.22]},"id":"nc72757690"}],"bbox":[-149.7773,33.5021667,0,-111.1335,65.1247,22.5]}'}
+    headers:
+      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
+      Access-Control-Allow-Methods: ['*']
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['public, max-age=900']
+      Connection: [close]
+      Content-Type: [application/json; charset=utf-8]
+      Date: ['Fri, 09 Nov 2018 20:28:14 GMT']
+      Expires: ['Fri, 09 Nov 2018 20:43:14 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 20:28:14 GMT']
+      Server: [nginx]
+      Strict-Transport-Security: [max-age=31536000]
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+      Via: [1.1 980d2a1c9c4f90ad69118c6357f92882.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [Vq9WH6M0HGBVQ2_NtQ0rQNYYsBi5NLFMEX2tmELjAZLcCsASCTjHEA==]
+      X-Cache: [Miss from cloudfront]
+      X-Cache-Status: [MISS]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: [1; mode=block]
+    status: {code: 200, message: OK}
+version: 1

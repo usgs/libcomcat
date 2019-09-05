@@ -18,12 +18,13 @@ def get_datadir():
     # where is this script?
     homedir = os.path.dirname(os.path.abspath(__file__))
     datadir = os.path.join(homedir, '..', 'data')
-    return datadir
+    cassettes = os.path.join(homedir, 'cassettes')
+    return cassettes, datadir
 
 
 def test_summary():
-    datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_summary.yaml')
+    cassettes, datadir = get_datadir()
+    tape_file = os.path.join(cassettes, 'classes_summary.yaml')
     with vcr.use_cassette(tape_file):
         eventlist = search(starttime=datetime(1994, 1, 17, 12, 30),
                            endtime=datetime(1994, 1, 18, 12, 35),
@@ -72,8 +73,8 @@ def test_summary():
 
 
 def test_detail_product_versions():
-    datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_detail_product.yaml')
+    cassettes, datadir = get_datadir()
+    tape_file = os.path.join(cassettes, 'classes_detailsummary.yaml')
     with vcr.use_cassette(tape_file):
         eventid = 'nn00570710'
         detail = get_event_by_id(eventid, includesuperseded=True)
@@ -123,8 +124,8 @@ def test_detail_product_versions():
 
 
 def test_moment_supplement():
-    datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_moment.yaml')
+    cassettes, datadir = get_datadir()
+    tape_file = os.path.join(cassettes, 'classes_moment.yaml')
     with vcr.use_cassette(tape_file):
         eventid = 'us2000ar20'  # 2017 M7.1 Mexico City
         detail = get_event_by_id(eventid)
@@ -134,8 +135,8 @@ def test_moment_supplement():
 
 
 def test_detail():
-    datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_detail.yaml')
+    cassettes, datadir = get_datadir()
+    tape_file = os.path.join(cassettes, 'classes_detailevent.yaml')
     with vcr.use_cassette(tape_file):
         eventid = 'ci3144585'  # northridge
         url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/%s.geojson' % eventid
@@ -259,8 +260,8 @@ def test_detail():
 
 
 def test_product():
-    datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_product.yaml')
+    cassettes, datadir = get_datadir()
+    tape_file = os.path.join(cassettes, 'classes_product.yaml')
     with vcr.use_cassette(tape_file):
         eventid = 'ci3144585'  # northridge
         event = get_event_by_id(eventid)

@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+# stdlib imports
+import os.path
+import re
+import subprocess
+import shutil
+import tempfile
+
+# third party imports
+import numpy as np
+import pandas as pd
+
+
+def get_command_output(cmd):
+    """
+    Method for calling external system command.
+
+    Args:
+        cmd: String command (e.g., 'ls -l', etc.).
+
+    Returns:
+        Three-element tuple containing a boolean indicating success or failure,
+        the stdout from running the command, and stderr.
+    """
+    proc = subprocess.Popen(cmd,
+                            shell=True,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE
+                            )
+    stdout, stderr = proc.communicate()
+    retcode = proc.returncode
+    if retcode == 0:
+        retcode = True
+    else:
+        retcode = False
+    return (retcode, stdout, stderr)
+
+
+def test_geteventhist():
+    # SMOKE TEST
+    tmpdir = tempfile.mkdtemp()
+    try:
+        cmd = 'geteventhist iscgemsup913159 -o %s -f excel -s' % tmpdir
+        res, stdout, stderr = get_command_output(cmd)
+        print(stdout)
+        if not res:
+            raise AssertionError(
+                'geteventhist command %s failed with errors "%s"' % (cmd, stderr))
+        fpath = os.path.join(tmpdir, 'iscgemsup913159_origin.xlsx')
+        df = pd.read_excel(fpath)
+    except Exception as e:
+        raise(e)
+    finally:
+        shutil.rmtree(tmpdir)
+    target_codes = ['nan', 'nan', 'nan', 'nan', 'nan', 'Code',
+                    'iscgem913159', 'iscgem913159', 'iscgemsup913159']
+    target_version = ['nan', 'nan', 'nan', 'nan', 'nan', 'Product Version',
+                      '1', '2', '3']
+    target_depth = ['nan', 'nan', 'nan', 'nan', 'nan', 'Depth',
+                    '10', 'nan', '10']
+    # The history up to now should not change
+    np.testing.assert_array_equal(np.asarray(
+        df['Unnamed: 2'][0:9], dtype='str'), target_codes)
+    np.testing.assert_array_equal(np.asarray(
+        df['Unnamed: 4'][0:9], dtype='str'), target_version)
+    np.testing.assert_array_equal(np.asarray(
+        df['Unnamed: 12'][0:9], dtype='str'), target_depth)
+
+    # SMOKE TEST for multiple events
+    tmpdir = tempfile.mkdtemp()
+    try:
+        cmd = 'geteventhist us2000artt  -o %s -r 100 500' % tmpdir
+        res, stdout, stderr = get_command_output(cmd)
+        print(stdout)
+        if not res:
+            raise AssertionError(
+                'geteventhist command %s failed with errors "%s"' % (cmd, stderr))
+        fpath = os.path.join(tmpdir, 'iscgemsup913159_origin.xlsx')
+    except Exception as e:
+        raise(e)
+    finally:
+        shutil.rmtree(tmpdir)
+    # The history up to now should not change
+    assert 'iscgemsup913159' in np.asarray(df['Unnamed: 2'][0:9], dtype='str')
+
+    # SMOKE TEST for multiple events
+    tmpdir = tempfile.mkdtemp()
+    try:
+        cmd = 'geteventhist us2000artt -w -r 100 500'
+        res, stdout, stderr = get_command_output(cmd)
+        if not res:
+            raise AssertionError(
+                'geteventhist command %s failed with errors "%s"' % (cmd, stderr))
+        fpath = os.path.join(tmpdir, 'iscgemsup913159_origin.xlsx')
+    except Exception as e:
+        raise(e)
+    finally:
+        shutil.rmtree(tmpdir)
+    # The history up to now should not change
+    assert b'us2000artt' in stdout
+
+
+if __name__ == '__main__':
+    test_geteventhist()

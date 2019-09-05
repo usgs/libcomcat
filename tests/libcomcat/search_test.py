@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
+# stdlib imports
 from datetime import datetime
 import os.path
 
+# third party imports
 import vcr
+
+# local imports
 from libcomcat.search import search, count, get_event_by_id
 from libcomcat.classes import DetailEvent
 
@@ -11,14 +15,14 @@ from libcomcat.classes import DetailEvent
 def get_datadir():
     # where is this script?
     homedir = os.path.dirname(os.path.abspath(__file__))
-    datadir = os.path.join(homedir, '..', 'data')
+    datadir = os.path.join(homedir, 'cassettes')
     return datadir
 
 
 def test_get_event():
     eventid = 'ci3144585'
     datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_event.yaml')
+    tape_file = os.path.join(datadir, 'search_id.yaml')
     with vcr.use_cassette(tape_file):
         event = get_event_by_id(eventid)
 
@@ -29,7 +33,7 @@ def test_get_event():
 
 def test_count():
     datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_count.yaml')
+    tape_file = os.path.join(datadir, 'search_count.yaml')
     with vcr.use_cassette(tape_file):
         nevents = count(starttime=datetime(1994, 1, 17, 12, 30),
                         endtime=datetime(1994, 1, 18, 12, 35),
@@ -40,7 +44,7 @@ def test_count():
 
 def test_search():
     datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_search.yaml')
+    tape_file = os.path.join(datadir, 'search_search.yaml')
     with vcr.use_cassette(tape_file):
         eventlist = search(starttime=datetime(1994, 1, 17, 12, 30),
                            endtime=datetime(1994, 1, 18, 12, 35),
@@ -58,7 +62,29 @@ def test_search():
                         endtime=datetime(2017, 1, 30))
 
 
+def test_url_error():
+    datadir = get_datadir()
+    tape_file = os.path.join(datadir, 'search_error.yaml')
+    with vcr.use_cassette(tape_file):
+        passed = True
+        try:
+            eventlist = search(starttime=datetime(1994, 1, 17, 12, 30),
+                               endtime=datetime(1994, 1, 18, 12, 35),
+                               minmagnitude=6.6, host="error")
+        except Exception as e:
+            passed = False
+            msg = ('Error downloading data from url '
+                   'https://error/fdsnws/event/1/query?format=geojson&starttime='
+                   '1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&limit='
+                   '20000&maxdepth=1000&maxmagnitude=10.0&mindepth=-100&minmagnitude'
+                   '=6.6&offset=1&orderby=time-asc&eventtype=earthquake.  "[Errno 8]'
+                   ' nodename nor servname provided, or not known".')
+            assert str(e) == msg
+        assert passed == False
+
+
 if __name__ == '__main__':
     test_get_event()
     test_count()
     test_search()
+    test_url_error()
