@@ -7,8 +7,8 @@ import json
 from collections import OrderedDict
 import re
 from enum import Enum
-import sys
 import time
+import logging
 
 # third party imports
 from obspy.core.event import read_events
@@ -102,7 +102,7 @@ def _get_focal_mechanism_info(focal):
     try:
         edict['%s_np1_strike' % msource] = focal['nodal-plane-1-strike']
     except Exception:
-        sys.stderr.write(
+        logging.warning(
             'No focal angles for %s in detailed geojson.\n' % eventid)
         return edict
     edict['%s_np1_dip' % msource] = focal['nodal-plane-1-dip']

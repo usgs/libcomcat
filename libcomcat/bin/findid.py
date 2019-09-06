@@ -2,19 +2,18 @@
 
 # stdlib
 import argparse
-from datetime import datetime, timedelta
 import sys
+import logging
+import os.path
 
 # third party
-from obspy.geodetics.base import gps2dist_azimuth
 import pandas as pd
-import numpy as np
 
 # local imports
 import libcomcat
-from libcomcat.search import search
 from libcomcat.utils import maketime
-from libcomcat.dataframes import get_summary_data_frame
+from libcomcat.dataframes import find_nearby_events
+from libcomcat.logging import setup_logger
 
 # constants
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
@@ -30,97 +29,114 @@ def get_parser():
     desc = '''Find the id(s) of the closest earthquake to input parameters.
 
     To print the authoritative id of the event closest in time and space
-    inside a 100 km, 16 second window to "2017-08-30 03:00:33 UTC 37.571   118.888":
+    inside a 100 km, 16 second window to
+    "2019-07-15T10:39:32 35.932 -117.715":
 
+    %(prog)s  2019-07-15T10:39:32 35.932 -117.715
 
-    %(prog)s  2017-08-30T03:00:33 37.571 -118.888
+    To print the ComCat url of that nearest event:
 
-    To make a similar query but with the time shifted by 2 minutes, and a
-    custom time window of 3 minutes:
+    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -u
 
-    %(prog)s  -w 180 2017-08-30T03:00:33 37.571 -118.888
+    To print all of the information about that event:
 
-    To print the authoritative id AND the url of the event closest in time and space to that point:
+    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -v
 
-    %(prog)s  -u -w 180 2017-08-30T03:00:33 37.571 -118.888
+    To print all of the events that are within expanded distance/time windows:
 
-    To print all of the ids associated with the event closest to above:
+    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120
 
-    %(prog)s -a 2015-03-29T23:48:31 -4.763 152.561
+    To write the output from the last command into a spreadsheet:
 
-    To print the id(s), time/distance deltas, and azimuth from input to nearest event:
-
-    %(prog)s -v 2015-03-29T23:48:31 -4.763 152.561
-
-    Notes:
-     - The time format at the command line must be of the form "YYYY-MM-DDTHH:MM:SS".  The time format in an input csv file
-     can be either :YYYY-MM-DDTHH:MM:SS" OR "YYYY-MM-DD HH:MM:SS".  This is because on the command line the argument parser
-     would be confused by the space between the date and the time, whereas in the csv file the input files are being split
-     by commas.
-     - Supplying the -a option with the -f option has no effect.
+    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120 -o
     '''
 
     parser = argparse.ArgumentParser(
         description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     # positional arguments
+    thelp = ('Time of earthquake, formatted as YYYY-mm-dd or '
+             'YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('time', type=maketime,
-                        help='Time of earthquake, formatted as YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
+                        help=thelp)
     parser.add_argument('lat', type=float, help='Latitude of earthquake')
     parser.add_argument('lon', type=float, help='Longitude of earthquake')
 
     # optional arguments
     parser.add_argument('--version', action='version',
                         version=libcomcat.__version__)
+    rhelp = 'Change search radius from default of %.0f km.' % SEARCH_RADIUS
     parser.add_argument('-r', '--radius', type=float,
-                        help='Change search radius from default of %.0f km.' % SEARCH_RADIUS)
+                        help=rhelp)
+    whelp = 'Change time window of %.0f seconds.' % TIME_WINDOW
     parser.add_argument('-w', '--window', type=float,
-                        help='Change time window of %.0f seconds.' % TIME_WINDOW)
-    parser.add_argument('-a', '--all', dest='printAll', action='store_true',
-                        help='Print all ids associated with event.')
-    parser.add_argument('-u', '--url', dest='printURL', action='store_true',
-                        help='Print URL associated with event.')
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help='Print time/distance deltas, and azimuth from input parameters to event.')
+                        help=whelp)
+    parser.add_argument('-a', '--all', dest='print_all', action='store_true',
+                        help='Print all ids associated with event.',
+                        default=False)
+    parser.add_argument('-u', '--url', dest='print_url', action='store_true',
+                        help='Print URL associated with event.', default=False)
+    vstr = ('Print time/distance deltas, and azimuth from input '
+            'parameters to event.')
+    parser.add_argument('-v', '--verbose', dest='print_verbose',
+                        action='store_true', help=vstr, default=False)
+    ohelp = ('Send -a output to a file. Supported formats are Excel and CSV, '
+             'format will be determined by extension (.xlsx and .csv)')
+    parser.add_argument('-o', '--outfile',
+                        help=ohelp)
+
+    loghelp = '''Send debugging, informational, warning and error messages to a file.
+    '''
+    parser.add_argument('--logfile', default='stderr', help=loghelp)
+    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+
+     - debug: Debugging message will be printed, most likely for developers.
+              Most verbose.
+     - info: Only informational messages, warnings, and errors will be printed.
+     - warning: Only warnings (i.e., could not retrieve information for a
+                single event out of many) and errors will be printed.
+     - error: Only errors will be printed, after which program will stop.
+              Least verbose.
+    '''
+    parser.add_argument('--loglevel', default='info',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help=levelhelp)
     return parser
 
 
-def get_event_info(time, lat, lon, twindow, radius):
-    start_time = time - timedelta(seconds=twindow)
-    end_time = time + timedelta(seconds=twindow)
-    events = search(starttime=start_time,
-                    endtime=end_time,
-                    latitude=lat,
-                    longitude=lon,
-                    maxradiuskm=radius)
-
-    if not len(events):
-        return None
-
-    df = get_summary_data_frame(events)
-    df['distance'] = 0
-    df['timedelta'] = 0
-    df['azimuth'] = 0
-    df['time_dist_norm'] = 0
-    for idx, row in df.iterrows():
-        distance, az, azb = gps2dist_azimuth(
-            lat, lon, row['latitude'], row['longitude'])
-        row_time = row['time'].to_pydatetime()
-        dtime = row_time - time
-        dt = np.abs(dtime.days * 86400 + dtime.seconds)
-        df.loc[idx, 'distance'] = distance
-        df.loc[idx, 'timedelta'] = dt
-        df.loc[idx, 'azimuth'] = az
-        dt_norm = dt / twindow
-        dd_norm = distance / radius
-        df.loc[idx, 'time_dist_norm'] = (dt_norm + dd_norm) / 2.0
-
-    return df
-
-
 def main():
+    # set the display width such that table output is not truncated
+    pd.set_option('display.max_columns', 10000)
+    pd.set_option("display.max_colwidth", 10000)
+    pd.set_option("display.expand_frame_repr", False)
+
     parser = get_parser()
 
     args = parser.parse_args()
+
+    # trap for mutually exclusive options a, u and v
+    argsum = (args.print_all + args.print_url + args.print_verbose)
+    if argsum > 1:
+        msg = ('The -a, -v, and -u options are mutually exclusive. '
+               'Choose one of these options. Exiting.')
+        print(msg)
+        sys.exit(1)
+
+    # if -o option you must have specified -a option also
+    if args.outfile is not None and not args.print_all:
+        print('You must select -a and -o together. Exiting')
+        sys.exit(1)
+
+    # if -o format is not recognized, error out
+    if args.outfile is not None:
+        fpath, fext = os.path.splitext(args.outfile)
+        supported = ['.xlsx', '.csv']
+        if fext not in supported:
+            fmt = ('File extension %s not in list of supported '
+                   'formats: %s. Exiting.')
+            print(fmt % (fext, str(supported)))
+            sys.exit(1)
+
+    setup_logger(args.logfile, args.loglevel)
 
     twindow = TIME_WINDOW
     if args.window:
@@ -130,29 +146,38 @@ def main():
     if args.radius:
         radius = args.radius
 
-    event_df = get_event_info(args.time, args.lat, args.lon, twindow, radius)
+    event_df = find_nearby_events(args.time, args.lat,
+                                  args.lon, twindow, radius)
 
     if event_df is None:
-        print('No events found matching your search criteria. Exiting.')
+        logging.error(
+            'No events found matching your search criteria. Exiting.')
         sys.exit(0)
 
-    nearest = event_df[event_df['time_dist_norm']
-                       == event_df['time_dist_norm'].min()]
-    if args.printAll:
-        for idx, row in event_df.iterrows():
-            print(row['id'])
-            for key, value in row.items():
-                if key == 'id':
-                    continue
-                print('\t' + key + ' : ' + str(value))
+    nearest = event_df.iloc[0]
+
+    if args.print_all:
+        if not args.outfile:
+            print(event_df)
+        else:
+            fpath, fext = os.path.splitext(args.outfile)
+            if fext == '.xlsx':
+                event_df.to_excel(args.outfile, index=False)
+            else:
+                event_df.to_csv(args.outfile, index=False)
+            print('Wrote %i records to %s' % (len(event_df), args.outfile))
         sys.exit(0)
 
-    if args.verbose:
-        print(nearest)
+    if args.print_verbose:
+        print('Event %s' % nearest['id'])
+        cols = nearest.index.to_list()
+        cols.remove('id')
+        for col in cols:
+            print('  %s : %s' % (col, nearest[col]))
         sys.exit(0)
 
-    if args.printURL:
-        print(nearest['url'].values[0])
+    if args.print_url:
+        print(nearest['url'])
         sys.exit(0)
 
     print(nearest['id'].values[0])

@@ -5,14 +5,9 @@ import sys
 # Third party imports
 import libcomcat
 from libcomcat.search import search, count
-from libcomcat.utils import (maketime, get_all_mags)
-from obspy.clients.fdsn import Client
+from libcomcat.utils import (maketime, get_all_mags, CombinedFormatter)
 import pandas as pd
-
-
-class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
-                      argparse.RawDescriptionHelpFormatter):
-    pass
+from libcomcat.logging import setup_logger
 
 
 def get_parser():
@@ -49,7 +44,7 @@ def get_parser():
 
     '''
     parser = argparse.ArgumentParser(
-        description=desc, formatter_class=CustomFormatter)
+        description=desc, formatter_class=CombinedFormatter)
     # positional arguments
     parser.add_argument('filename',
                         metavar='FILENAME', help='Output filename.')
@@ -75,12 +70,32 @@ def get_parser():
                         help='Print progress')
     parser.add_argument('-f', '--format', dest='format', choices=['csv', 'tab', 'excel'], default='csv',
                         help='Output format.')
+
+    loghelp = '''Send debugging, informational, warning and error messages to a file.
+    '''
+    parser.add_argument('--logfile', default='stderr', help=loghelp)
+    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+
+     - debug: Debugging message will be printed, most likely for developers.
+              Most verbose.
+     - info: Only informational messages, warnings, and errors will be printed.
+     - warning: Only warnings (i.e., could not retrieve information for a
+                single event out of many) and errors will be printed.
+     - error: Only errors will be printed, after which program will stop.
+              Least verbose.
+    '''
+    parser.add_argument('--loglevel', default='info',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help=levelhelp)
+
     return parser
 
 
 def main():
     parser = get_parser()
     args = parser.parse_args()
+
+    setup_logger(args.logfile, args.loglevel)
 
     latitude = None
     longitude = None

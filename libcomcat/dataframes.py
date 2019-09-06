@@ -1,12 +1,12 @@
 # stdlib imports
 from xml.dom import minidom
-import sys
 from urllib.request import urlopen
 import warnings
 import json
 from io import StringIO
-from datetime import datetime
+from datetime import datetime, timedelta
 import socket
+import logging
 
 # third party imports
 import numpy as np
@@ -19,7 +19,7 @@ from impactutils.mapping.compass import get_compass_dir_azimuth
 
 # local imports
 from libcomcat.classes import VersionOption
-from libcomcat.search import get_event_by_id
+from libcomcat.search import get_event_by_id, search
 from libcomcat.exceptions import (ConnectionError, ParsingError,
                                   ProductNotFoundError,
                                   ProductNotSpecifiedError)
@@ -124,6 +124,9 @@ def get_phase_dataframe(detail, catalog='preferred'):
             raise ParsingError(msg)
         catevent = catalog.events[0]
         for pick in catevent.picks:
+            station = pick.waveform_id.station_code
+            fmt = 'Getting pick %s for station%s...'
+            logging.debug(fmt % (pick.time, station))
             phaserow = _get_phaserow(pick, catevent)
             if phaserow is None:
                 continue
@@ -342,14 +345,14 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
     elist = []
     ic = 0
     inc = min(100, np.power(10, np.floor(np.log10(len(events))) - 1))
-    if verbose:
-        sys.stderr.write(
-            'Getting detailed event info - reporting every %i events.\n' % inc)
+    fmt = 'Getting detailed event info - reporting every %i events.'
+    logging.debug(fmt % inc)
     for event in events:
         try:
             detail = event.getDetailEvent()
         except Exception:
-            print('Failed to get detailed version of event %s' % event.id)
+            logging.warning(
+                'Failed to get detailed version of event %s' % event.id)
             continue
         edict = detail.toDict(get_all_magnitudes=get_all_magnitudes,
                               get_tensors=get_tensors,
@@ -358,7 +361,7 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
         elist.append(edict)
         if ic % inc == 0 and verbose:
             msg = 'Getting detailed information for %s, %i of %i events.\n'
-            sys.stderr.write(msg % (event.id, ic, len(events)))
+            logging.debug(msg % (event.id, ic, len(events)))
         ic += 1
     df = pd.DataFrame(elist)
     first_columns = ['id', 'time', 'latitude',
@@ -902,6 +905,7 @@ def get_history_data_frame(eventid, products=None):
 
     dataframe = pd.DataFrame(columns=PRODUCT_COLUMNS)
     for product in products:
+        logging.debug('Searching for %s products...' % product)
         if not event.hasProduct(product):
             continue
         prows = _get_product_rows(event, product)
@@ -1574,3 +1578,75 @@ def split_history_frame(dataframe, product=None):
     dataframe = dataframe.sort_values('Update Time')
 
     return dataframe
+
+
+def find_nearby_events(time, lat, lon, twindow, radius):
+    """Return dataframe containing events near (time/space) input event.
+
+    Rows in the dataframe will be sorted in ascending order by the
+    normalized_time_dist_vector column (see below), such that the first row in
+    the dataframe is the best match according to that metric.
+
+    Args:
+        time (datetime): Input event origin time.
+        lat (float): Input event latitude.
+        lon (float): Input event longitude.
+        twindow (float): Time search window in seconds.
+        radius (float): Search distance window in km.
+    Returns:
+        DataFrame: pandas DataFrame containing columns:
+         - id ComCat Event ID
+         - time Authoritative event time
+         - latitude Authoritative event latitude
+         - longitude Authoritative event longitude
+         - magnitude Authoritative event magnitude
+         - distance(km) Distance from input event in km
+         - timedelta(sec) Time difference from input event in seconds
+         - azimuth(deg) Azimuth from input event to event in this row.
+         - normalized_time_dist_vector Result of: 
+             sqrt((dd/radius)^2 + (dt/window)^2), 
+           where dd is distance, and dt is time delta.
+    """
+    start_time = time - timedelta(seconds=twindow)
+    end_time = time + timedelta(seconds=twindow)
+    events = search(starttime=start_time,
+                    endtime=end_time,
+                    latitude=lat,
+                    longitude=lon,
+                    maxradiuskm=radius)
+
+    if not len(events):
+        return None
+
+    df = get_summary_data_frame(events)
+
+    # drop the pager alert level and location strings,
+    # as they aren't really needed in this context
+    df = df.drop(labels=['alert', 'location'], axis='columns')
+
+    df['distance(km)'] = 0
+    df['timedelta(sec)'] = 0
+    df['azimuth(deg)'] = 0
+    df['normalized_time_dist_vector'] = 0
+    for idx, row in df.iterrows():
+        distance, az, azb = gps2dist_azimuth(
+            lat, lon, row['latitude'], row['longitude'])
+        distance_km = distance / 1000
+        row_time = row['time'].to_pydatetime()
+        dtime = row_time - time
+        dt = np.abs(dtime.days * 86400 + dtime.seconds)
+        df.loc[idx, 'distance(km)'] = distance_km
+        df.loc[idx, 'timedelta(sec)'] = dt
+        df.loc[idx, 'azimuth(deg)'] = az
+        dt_norm = dt / twindow
+        dd_norm = distance_km / radius
+        norm_vec = np.sqrt(dt_norm**2 + dd_norm**2)
+        df.loc[idx, 'normalized_time_dist_vector'] = norm_vec
+
+    # reorder the columns so that url is at the end
+    cols = ['id', 'time', 'latitude', 'longitude', 'depth', 'magnitude',
+            'distance(km)', 'timedelta(sec)', 'azimuth(deg)',
+            'normalized_time_dist_vector', 'url']
+    df = df[cols]
+    df = df.sort_values('normalized_time_dist_vector', axis='index')
+    return df

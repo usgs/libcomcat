@@ -15,6 +15,7 @@ import libcomcat
 from libcomcat.utils import maketime
 from libcomcat.dataframes import get_phase_dataframe
 from libcomcat.search import search, get_event_by_id
+from libcomcat.logging import setup_logger
 
 TIMEOUT = 60  # how many seconds to wait to fetch a url?
 
@@ -93,12 +94,33 @@ def get_parser():
                         help='Source contributor (who loaded product) (us, nc, etc.)')
     parser.add_argument('-f', '--format', dest='format', choices=['csv', 'tab', 'excel'], default='csv',
                         metavar='FORMAT', help='Output format.')
+
+    loghelp = '''Send debugging, informational, warning and error messages to a file.
+    '''
+    parser.add_argument('--logfile', default='stderr', help=loghelp)
+    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+
+     - debug: Debugging message will be printed, most likely for developers.
+              Most verbose.
+     - info: Only informational messages, warnings, and errors will be printed.
+     - warning: Only warnings (i.e., could not retrieve information for a
+                single event out of many) and errors will be printed.
+     - error: Only errors will be printed, after which program will stop.
+              Least verbose.
+    '''
+    parser.add_argument('--loglevel', default='info',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help=levelhelp)
+
     return parser
 
 
 def main():
     parser = get_parser()
     args = parser.parse_args()
+
+    setup_logger(args.logfile, args.loglevel)
+
     if args.eventid:
         detail = get_event_by_id(args.eventid, catalog=args.catalog)
         try:

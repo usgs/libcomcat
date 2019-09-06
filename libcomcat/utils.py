@@ -5,6 +5,7 @@ import os.path
 import math
 import string
 from functools import partial
+import argparse
 
 # third party imports
 import pandas as pd
@@ -47,6 +48,12 @@ ECONOMIC_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
 COUNTRIES_SHP = 'ne_50m_admin_0_countries.shp'
 BUFFER_DISTANCE_KM = 100
 KM_PER_DEGREE = 119.191
+
+
+class CombinedFormatter(argparse.ArgumentDefaultsHelpFormatter,
+                        argparse.RawTextHelpFormatter,
+                        argparse.RawDescriptionHelpFormatter):
+    pass
 
 
 def get_mag_src(mag):

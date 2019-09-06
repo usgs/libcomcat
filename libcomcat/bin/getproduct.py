@@ -5,6 +5,7 @@ import argparse
 import os.path
 import sys
 from datetime import datetime, timedelta
+import logging
 
 # local imports
 import libcomcat
@@ -13,6 +14,7 @@ from libcomcat.utils import (maketime, makedict, check_ccode,
                              get_country_bounds, filter_by_country,
                              BUFFER_DISTANCE_KM)
 from libcomcat.classes import VersionOption
+from libcomcat.logging import setup_logger
 
 # third party imports
 import numpy as np
@@ -67,8 +69,8 @@ def _get_product_from_detail(detail, product, contents, folder,
                     print('Could not download %s from event %s.  Continuing...' % (
                         content_name, detail.id))
                     continue
-                sys.stderr.write('Downloaded %s %s to %s\n' %
-                                 (eventid, content, filename))
+                logging.info('Downloaded %s %s to %s\n' %
+                             (eventid, content, filename))
             else:
                 url = product.getContentURL(content_name)
                 print(url)
@@ -158,12 +160,32 @@ def get_parser():
                         help='Get contents for the "preferred" source, "all" sources, or a specific source ("us").')
     parser.add_argument('--host',
                         help='Specify a different comcat *search* host than earthquake.usgs.gov.')
+
+    loghelp = '''Send debugging, informational, warning and error messages to a file.
+    '''
+    parser.add_argument('--logfile', default='stderr', help=loghelp)
+    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+
+     - debug: Debugging message will be printed, most likely for developers.
+              Most verbose.
+     - info: Only informational messages, warnings, and errors will be printed.
+     - warning: Only warnings (i.e., could not retrieve information for a
+                single event out of many) and errors will be printed.
+     - error: Only errors will be printed, after which program will stop.
+              Least verbose.
+    '''
+    parser.add_argument('--loglevel', default='info',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help=levelhelp)
+
     return parser
 
 
 def main():
     parser = get_parser()
     args = parser.parse_args()
+
+    setup_logger(args.logfile, args.loglevel)
 
     if args.eventid:
         detail = get_event_by_id(args.eventid, includesuperseded=True)
@@ -282,6 +304,7 @@ def main():
         events = [event for event in events if event.id in df2['id'].unique()]
 
     for event in events:
+        logging.debug('Retrieving products for event %s...' % event.id)
         if not event.hasProduct(args.product):
             continue
         if args.country:
