@@ -1,12 +1,11 @@
 # stdlib imports
-from datetime import datetime, timedelta
+from datetime import timedelta
 from urllib import request
+from urllib.parse import urlencode
 from urllib.error import HTTPError
-from urllib.parse import urlparse, urlencode
 import json
-import calendar
-import sys
 import time
+import logging
 
 # third party imports
 from impactutils.time.ancient_time import HistoricTime
@@ -18,13 +17,16 @@ from libcomcat.classes import SummaryEvent, DetailEvent
 # constants
 # url template for counting events
 HOST = 'earthquake.usgs.gov'
-CATALOG_COUNT_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson'
+CATALOG_COUNT_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/'
+                          '1/count?format=geojson')
 SEARCH_TEMPLATE = 'https://[HOST]/fdsnws/event/1/query?format=geojson'
 TIMEOUT = 60  # how long do we wait for a url to return?
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 WEEKSECS = 86400 * 7  # number of seconds in a week
-WAITSECS = 3  # number of seconds to wait after failing download before trying again
-SEARCH_LIMIT = 20000  # maximum number of events ComCat will return in one search
+# number of seconds to wait after failing download before trying again
+WAITSECS = 3
+# maximum number of events ComCat will return in one search
+SEARCH_LIMIT = 20000
 
 
 def count(starttime=None,
@@ -67,19 +69,22 @@ def count(starttime=None,
 
     https://earthquake.usgs.gov/fdsnws/event/1/ (see count section)
 
-    Some of the search parameters described there are NOT implemented here, usually because they do not 
-    apply to GeoJSON search results, which we are getting here and parsing into Python data structures.
+    Some of the search parameters described there are NOT implemented here,
+    usually because they do not apply to GeoJSON search results, which we are
+    getting here and parsing into Python data structures.
 
-    This function returns a list of SummaryEvent objects, described elsewhere in this package.
+    This function returns a list of SummaryEvent objects, described elsewhere
+    in this package.
 
     Usage:
       TODO
 
     Args:
-        starttime (datetime):  Python datetime - Limit to events on or after 
-            the specified start time. 
+        starttime (datetime):  Python datetime - Limit to events on or after
+            the specified start time.
         endtime (datetime):
-            Python datetime - Limit to events on or before the specified end time. 
+            Python datetime - Limit to events on or before the specified
+                              end time.
         updatedafter (datetime):
             Limit to events updated after the specified time.
         minlatitude (float):
@@ -89,35 +94,40 @@ def count(starttime=None,
         minlongitude (float):
             Limit to events with a longitude larger than the specified minimum.
         maxlongitude (float):
-            Limit to events with a longitude smaller than the specified maximum.
+            Limit to events with a longitude smaller than the specified
+            maximum.
         latitude (float):
             Specify the latitude to be used for a radius search.
         longitude (float):
             Specify the longitude to be used for a radius search.
         maxradiuskm (float):
-            Limit to events within the specified maximum number of kilometers 
-            from the geographic point defined by the latitude and longitude parameters.
+            Limit to events within the specified maximum number of kilometers
+            from the geographic point defined by the latitude and longitude
+            parameters.
         maxradius (float):
-            Limit to events within the specified maximum number of degrees 
-            from the geographic point defined by the latitude and longitude parameters.
+            Limit to events within the specified maximum number of degrees
+            from the geographic point defined by the latitude and longitude
+            parameters.
         catalog (str):
             Limit to events from a specified catalog.
         contributor (str):
             Limit to events contributed by a specified contributor.
         limit (int):
-            Limit the results to the specified number of events.  
-            NOTE, this will be throttled by this Python API to the supported 
+            Limit the results to the specified number of events.
+            NOTE, this will be throttled by this Python API to the supported
             Web API limit of 20,000.
         maxdepth (float):
             Limit to events with depth less than the specified maximum.
         maxmagnitude (float):
-            Limit to events with a magnitude smaller than the specified maximum.
+            Limit to events with a magnitude smaller than the specified
+            maximum.
         mindepth (float):
             Limit to events with depth more than the specified minimum.
         minmagnitude (float):
             Limit to events with a magnitude larger than the specified minimum.
         offset (int):
-            Return results starting at the event count specified, starting at 1.
+            Return results starting at the event count specified, starting
+            at 1.
         orderby (str):
             Order the results. The allowed values are:
               - time order by origin descending time
@@ -125,23 +135,28 @@ def count(starttime=None,
               - magnitude order by descending magnitude
               - magnitude-asc order by ascending magnitude
         alertlevel (str):
-            Limit to events with a specific PAGER alert level. The allowed values are:
+            Limit to events with a specific PAGER alert level. The allowed
+            values are:
               - green Limit to events with PAGER alert level "green".
               - yellow Limit to events with PAGER alert level "yellow".
               - orange Limit to events with PAGER alert level "orange".
               - red Limit to events with PAGER alert level "red".
         eventtype (str):
-            Limit to events of a specific type. NOTE: "earthquake" will filter non-earthquake events.
+            Limit to events of a specific type. NOTE: "earthquake" will filter
+            non-earthquake events.
         maxcdi (float):
-            Maximum value for Maximum Community Determined Intensity reported by DYFI.
+            Maximum value for Maximum Community Determined Intensity reported
+            by DYFI.
         maxgap (float):
             Limit to events with no more than this azimuthal gap.
         maxmmi (float):
-            Maximum value for Maximum Modified Mercalli Intensity reported by ShakeMap.
+            Maximum value for Maximum Modified Mercalli Intensity reported
+            by ShakeMap.
         maxsig (float):
             Limit to events with no more than this significance.
         mincdi (float):
-            Minimum value for Maximum Community Determined Intensity reported by DYFI.
+            Minimum value for Maximum Community Determined Intensity
+            reported by DYFI.
         minfelt (int):
             Limit to events with this many DYFI responses.
         mingap (float):
@@ -149,20 +164,22 @@ def count(starttime=None,
         minsig (float):
             Limit to events with no less than this significance.
         producttype (str):
-            Limit to events that have this type of product associated. Example producttypes:
+            Limit to events that have this type of product associated.
+            Example producttypes:
                - moment-tensor
                - focal-mechanism
                - shakemap
                - losspager
                - dyfi
         productcode (str):
-            Return the event that is associated with the productcode. 
-            The event will be returned even if the productcode is not 
+            Return the event that is associated with the productcode.
+            The event will be returned even if the productcode is not
             the preferred code for the event. Example productcodes:
              - nn00458749
              - at00ndf1fr
         reviewstatus (str):
-            Limit to events with a specific review status. The different review statuses are:
+            Limit to events with a specific review status. The different
+            review statuses are:
                - automatic Limit to events with review status "automatic".
                - reviewed Limit to events with review status "reviewed".
     Returns:
@@ -193,9 +210,8 @@ def count(starttime=None,
     for stime, etime in segments:
         newargs['starttime'] = stime
         newargs['endtime'] = etime
-        if verbose:
-            sys.stderr.write(
-                'Searching time segment %i: %s to %s\n' % (iseg, stime, etime))
+        logging.debug(
+            'Searching time segment %i: %s to %s\n' % (iseg, stime, etime))
         iseg += 1
         nevents += _count(**newargs)
 
@@ -212,22 +228,27 @@ def get_event_by_id(eventid, catalog=None,
 
     https://earthquake.usgs.gov/fdsnws/event/1/
 
-    Some of the search parameters described there are NOT implemented here, usually because they do not 
-    apply to GeoJSON search results, which we are getting here and parsing into Python data structures.
+    Some of the search parameters described there are NOT implemented here,
+    usually because they do not apply to GeoJSON search results, which we are
+    getting here and parsing into Python data structures.
 
-    This function returns a DetailEvent object, described elsewhere in this package.
+    This function returns a DetailEvent object, described elsewhere in this
+    package.
 
     Usage:
       TODO
 
 
     Args:
-        eventid (str): Select a specific event by ID; event identifiers are data center specific.
+        eventid (str): Select a specific event by ID; event identifiers are
+        data center specific.
         includesuperseded (bool):
-            Specify if superseded products should be included. This also includes all 
-            deleted products, and is mutually exclusive to the includedeleted parameter. 
-        includedeleted (bool): Specify if deleted products should be incuded. 
-        host (str): Replace default ComCat host (earthquake.usgs.gov) with a custom host.
+            Specify if superseded products should be included. This also
+            includes all deleted products, and is mutually exclusive to the
+            includedeleted parameter.
+        includedeleted (bool): Specify if deleted products should be incuded.
+        host (str): Replace default ComCat host (earthquake.usgs.gov) with a
+                    custom host.
     Returns: DetailEvent object.
     """
     # getting the inputargs must be the first line of the method!
@@ -290,19 +311,23 @@ def search(starttime=None,
 
     https://earthquake.usgs.gov/fdsnws/event/1/
 
-    Some of the search parameters described there are NOT implemented here, usually because they do not 
-    apply to GeoJSON search results, which we are getting here and parsing into Python data structures.
+    Some of the search parameters described there are NOT implemented here,
+    usually because they do not apply to GeoJSON search results, which we are
+    getting here and parsing into Python data structures.
 
-    This function returns a list of SummaryEvent objects, described elsewhere in this package.
+    This function returns a list of SummaryEvent objects, described elsewhere
+    in this package.
 
     Usage:
       TODO
 
     Args:
         starttime (datetime):
-            Python datetime - Limit to events on or after the specified start time. 
+            Python datetime - Limit to events on or after the specified start
+            time.
         endtime (datetime):
-            Python datetime - Limit to events on or before the specified end time. 
+            Python datetime - Limit to events on or before the specified end
+            time.
         updatedafter (datetime):
            Python datetime - Limit to events updated after the specified time.
         minlatitude (float):
@@ -312,34 +337,40 @@ def search(starttime=None,
         minlongitude (float):
             Limit to events with a longitude larger than the specified minimum.
         maxlongitude (float):
-            Limit to events with a longitude smaller than the specified maximum.
+            Limit to events with a longitude smaller than the specified
+            maximum.
         latitude (float):
             Specify the latitude to be used for a radius search.
         longitude (float):
             Specify the longitude to be used for a radius search.
         maxradiuskm (float):
-            Limit to events within the specified maximum number of kilometers 
-            from the geographic point defined by the latitude and longitude parameters.
+            Limit to events within the specified maximum number of kilometers
+            from the geographic point defined by the latitude and longitude
+            parameters.
         maxradius (float):
-            Limit to events within the specified maximum number of degrees 
-            from the geographic point defined by the latitude and longitude parameters.
+            Limit to events within the specified maximum number of degrees
+            from the geographic point defined by the latitude and longitude
+            parameters.
         catalog (str):
             Limit to events from a specified catalog.
         contributor (str):
             Limit to events contributed by a specified contributor.
         limit (int):
-            Limit the results to the specified number of events.  
-             NOTE, this will be throttled by this Python API to the supported Web API limit of 20,000.
+            Limit the results to the specified number of events.
+             NOTE, this will be throttled by this Python API to the supported
+             Web API limit of 20,000.
         maxdepth (float):
             Limit to events with depth less than the specified maximum.
         maxmagnitude (float):
-            Limit to events with a magnitude smaller than the specified maximum.
+            Limit to events with a magnitude smaller than the specified
+            maximum.
         mindepth (float):
             Limit to events with depth more than the specified minimum.
         minmagnitude (float):
             Limit to events with a magnitude larger than the specified minimum.
         offset (int):
-            Return results starting at the event count specified, starting at 1.
+            Return results starting at the event count specified, starting
+            at 1.
         orderby (str):
             Order the results. The allowed values are:
             - time order by origin descending time
@@ -347,23 +378,28 @@ def search(starttime=None,
             - magnitude order by descending magnitude
             - magnitude-asc order by ascending magnitude
         alertlevel (str):
-            Limit to events with a specific PAGER alert level. The allowed values are:
+            Limit to events with a specific PAGER alert level. The allowed
+            values are:
               - green Limit to events with PAGER alert level "green".
               - yellow Limit to events with PAGER alert level "yellow".
               - orange Limit to events with PAGER alert level "orange".
               - red Limit to events with PAGER alert level "red".
         eventtype (str):
-            Limit to events of a specific type. NOTE: "earthquake" will filter non-earthquake events.
+            Limit to events of a specific type. NOTE: "earthquake" will filter
+            non-earthquake events.
         maxcdi (float):
-            Maximum value for Maximum Community Determined Intensity reported by DYFI.
+            Maximum value for Maximum Community Determined Intensity reported
+            by DYFI.
         maxgap (float):
             Limit to events with no more than this azimuthal gap.
         maxmmi (float):
-            Maximum value for Maximum Modified Mercalli Intensity reported by ShakeMap.
+            Maximum value for Maximum Modified Mercalli Intensity reported by
+            ShakeMap.
         maxsig (float):
             Limit to events with no more than this significance.
         mincdi (float):
-            Minimum value for Maximum Community Determined Intensity reported by DYFI.
+            Minimum value for Maximum Community Determined Intensity reported
+            by DYFI.
         minfelt (int):
             Limit to events with this many DYFI responses.
         mingap (float):
@@ -371,27 +407,31 @@ def search(starttime=None,
         minsig (float):
             Limit to events with no less than this significance.
         producttype (str):
-            Limit to events that have this type of product associated. Example producttypes:
+            Limit to events that have this type of product associated. Example
+            producttypes:
                - moment-tensor
                - focal-mechanism
                - shakemap
                - losspager
                - dyfi
         productcode (str):
-              Return the event that is associated with the productcode. 
-              The event will be returned even if the productcode is not 
+              Return the event that is associated with the productcode.
+              The event will be returned even if the productcode is not
               the preferred code for the event. Example productcodes:
                - nn00458749
                - at00ndf1fr
         reviewstatus (str):
-            Limit to events with a specific review status. The different review statuses are:
+            Limit to events with a specific review status. The different
+            review statuses are:
                 - automatic Limit to events with review status "automatic".
                 - reviewed Limit to events with review status "reviewed".
-        host (str): 
-            Replace default ComCat host (earthquake.usgs.gov) with a custom host.
-        enable_limit (bool): Enable 20,000 event search limit. Will turn off searching
-            in segments, which is meant to safely avoid that limit.
-            Use only when you are certain your search will be small.
+        host (str):
+            Replace default ComCat host (earthquake.usgs.gov) with a custom
+            host.
+        enable_limit (bool): Enable 20,000 event search limit. Will turn off
+                             searching in segments, which is meant to safely
+                             avoid that limit. Use only when you are certain
+                             your search will be small.
 
     Returns:
         list: List of SummaryEvent() objects.
@@ -424,9 +464,8 @@ def search(starttime=None,
     for stime, etime in segments:
         newargs['starttime'] = stime
         newargs['endtime'] = etime
-        if verbose:
-            sys.stderr.write(
-                'Searching time segment %i: %s to %s\n' % (iseg, stime, etime))
+        fmt = 'Searching time segment %i: %s to %s\n'
+        logging.debug(fmt % (iseg, stime, etime))
         iseg += 1
         events += _search(**newargs)
 

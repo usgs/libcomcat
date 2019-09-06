@@ -37,3 +37,8 @@ class ArgumentConflictError(ComCatError):
 class UndefinedVersionError(ComCatError):
     """Arguments passed to a function that cannot be combined"""
     pass
+
+
+class TimeOutError(ComCatError):
+    """Connection timed out."""
+    pass

@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 import argparse
 import sys
+import logging
 
 
 import libcomcat
 from libcomcat.search import search, count
 from libcomcat.utils import (maketime, check_ccode,
                              get_country_bounds, filter_by_country,
-                             BUFFER_DISTANCE_KM)
+                             BUFFER_DISTANCE_KM, CombinedFormatter)
 from libcomcat.dataframes import (get_detail_data_frame,
                                   get_summary_data_frame)
+from libcomcat.logging import setup_logger
 
 
 def get_parser():
@@ -90,7 +92,7 @@ def get_parser():
     the magnitude values and associated source and type.  '''
 
     parser = argparse.ArgumentParser(
-        description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=desc, formatter_class=CombinedFormatter)
     # positional arguments
     parser.add_argument('filename',
                         metavar='FILENAME', help='Output filename.')
@@ -202,6 +204,22 @@ def get_parser():
               - red; Limit to events with PAGER alert level "red"."""
     parser.add_argument('--alertlevel', help=helpstr, default=None)
 
+    loghelp = '''Send debugging, informational, warning and error messages to a file.
+    '''
+    parser.add_argument('--logfile', default='stderr', help=loghelp)
+    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+
+     - debug: Debugging message will be printed, most likely for developers.
+              Most verbose.
+     - info: Only informational messages, warnings, and errors will be printed.
+     - warning: Only warnings (i.e., could not retrieve information for a
+                single event out of many) and errors will be printed.
+     - error: Only errors will be printed, after which program will stop.
+              Least verbose.
+    '''
+    parser.add_argument('--loglevel', default='info',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help=levelhelp)
     return parser
 
 
@@ -209,10 +227,13 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    setup_logger(args.logfile, args.loglevel)
+
     tsum = (args.bounds is not None) + \
         (args.radius is not None) + (args.country is not None)
     if tsum != 1:
-        print('Please specify a bounding box, radius, or country code.')
+        logging.error(
+            'Please specify a bounding box, radius, or country code.')
         sys.exit(1)
 
     latitude = None
@@ -238,9 +259,10 @@ def main():
         ccode = args.country
         if not check_ccode(ccode):
             curl = 'https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2'
-            fmt = '%s is not a valid ISO 3166 country code. See %s for the list.'
+            fmt = ('%s is not a valid ISO 3166 country code. '
+                   'See %s for the list.')
             tpl = (ccode, curl)
-            print(fmt % tpl)
+            logging.error(fmt % tpl)
             sys.exit(1)
         bounds = get_country_bounds(ccode, args.buffer)  # this returns a list
 
@@ -312,10 +334,9 @@ def main():
         events = []
         for i, tbounds in enumerate(bounds):
             lonmin, lonmax, latmin, latmax = tbounds
-            if args.verbose:
-                fmt = 'Checking bounds %i of %i for %s...\n'
-                tpl = (i + 1, len(bounds), ccode)
-                sys.stderr.write(fmt % tpl)
+            fmt = 'Checking bounds %i of %i for %s...\n'
+            tpl = (i + 1, len(bounds), ccode)
+            logging.debug(fmt % tpl)
             tevents = search(starttime=args.startTime,
                              endtime=args.endTime,
                              updatedafter=args.after,
@@ -337,26 +358,28 @@ def main():
             events += tevents
 
     if not len(events):
-        print('No events found matching your search criteria. Exiting.')
+        logging.info('No events found matching your search criteria. Exiting.')
         sys.exit(0)
 
-    if args.getAngles != 'none' or args.getAllMags or args.getComponents != 'none':
-        if args.verbose:
-            sys.stderr.write(
-                'Fetched %i events...creating table.\n' % (len(events)))
+    if (args.getAngles != 'none' or
+            args.getAllMags or
+            args.getComponents != 'none'):
 
+        logging.info(
+            'Fetched %i events...creating table.\n' % (len(events)))
+        supp = args.getMomentSupplement
         df = get_detail_data_frame(events, get_all_magnitudes=args.getAllMags,
                                    get_tensors=args.getComponents,
                                    get_focals=args.getAngles,
-                                   get_moment_supplement=args.getMomentSupplement,
+                                   get_moment_supplement=supp,
                                    verbose=args.verbose)
     else:
-        if args.verbose:
-            sys.stderr.write(
-                'Fetched %i events...creating summary table.\n' % (len(events)))
+        logging.info(
+            'Fetched %i events...creating summary table.\n' % (len(events)))
         df = get_summary_data_frame(events)
 
-    # order the columns so that at least the initial parameters come the way we want them...
+    # order the columns so that at least the initial parameters come the way
+    # we want them...
     first_columns = list(events[0].toDict().keys())
     col_list = list(df.columns)
     for column in first_columns:
@@ -366,16 +389,15 @@ def main():
     if args.country:
         df = filter_by_country(df, ccode, buffer_km=args.buffer)
 
-    if args.verbose:
-        sys.stderr.write('Created table...saving %i records to %s.\n' %
-                         (len(df), args.filename))
+    logging.info('Created table...saving %i records to %s.\n' %
+                 (len(df), args.filename))
     if args.format == 'csv':
         df.to_csv(args.filename, index=False, chunksize=1000)
     elif args.format == 'tab':
         df.to_csv(args.filename, sep='\t', index=False)
     else:
         df.to_excel(args.filename, index=False)
-    print('%i records saved to %s.' % (len(df), args.filename))
+    logging.info('%i records saved to %s.' % (len(df), args.filename))
     sys.exit(0)
 
 

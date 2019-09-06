@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import sys
+import logging
 
 # third party imports
 import pandas as pd
@@ -13,6 +14,7 @@ from libcomcat.search import search, get_event_by_id
 from libcomcat.classes import SummaryEvent
 from libcomcat.utils import maketime
 from libcomcat.dataframes import get_pager_data_frame
+from libcomcat.logging import setup_logger
 
 
 def add_headers(filename, file_format):
@@ -148,12 +150,32 @@ def get_parser():
                'earthquake.usgs.gov.')
     parser.add_argument('--host',
                         help=helpstr)
+
+    loghelp = '''Send debugging, informational, warning and error messages to a file.
+    '''
+    parser.add_argument('--logfile', default='stderr', help=loghelp)
+    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+
+     - debug: Debugging message will be printed, most likely for developers.
+              Most verbose.
+     - info: Only informational messages, warnings, and errors will be printed.
+     - warning: Only warnings (i.e., could not retrieve information for a
+                single event out of many) and errors will be printed.
+     - error: Only errors will be printed, after which program will stop.
+              Least verbose.
+    '''
+    parser.add_argument('--loglevel', default='info',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help=levelhelp)
+
     return parser
 
 
 def main():
     parser = get_parser()
     args = parser.parse_args()
+
+    setup_logger(args.logfile, args.loglevel)
 
     latitude = None
     longitude = None
@@ -211,10 +233,9 @@ def main():
     nevents = len(events)
     i = 1
     for event in events:
-        if args.verbose and (i == 1 or (not i % (nevents // 10))):
-            sys.stderr.write('Processing event %s (%i of %i).\n' %
-                             (event.id, i, nevents))
-        i += 1
+        logging.debug('Processing event %s (%i of %i).\n' %
+                      (event.id, i, nevents))
+
         if isinstance(event, SummaryEvent):
             detail = event.getDetailEvent(includesuperseded=args.all_versions)
         else:
@@ -227,9 +248,8 @@ def main():
         else:
             dataframe = pd.concat([dataframe, df])
 
-    if args.verbose:
-        sys.stderr.write('Created table...saving %i records to %s.\n' %
-                         (len(dataframe), args.filename))
+    fmt = 'Created table...saving %i records to %s.\n'
+    print(fmt % (len(dataframe), args.filename))
     if args.format == 'csv':
         dataframe.to_csv(args.filename, index=False, chunksize=1000)
     elif args.format == 'tab':

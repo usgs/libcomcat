@@ -16,7 +16,7 @@ import libcomcat
 from libcomcat.search import search
 from libcomcat.dataframes import (get_history_data_frame, split_history_frame,
                                   PRODUCTS, TIMEFMT, PRODUCT_COLUMNS)
-
+from libcomcat.logging import setup_logger
 
 DISPLAY_TIME_FMT = '%Y-%m-%d %H:%M:%S'
 
@@ -143,6 +143,23 @@ def get_parser():
     parser.add_argument('-f', '--format', help='Control output format',
                         choices=['excel', 'csv'],
                         default='csv', dest='format')
+
+    loghelp = '''Send debugging, informational, warning and error messages to a file.
+    '''
+    parser.add_argument('--logfile', default='stderr', help=loghelp)
+    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+
+     - debug: Debugging message will be printed, most likely for developers.
+              Most verbose.
+     - info: Only informational messages, warnings, and errors will be printed.
+     - warning: Only warnings (i.e., could not retrieve information for a
+                single event out of many) and errors will be printed.
+     - error: Only errors will be printed, after which program will stop.
+              Least verbose.
+    '''
+    parser.add_argument('--loglevel', default='info',
+                        choices=['debug', 'info', 'warning', 'error'],
+                        help=levelhelp)
     return parser
 
 
@@ -275,6 +292,8 @@ def main():
     pd.set_option("display.colheader_justify", "left")
     parser = get_parser()
     args = parser.parse_args()
+
+    setup_logger(args.logfile, args.loglevel)
 
     # make sure that input products are in the list of supported products
     if not set(args.products) <= set(PRODUCTS):
