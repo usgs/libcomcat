@@ -72,14 +72,6 @@ def test_url_error():
                                endtime=datetime(1994, 1, 18, 12, 35),
                                minmagnitude=6.6, host="error")
         except Exception as e:
-            passed = False
-            msg = ('Error downloading data from url '
-                   'https://error/fdsnws/event/1/query?format=geojson&starttime='
-                   '1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&limit='
-                   '20000&maxdepth=1000&maxmagnitude=10.0&mindepth=-100&minmagnitude'
-                   '=6.6&offset=1&orderby=time-asc&eventtype=earthquake.  "[Errno 8]'
-                   ' nodename nor servname provided, or not known".')
-            assert str(e) == msg
         assert passed == False
 
 

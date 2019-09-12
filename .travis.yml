@@ -15,7 +15,7 @@ before_script:
 script:
     - export PYTHONPATH="."
     - echo `which py.test`
-    - py.test --cov=libcomcat --ignore libcomcat/tests/bin/
+    - py.test --ignore=tests/bin/ --cov=libcomcat
 after_success:
     - pip install codecov codacy-coverage
     - codecov
