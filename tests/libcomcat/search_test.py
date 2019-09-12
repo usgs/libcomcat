@@ -72,6 +72,7 @@ def test_url_error():
                                endtime=datetime(1994, 1, 18, 12, 35),
                                minmagnitude=6.6, host="error")
         except Exception as e:
+            passed = False
         assert passed == False
 
 
