@@ -2,3 +2,4 @@ ignore:
 - "libcomcat/_version.py"
 - "versioneer.py"
 - "libcomcat/bin/*"
+- "libcomcat/logging.py"
