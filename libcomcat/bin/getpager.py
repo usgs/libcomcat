@@ -248,18 +248,21 @@ def main():
         else:
             dataframe = pd.concat([dataframe, df])
 
-    fmt = 'Created table...saving %i records to %s.\n'
-    print(fmt % (len(dataframe), args.filename))
-    if args.format == 'csv':
-        dataframe.to_csv(args.filename, index=False, chunksize=1000)
-    elif args.format == 'tab':
-        dataframe.to_csv(args.filename, sep='\t', index=False)
+    if args.verbose:
+        sys.stderr.write('Created table...saving %i records to %s.\n' %
+                         (len(dataframe), args.filename))
+    if dataframe is not None:
+        if args.format == 'csv':
+            dataframe.to_csv(args.filename, index=False, chunksize=1000)
+        elif args.format == 'tab':
+            dataframe.to_csv(args.filename, sep='\t', index=False)
+        else:
+            dataframe.to_excel(args.filename, index=False)
+
+        add_headers(args.filename, args.format)
+        print('%i records saved to %s.' % (len(dataframe), args.filename))
     else:
-        dataframe.to_excel(args.filename, index=False)
-
-    add_headers(args.filename, args.format)
-
-    print('%i records saved to %s.' % (len(dataframe), args.filename))
+        sys.stderr.write('No Pager products found for requested event(s)\n')
     sys.exit(0)
 
 

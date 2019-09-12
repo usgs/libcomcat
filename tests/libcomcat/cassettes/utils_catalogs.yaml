@@ -1,0 +1,36 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Connection: [close]
+      Host: [earthquake.usgs.gov]
+      User-Agent: [Python-urllib/3.5]
+    method: GET
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/catalogs
+  response:
+    body: {string: '<?xml version="1.0"?>
+
+        <Catalogs><Catalog>=c</Catalog><Catalog>ak</Catalog><Catalog>at</Catalog><Catalog>atlas</Catalog><Catalog>av</Catalog><Catalog>cgs</Catalog><Catalog>choy</Catalog><Catalog>ci</Catalog><Catalog>dr</Catalog><Catalog>duputel</Catalog><Catalog>ew_dm</Catalog><Catalog>gcmt</Catalog><Catalog>hv</Catalog><Catalog>is</Catalog><Catalog>iscgem</Catalog><Catalog>iscgemsup</Catalog><Catalog>ismpkansas</Catalog><Catalog>ld</Catalog><Catalog>mb</Catalog><Catalog>nc</Catalog><Catalog>ne</Catalog><Catalog>nm</Catalog><Catalog>nn</Catalog><Catalog>official</Catalog><Catalog>official19631013051759_30</Catalog><Catalog>pr</Catalog><Catalog>pt</Catalog><Catalog>sc</Catalog><Catalog>se</Catalog><Catalog>unknown</Catalog><Catalog>us</Catalog><Catalog>uu</Catalog><Catalog>uw</Catalog></Catalogs>'}
+    headers:
+      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
+      Access-Control-Allow-Methods: ['*']
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['public, max-age=900']
+      Connection: [close]
+      Content-Length: ['805']
+      Content-Type: [application/xml]
+      Date: ['Fri, 09 Nov 2018 19:30:11 GMT']
+      Expires: ['Fri, 09 Nov 2018 19:45:11 GMT']
+      Last-Modified: ['Fri, 09 Nov 2018 19:30:11 GMT']
+      Server: [nginx]
+      Strict-Transport-Security: [max-age=31536000]
+      Vary: [Accept-Encoding]
+      Via: [1.1 2a7e9ec6f25ccbf79b1adfa129de8f9c.cloudfront.net (CloudFront)]
+      X-Amz-Cf-Id: [nzsgLabmMs2acf6M7PX6RXD08CKg-_EbJ-V2b2OxiFi4snngG5Boig==]
+      X-Cache: [Miss from cloudfront]
+      X-Cache-Status: [EXPIRED]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [SAMEORIGIN]
+      X-XSS-Protection: [1; mode=block]
+    status: {code: 200, message: OK}
+version: 1

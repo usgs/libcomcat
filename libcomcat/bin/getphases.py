@@ -185,6 +185,7 @@ def main():
 
     for event in events:
         if not event.hasProduct('phase-data'):
+            print('%s has no phase data.' % event.id)
             continue
         try:
             detail = event.getDetailEvent()

@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
+# stdlib
 import os.path
 from datetime import datetime
 
+# third party improts
+from obspy.core.event.magnitude import Magnitude
 import pandas as pd
-
 import vcr
 
+# local imports
 from libcomcat.utils import (makedict,
                              maketime,
                              get_catalogs,
+                             get_mag_src,
                              read_phases,
                              get_contributors,
                              check_ccode,
@@ -23,7 +27,8 @@ def get_datadir():
     # where is this script?
     homedir = os.path.dirname(os.path.abspath(__file__))
     datadir = os.path.join(homedir, '..', 'data')
-    return datadir
+    cassettes = os.path.join(homedir, 'cassettes')
+    return cassettes, datadir
 
 
 def test_reader():
@@ -83,16 +88,16 @@ def test_maketime():
 
 
 def test_catalogs():
-    datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_catalogs.yaml')
+    cassettes, datadir = get_datadir()
+    tape_file = os.path.join(cassettes, 'utils_catalogs.yaml')
     with vcr.use_cassette(tape_file):
         catalogs = get_catalogs()
         assert 'us' in catalogs
 
 
 def test_contributors():
-    datadir = get_datadir()
-    tape_file = os.path.join(datadir, 'vcr_contributors.yaml')
+    cassettes, datadir = get_datadir()
+    tape_file = os.path.join(cassettes, 'utils_contributors.yaml')
     with vcr.use_cassette(tape_file):
         contributors = get_contributors()
         assert 'ak' in contributors
@@ -111,6 +116,26 @@ def test_get_utm_proj():
         lat, lon, projstr = tpl
         proj = _get_utm_proj(lat, lon)
         assert proj.srs == projstr
+
+
+def test_get_mag_src():
+    mag = Magnitude()
+    mag.resource_id.id = 'gcmt1000'
+    assert get_mag_src(mag) == 'gcmt'
+    mag.resource_id.id = 'us1000'
+    assert get_mag_src(mag) == 'us'
+    mag.resource_id.id = 'duputel1000'
+    assert get_mag_src(mag) == 'duputel'
+    mag.resource_id.id = 'at1000'
+    assert get_mag_src(mag) == 'at'
+    mag.resource_id.id = 'pt1000'
+    assert get_mag_src(mag) == 'pt'
+    mag.resource_id.id = 'ak1000'
+    assert get_mag_src(mag) == 'ak'
+    mag.resource_id.id = 'pr1000'
+    assert get_mag_src(mag) == 'pr'
+    mag.resource_id.id = 'none1000'
+    assert get_mag_src(mag) == 'unknown'
 
 
 def test_check_ccode():
@@ -153,6 +178,7 @@ if __name__ == '__main__':
     test_get_country_bounds()
     test_check_ccode()
     test_get_utm_proj()
+    test_get_mag_src()
     print('Testing reader...')
     test_reader()
     print('Testing makedict...')
