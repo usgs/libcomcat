@@ -1,6 +1,5 @@
 # stdlib imports
 from xml.dom import minidom
-from urllib.request import urlopen
 import os.path
 import math
 import string
@@ -18,16 +17,15 @@ import pkg_resources
 import pyproj
 import numpy as np
 from shapely.ops import transform
+import requests
 
 # local imports
-from libcomcat.exceptions import (ConnectionError,
-                                  ParsingError,
-                                  ProductNotFoundError,
-                                  ProductNotSpecifiedError,
-                                  ContentNotFoundError,
-                                  ArgumentConflictError,
-                                  UndefinedVersionError)
+from libcomcat.exceptions import ConnectionError
+from libcomcat import __version__ as libversion
 
+# use this to set the user agent for each request, giving us a way
+# to distinguish libcomcat requests from other browser requests
+HEADERS = {'User-Agent': 'libcomcat v%s' % libversion}
 
 # constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
@@ -48,6 +46,8 @@ ECONOMIC_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
 COUNTRIES_SHP = 'ne_50m_admin_0_countries.shp'
 BUFFER_DISTANCE_KM = 100
 KM_PER_DEGREE = 119.191
+
+TIMEOUT = 60  # how long should we wait for a response from ComCat?
 
 
 class CombinedFormatter(argparse.ArgumentDefaultsHelpFormatter,
@@ -216,9 +216,13 @@ def get_catalogs():
         list: Catalogs available in ComCat (see the catalog
             parameter in search() method.)
     """
-    fh = urlopen(CATALOG_SEARCH_TEMPLATE, timeout=TIMEOUT)
-    data = fh.read().decode('utf8')
-    fh.close()
+    try:
+        request = requests.get(CATALOG_SEARCH_TEMPLATE, timeout=TIMEOUT)
+        data = request.text
+    except Exception as e:
+        fmt = 'Could not connect to url %s. Error: "%s"'
+        raise ConnectionError(fmt % (CATALOG_SEARCH_TEMPLATE, str(e)))
+
     root = minidom.parseString(data)
     catalogs = root.getElementsByTagName('Catalog')
     catlist = []
@@ -235,9 +239,12 @@ def get_contributors():
         list: Contributors available in ComCat (see the contributor
             parameter in search() method.)
     """
-    fh = urlopen(CONTRIBUTORS_SEARCH_TEMPLATE, timeout=TIMEOUT)
-    data = fh.read().decode('utf8')
-    fh.close()
+    try:
+        request = requests.get(CONTRIBUTORS_SEARCH_TEMPLATE, timeout=TIMEOUT)
+        data = request.text
+    except Exception as e:
+        fmt = 'Could not connect to url %s. Error: "%s"'
+        raise ConnectionError(fmt % (CONTRIBUTORS_SEARCH_TEMPLATE, str(e)))
     root = minidom.parseString(data)
     contributors = root.getElementsByTagName('Contributor')
     conlist = []
@@ -269,7 +276,7 @@ def check_ccode(ccode):
 
 
 def get_country_bounds(ccode, buffer_km=BUFFER_DISTANCE_KM):
-    """Get list of country bounds tuples (one for each sub-polygon in country polygon.)
+    """Get list of country bounds (one for each sub-polygon in country polygon.)
 
     Args:
         ccode (str): Three letter ISO 3166 country code.
@@ -374,7 +381,7 @@ def filter_by_country(df, ccode, buffer_km=BUFFER_DISTANCE_KM):
     """Filter earthquake dataframe by country code.
 
     Args:
-        df (DataFrame): pandas Dataframe containing at least columns (latitude,longitude).
+        df (DataFrame): pandas Dataframe with columns (latitude,longitude).
         ccode (str): Three letter ISO 3166 country code.
         buffer_km (int): Buffer distance around country boundary.
 

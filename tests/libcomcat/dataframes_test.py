@@ -4,7 +4,6 @@ import os.path
 from datetime import datetime
 
 import numpy as np
-import pandas as pd
 
 import vcr
 
@@ -30,13 +29,11 @@ def get_datadir():
 def test_phase_dataframe():
     cassettes, datadir = get_datadir()
     tape_file = os.path.join(cassettes, 'dataframes_phase.yaml')
-    # with vcr.use_cassette(tape_file):
-    detail = get_event_by_id('us1000778i')  # 2016 NZ event
-    df = get_magnitude_data_frame(detail, 'us', 'mb')
-    np.testing.assert_almost_equal(df['Magnitude'].sum(), 756.8100000000001)
-    x = 1
-
-    # Test for
+    with vcr.use_cassette(tape_file):
+        detail = get_event_by_id('us1000778i')  # 2016 NZ event
+        df = get_magnitude_data_frame(detail, 'us', 'mb')
+        np.testing.assert_almost_equal(
+            df['Magnitude'].sum(), 756.8100000000001)
 
 
 def test_magnitude_dataframe():
@@ -262,7 +259,7 @@ def test_dyfi():
 def test_nan_mags():
     detail = get_event_by_id('us2000arrw')
     try:
-        df = get_phase_dataframe(detail)
+        _ = get_phase_dataframe(detail)
     except ParsingError:
         pass
 

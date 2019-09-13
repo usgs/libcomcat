@@ -1,18 +1,17 @@
 # stdlib imports
 from datetime import timedelta
-from urllib import request
 from urllib.parse import urlencode
-from urllib.error import HTTPError
-import json
 import time
 import logging
 
 # third party imports
 from impactutils.time.ancient_time import HistoricTime
 import numpy as np
+import requests
 
 # local imports
 from libcomcat.classes import SummaryEvent, DetailEvent
+from libcomcat.utils import HEADERS, TIMEOUT
 
 # constants
 # url template for counting events
@@ -20,7 +19,6 @@ HOST = 'earthquake.usgs.gov'
 CATALOG_COUNT_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/'
                           '1/count?format=geojson')
 SEARCH_TEMPLATE = 'https://[HOST]/fdsnws/event/1/query?format=geojson'
-TIMEOUT = 60  # how long do we wait for a url to return?
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 WEEKSECS = 86400 * 7  # number of seconds in a week
 # number of seconds to wait after failing download before trying again
@@ -525,30 +523,26 @@ def _search(**newargs):
         return DetailEvent(url)
 
     try:
-        fh = request.urlopen(url, timeout=TIMEOUT)
-        data = fh.read().decode('utf8')
-        fh.close()
-        jdict = json.loads(data)
+        response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
+        jdict = response.json()
         events = []
         for feature in jdict['features']:
             events.append(SummaryEvent(feature))
-    except HTTPError as htpe:
+    except requests.HTTPError as htpe:
         if htpe.code == 503:
             try:
                 time.sleep(WAITSECS)
-                fh = request.urlopen(url, timeout=TIMEOUT)
-                data = fh.read().decode('utf8')
-                fh.close()
-                jdict = json.loads(data)
+                response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
+                jdict = response.json()
                 events = []
                 for feature in jdict['features']:
                     events.append(SummaryEvent(feature))
             except Exception as msg:
-                raise Exception(
-                    'Error downloading data from url %s.  "%s".' % (url, msg))
+                fmt = 'Error downloading data from url %s.  "%s".'
+                raise ConnectionError(fmt % (url, msg))
     except Exception as msg:
-        raise Exception(
-            'Error downloading data from url %s.  "%s".' % (url, msg))
+        fmt = 'Error downloading data from url %s.  "%s".'
+        raise ConnectionError(fmt % (url, msg))
 
     return events
 
@@ -565,25 +559,25 @@ def _count(**newargs):
     url = CATALOG_COUNT_TEMPLATE + '&' + paramstr
     nevents = 0
     try:
-        fh = request.urlopen(url, timeout=TIMEOUT)
-        data = fh.read().decode('utf8')
-        fh.close()
-        jdict = json.loads(data)
+        response = requests.get(CATALOG_COUNT_TEMPLATE,
+                                params=newargs, timeout=TIMEOUT,
+                                headers=HEADERS)
+        jdict = response.json()
         nevents = jdict['count']
-    except HTTPError as htpe:
+    except requests.HTTPError as htpe:
         if htpe.code == 503:
             try:
                 time.sleep(WAITSECS)
-                fh = request.urlopen(url, timeout=TIMEOUT)
-                data = fh.read().decode('utf8')
-                fh.close()
-                jdict = json.loads(data)
+                response = requests.get(CATALOG_COUNT_TEMPLATE,
+                                        params=newargs, timeout=TIMEOUT,
+                                        headers=HEADERS)
+                jdict = response.json()
                 nevents = jdict['count']
             except Exception as msg:
-                raise Exception(
-                    'Error downloading data from url %s.  "%s".' % (url, msg))
+                fmt = 'Error downloading data from url %s.  "%s".'
+                raise ConnectionError(fmt % (url, msg))
     except Exception as msg:
-        raise Exception(
-            'Error downloading data from url %s.  "%s".' % (url, msg))
+        fmt = 'Error downloading data from url %s.  "%s".'
+        raise ConnectionError(fmt % (url, msg))
 
     return nevents

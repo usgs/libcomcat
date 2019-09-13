@@ -1,9 +1,7 @@
 # stdlib imports
 from datetime import datetime, timedelta
-from urllib import request
 from urllib.error import HTTPError
 from urllib.parse import urlparse
-import json
 from collections import OrderedDict
 import re
 from enum import Enum
@@ -15,11 +13,13 @@ from obspy.core.event import read_events
 import pandas as pd
 import numpy as np
 import dateutil
+import requests
 
 # local imports
 from libcomcat.exceptions import (ConnectionError, ProductNotFoundError,
                                   ArgumentConflictError, UndefinedVersionError,
                                   ContentNotFoundError)
+from libcomcat.utils import HEADERS, TIMEOUT
 
 # constants
 # the detail event URL template
@@ -30,7 +30,6 @@ URL_TEMPLATE = ('https://earthquake.usgs.gov/earthquakes/feed'
 SEARCH_DETAIL_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/1/query'
                           '?format=geojson&eventid=%s&'
                           'includesuperseded=%s&includedeleted=%s')
-TIMEOUT = 60  # how long should we wait for a url to return?
 WAITSECS = 3
 
 
@@ -353,17 +352,13 @@ class DetailEvent(object):
                        event.
         """
         try:
-            fh = request.urlopen(url, timeout=TIMEOUT)
-            data = fh.read().decode('utf-8')
-            fh.close()
-            self._jdict = json.loads(data)
+            response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
+            self._jdict = response.json()
             self._actual_url = url
         except HTTPError:
             try:
-                fh = request.urlopen(url, timeout=TIMEOUT)
-                data = fh.read().decode('utf-8')
-                fh.close()
-                self._jdict = json.loads(data)
+                response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
+                self._jdict = response.json()
                 self._actual_url = url
             except Exception as msg:
                 fmt = 'Could not connect to ComCat server - %s.'
@@ -556,7 +551,7 @@ class DetailEvent(object):
                 SummaryEvent.toDict(), *preferred* moment tensor and focal
                 mechanism data.  If all magnitudes are requested, then
                 those will be returned as well. Generally speaking, the
-                number and name of the fields will vary by what data is 
+                number and name of the fields will vary by what data is
                 available.
         """
         edict = OrderedDict()
@@ -843,7 +838,8 @@ class Product(object):
         then grid.xml will be matched.
 
         Args:
-            regexp (str): Regular expression to use to search for matching contents.
+            regexp (str): Regular expression to use to search for
+                          matching contents.
         Returns:
             str: Shortest file name to match input regexp, or None if
                  no matches found.
@@ -872,7 +868,8 @@ class Product(object):
         matched.
 
         Args:
-            regexp (str): Regular expression to use to search for matching contents.
+            regexp (str): Regular expression to use to search for matching
+                          contents.
         Returns:
             str: URL for shortest file name to match input regexp, or
                  None if no matches found.
@@ -927,8 +924,8 @@ class Product(object):
                 the Product.
         Returns:
             tuple: (array of bytes containing file contents, source url)
-                Bytes can be decoded to UTF-8 by the user if file contents are known
-                to be ASCII.  i.e.,
+                Bytes can be decoded to UTF-8 by the user if file contents
+                are known to be ASCII.  i.e.,
                 product.getContentBytes('info.json').decode('utf-8')
         Raises:
             Exception: If content could not be downloaded from ComCat
@@ -951,16 +948,15 @@ class Product(object):
                 'Could not find any content matching input %s' % regexp)
 
         try:
-            fh = request.urlopen(url, timeout=TIMEOUT)
-            data = fh.read()
-            fh.close()
+            response = requests.get(
+                url, timeout=TIMEOUT, stream=True, headers=HEADERS)
+            data = response.content
 
         except HTTPError:
             time.sleep(WAITSECS)
             try:
-                fh = request.urlopen(url, timeout=TIMEOUT)
-                data = fh.read()
-                fh.close()
+                response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
+                data = response.content
             except Exception:
                 raise ConnectionError('Could not download %s from %s.' %
                                       (content_name, url))
@@ -1043,7 +1039,8 @@ class Product(object):
         """List of product properties.
 
         Returns:
-            list: List of product properties (retrievable from object with [] operator).
+            list: List of product properties (retrievable from object
+                  with [] operator).
         """
         return list(self._product['properties'].keys())
 
@@ -1052,7 +1049,8 @@ class Product(object):
         """List of product properties.
 
         Returns:
-            list: List of product properties (retrievable with getContent() method).
+            list: List of product properties (retrievable with
+                  getContent() method).
         """
         return list(self._product['contents'].keys())
 
