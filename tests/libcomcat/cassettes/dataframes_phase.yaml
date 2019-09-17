@@ -2,118 +2,1378 @@ interactions:
 - request:
     body: null
     headers:
-      Connection: [close]
-      Host: [earthquake.usgs.gov]
-      User-Agent: [Python-urllib/3.5]
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - libcomcat v0+untagged.359.ga09bfa5.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventid=us1000778i&includedeleted=false&includesuperseded=false
   response:
-    body: {string: '{"type":"Feature","properties":{"mag":7.8,"place":"54km NNE of
-        Amberley, New Zealand","time":1479034976340,"updated":1539813034137,"tz":720,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/us1000778i","felt":710,"cdi":9.1,"mmi":8.9,"alert":"orange","status":"reviewed","tsunami":1,"sig":1646,"net":"us","code":"1000778i","ids":",at00ogkuoy,us1000778i,atlas20161113110256,","sources":",at,us,atlas,","types":",cap,dyfi,finite-fault,general-link,general-text,geoserve,ground-failure,impact-link,impact-text,losspager,moment-tensor,origin,phase-data,poster,scitech-link,shakemap,","nst":null,"dmin":0.481,"rms":0.56,"gap":21,"magType":"mww","type":"earthquake","title":"M
-        7.8 - 54km NNE of Amberley, New Zealand","products":{"cap":[{"indexid":"105468311","indexTime":1479036302513,"id":"urn:usgs-product:us:cap:us1000778i:1479036100040","type":"cap","code":"us1000778i","source":"us","updateTime":1479036100040,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i"},"preferredWeight":6,"contents":{"capalert.xml":{"contentType":"application/xml","lastModified":1479036301000,"length":5063,"url":"https://earthquake.usgs.gov/archive/product/cap/us1000778i/us/1479036100040/capalert.xml"},"contents.xml":{"contentType":"application/xml","lastModified":1361473072000,"length":194,"url":"https://earthquake.usgs.gov/archive/product/cap/us1000778i/us/1479036100040/contents.xml"}}},{"indexid":"105468131","indexTime":1479035702073,"id":"urn:usgs-product:at:cap:at00ogkuoy:1479035682421","type":"cap","code":"at00ogkuoy","source":"at","updateTime":1479035682421,"status":"UPDATE","properties":{"eventsource":"at","eventsourcecode":"00ogkuoy"},"preferredWeight":6,"contents":{"capalert.xml":{"contentType":"application/xml","lastModified":1479035701000,"length":4945,"url":"https://earthquake.usgs.gov/archive/product/cap/at00ogkuoy/at/1479035682421/capalert.xml"},"contents.xml":{"contentType":"application/xml","lastModified":1361473072000,"length":194,"url":"https://earthquake.usgs.gov/archive/product/cap/at00ogkuoy/at/1479035682421/contents.xml"}}}],"dyfi":[{"indexid":"152765081","indexTime":1521035445651,"id":"urn:usgs-product:us:dyfi:us1000778i:1521035439960","type":"dyfi","code":"us1000778i","source":"us","updateTime":1521035439960,"status":"UPDATE","properties":{"depth":"15.11","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T11:02:56.000Z","latitude":"-42.7373","longitude":"173.054","magnitude":"7.8","maxmmi":"9.1","num-responses":"710","numResp":"710","pdl-client-version":"Version
-        1.13.3 2018-02-06"},"preferredWeight":156,"contents":{"cdi_geo.txt":{"contentType":"text/plain","lastModified":1521035439000,"length":13665,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/cdi_geo.txt"},"cdi_geo.xml":{"contentType":"application/xml","lastModified":1521035439000,"length":49092,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/cdi_geo.xml"},"cdi_geo_1km.txt":{"contentType":"text/plain","lastModified":1521035439000,"length":42063,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/cdi_geo_1km.txt"},"cdi_zip.txt":{"contentType":"text/plain","lastModified":1521035439000,"length":9778,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/cdi_zip.txt"},"cdi_zip.xml":{"contentType":"application/xml","lastModified":1521035439000,"length":26361,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/cdi_zip.xml"},"contents.xml":{"contentType":"application/xml","lastModified":1521035439000,"length":4224,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/contents.xml"},"dyfi.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1521035439000,"length":1175,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi.kmz"},"dyfi_geo.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1521035439000,"length":11711,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi_geo.kmz"},"dyfi_geo_10km.geojson":{"contentType":"application/octet-stream","lastModified":1521035439000,"length":46981,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi_geo_10km.geojson"},"dyfi_geo_1km.geojson":{"contentType":"application/octet-stream","lastModified":1521035439000,"length":126337,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi_geo_1km.geojson"},"dyfi_plot_atten.json":{"contentType":"application/json","lastModified":1521035439000,"length":7243,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi_plot_atten.json"},"dyfi_plot_numresp.json":{"contentType":"application/json","lastModified":1521035439000,"length":33681,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi_plot_numresp.json"},"dyfi_zip.geojson":{"contentType":"application/octet-stream","lastModified":1521035439000,"length":18717,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi_zip.geojson"},"dyfi_zip.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1521035439000,"length":7176,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/dyfi_zip.kmz"},"event_data.xml":{"contentType":"application/xml","lastModified":1521035439000,"length":3051,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/event_data.xml"},"us1000778i_ciim.jpg":{"contentType":"image/jpeg","lastModified":1521035439000,"length":90157,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim.jpg"},"us1000778i_ciim.pdf":{"contentType":"application/pdf","lastModified":1521035439000,"length":292637,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim.pdf"},"us1000778i_ciim.ps":{"contentType":"application/postscript","lastModified":1521035439000,"length":588789,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim.ps"},"us1000778i_ciim_geo.jpg":{"contentType":"image/jpeg","lastModified":1521035439000,"length":87775,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim_geo.jpg"},"us1000778i_ciim_geo.pdf":{"contentType":"application/pdf","lastModified":1521035439000,"length":287765,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim_geo.pdf"},"us1000778i_ciim_geo.ps":{"contentType":"application/postscript","lastModified":1521035439000,"length":589266,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim_geo.ps"},"us1000778i_ciim_geo_imap.html":{"contentType":"text/html","lastModified":1521035439000,"length":36243,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim_geo_imap.html"},"us1000778i_ciim_imap.html":{"contentType":"text/html","lastModified":1521035439000,"length":16329,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_ciim_imap.html"},"us1000778i_plot_atten.jpg":{"contentType":"image/jpeg","lastModified":1521035439000,"length":65898,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_plot_atten.jpg"},"us1000778i_plot_atten.ps":{"contentType":"application/postscript","lastModified":1521035439000,"length":57253,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_plot_atten.ps"},"us1000778i_plot_atten.txt":{"contentType":"text/plain","lastModified":1521035439000,"length":4820,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_plot_atten.txt"},"us1000778i_plot_numresp.jpg":{"contentType":"image/jpeg","lastModified":1521035439000,"length":33650,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_plot_numresp.jpg"},"us1000778i_plot_numresp.ps":{"contentType":"application/postscript","lastModified":1521035439000,"length":30386,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_plot_numresp.ps"},"us1000778i_plot_numresp.txt":{"contentType":"text/plain","lastModified":1521035439000,"length":21647,"url":"https://earthquake.usgs.gov/archive/product/dyfi/us1000778i/us/1521035439960/us1000778i_plot_numresp.txt"}}}],"finite-fault":[{"indexid":"169748561","indexTime":1539813043951,"id":"urn:usgs-product:us:finite-fault:us1000778i:1539813034137","type":"finite-fault","code":"us1000778i","source":"us","updateTime":1539813034137,"status":"UPDATE","properties":{"average-rise-time":"7.38","average-rupture-velocity":"1.85","depth":"16.0000","derived-magnitude":"7.8900","derived-magnitude-type":"Mw","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T00:00:00.000Z","hypocenter-x":"33.7500","hypocenter-z":"16.2500","latitude":"-42.7570","location":"54km
-        NNE of Amberley, New Zealand","longitude":"173.0770","maximum-frequency":"1.0000","maximum-rise":"12.0000","maximum-slip":"4.0000","minimum-frequency":"0.0020","model-dip":"80.0000","model-length":"97.5000","model-rake":"180.0000","model-strike":"255.0000","model-top":"-1.2900","model-width":"26.0000","number-longwaves":"47","number-pwaves":"60","number-shwaves":"29","review-status":"reviewed","scalar-moment":"896693400000000032768.0000","segment-1-dip":"80.0000","segment-1-strike":"255.0000","segment-2-dip":"36.0000","segment-2-strike":"225.0000","segment-3-dip":"36.0000","segment-3-strike":"225.0000","segment-4-dip":"70.0000","segment-4-strike":"225.0000","segment-5-dip":"70.0000","segment-5-strike":"245.0000","segments":"5","subfault-1-area":"278.9604","subfault-1-length":"28.9490","subfault-1-width":"9.6363","subfault-2-area":"3039.8759","subfault-2-length":"56.8141","subfault-2-width":"53.5056","subfault-3-area":"224.9541","subfault-3-length":"14.2686","subfault-3-width":"15.7656","subfault-4-area":"1391.4879","subfault-4-length":"98.1574","subfault-4-width":"14.1761","subfault-5-area":"1192.2212","subfault-5-length":"69.1596","subfault-5-width":"17.2387","time-windows":"8","velocity-function":"Asymetriccosine"},"preferredWeight":156,"contents":{"1000778i.html":{"contentType":"text/html","lastModified":1539813033000,"length":4652,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/1000778i.html"},"CMTSOLUTION":{"contentType":"application/octet-stream","lastModified":1539727788000,"length":107156,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/CMTSOLUTION"},"FFM.geojson":{"contentType":"application/octet-stream","lastModified":1539813032000,"length":1150351,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/FFM.geojson"},"basemap.png":{"contentType":"application/octet-stream","lastModified":1539727788000,"length":1382312,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/basemap.png"},"basic_inversion.param":{"contentType":"application/octet-stream","lastModified":1539727787000,"length":134535,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/basic_inversion.param"},"complete_inversion.fsp":{"contentType":"application/octet-stream","lastModified":1539727788000,"length":79453,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/complete_inversion.fsp"},"contents.xml":{"contentType":"application/octet-stream","lastModified":1539813033000,"length":1446,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/contents.xml"},"coulomb.inp":{"contentType":"application/octet-stream","lastModified":1539727787000,"length":93023,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/coulomb.inp"},"moment_rate.mr":{"contentType":"application/octet-stream","lastModified":1539727787000,"length":31744,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/moment_rate.mr"},"moment_rate.png":{"contentType":"application/octet-stream","lastModified":1539727878000,"length":113799,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/moment_rate.png"},"properties.json":{"contentType":"application/octet-stream","lastModified":1539813033000,"length":1833,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/properties.json"},"slip.png":{"contentType":"application/octet-stream","lastModified":1539727846000,"length":223567,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/slip.png"},"waveplots.zip":{"contentType":"application/octet-stream","lastModified":1539813033000,"length":2857301,"url":"https://earthquake.usgs.gov/archive/product/finite-fault/us1000778i/us/1539813034137/waveplots.zip"}}}],"general-link":[{"indexid":"105819361","indexTime":1479837311507,"id":"urn:usgs-product:admin:general-link:eventadmin-us1000778i-1479837220997:1479837310963","type":"general-link","code":"eventadmin-us1000778i-1479837220997","source":"admin","updateTime":1479837310963,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","text":"Before
-        and after satellite photos of Waiapapa Bay showing fault scarp and uplift","url":"/realtime/product/general-text/us1000778i-1479836679954/admin/1479837066861/WaiapapaBay-Comparison-lg.jpg"},"preferredWeight":1,"contents":[]},{"indexid":"105784631","indexTime":1479749038510,"id":"urn:usgs-product:admin:general-link:eventadmin-us1000778i-1479748996503:1479749033227","type":"general-link","code":"eventadmin-us1000778i-1479748996503","source":"admin","updateTime":1479749033227,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","text":"Complex,
-        compound New Zealand earthquake - Part 2: Faulting by Day","url":"http://blogs.agu.org/tremblingearth/2016/11/18/complex-compound-new-zealand-earthquake-part-2-faulting-day/"},"preferredWeight":1,"contents":[]},{"indexid":"105784481","indexTime":1479748991778,"id":"urn:usgs-product:admin:general-link:eventadmin-us1000778i-1479748963428:1479748991235","type":"general-link","code":"eventadmin-us1000778i-1479748963428","source":"admin","updateTime":1479748991235,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","text":"Complex,
-        compound New Zealand earthquake - Part 1: Seismology by Night","url":"http://blogs.agu.org/tremblingearth/2016/11/16/complex-compound-new-zealand-earthquake-part-1-seismology-night/"},"preferredWeight":1,"contents":[]},{"indexid":"105784271","indexTime":1479748713735,"id":"urn:usgs-product:admin:general-link:eventadmin-us1000778i-1479748636690:1479748713086","type":"general-link","code":"eventadmin-us1000778i-1479748636690","source":"admin","updateTime":1479748713086,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","text":"Complex
-        Earthquake Raises Complex Questions (AGU-EOS Editor''s VOX)","url":"https://eos.org/editors-vox/complex-earthquake-raises-complex-questions"},"preferredWeight":1,"contents":[]}],"general-text":[{"indexid":"105820741","indexTime":1479839533693,"id":"urn:usgs-product:admin:general-text:us1000778i-1479838099163:1479839532760","type":"general-text","code":"us1000778i-1479838099163","source":"admin","updateTime":1479839532760,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","review-status":"Reviewed"},"preferredWeight":1,"contents":{"":{"contentType":"1","lastModified":1479839532000,"length":206,"bytes":"View
-        before and after satellite photos of <a href=\"/realtime/product/general-text/us1000778i-1479836679954/admin/1479837066861/WaiapapaBay-Comparison-lg.jpg\">Waiapapa
-        Bay</a> showing fault scarp and uplift."},"WaiapapaBay-Comparison-lg.jpg":{"contentType":"image/jpeg","lastModified":1479836914000,"length":162492,"url":"https://earthquake.usgs.gov/archive/product/general-text/us1000778i-1479838099163/admin/1479839532760/WaiapapaBay-Comparison-lg.jpg"}}},{"indexid":"105483591","indexTime":1479077966971,"id":"urn:usgs-product:admin:general-text:us1000778i-1479043996195:1479077965927","type":"general-text","code":"us1000778i-1479043996195","source":"admin","updateTime":1479077965927,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","review-status":"Reviewed"},"preferredWeight":1,"contents":{"":{"contentType":"1","lastModified":1479077965000,"length":3229,"bytes":"<h2>Tectonic
-        Summary</h2>\n<p>\nThe November 13, 2016 M 7.8 earthquake in North Canterbury,
-        New Zealand, occurred as the result of shallow oblique-reverse faulting on
-        or near the boundary between the Pacific and Australia plates in South Island,
-        New Zealand. At the location of this earthquake, the Pacific plate moves to
-        the west-southwest with respect to the Australia plate at a rate of approximately
-        40 mm/yr. The epicenter of the earthquake is about 30-45 km south-southeast
-        of the main surface expression of the plate boundary in the region\u2014the
-        Hope Fault, part of the Marlborough Fault system that connects a subduction
-        zone (the Hikurangi Trough) to the primary plate boundary in the South Island\u2014the
-        Alpine Fault. The plate boundary in the region of the earthquake is complex,
-        involving a transition from subduction along the Hikurangi Trough to the east
-        of the North Island, to transform faulting through the South Island. The shallow
-        crustal region to the southeast of the Hope fault primarily involves thin-skinned
-        shortening and fold and thrust belt tectonics. The size, depth (~25 km) and
-        faulting orientation of the November 13 event suggest a larger, subduction-related
-        structure, though the subduction zone interface is not thought to extend this
-        far to the south. The complexity of the event, involving a main energy release
-        delayed by about 40 s, combined with an early aftershock distribution extending
-        about 150 km to the north-northeast of the mainshock, suggests the potential
-        for triggered slip on the Pacific:Australia subduction zone interface.\n</p><p>\nWhile
-        commonly plotted as points on maps, earthquakes of this size are more appropriately
-        described as slip over a larger fault area. Reverse-faulting events of the
-        size of the November 13, 2016 earthquake are typically about 120x50 km (length
-        x width). Modeling of this event implies slip occurred over an area about
-        200x60 km in size. Over the 9 hours following the M 7.8 mainshock, 25 aftershocks
-        have occurred, ranging in size from M 4.5 to M 6.5 and extending from the
-        region of the mainshock epicenter to about 160 km to the northeast.\n</p><p>\nThe
-        Pacific-Australia plate boundary in northern South Island has a history of
-        large earthquakes both along the plate boundary proper and distributed around
-        the plate boundary internal to the Australia and Pacific plates. The November
-        13th M 7.8 earthquake is the largest event in the region since an M 7.3 earthquake
-        100 km to the northwest in June 1929. That June 1929 earthquake occurred just
-        3 months after the March 1929 Arthur\u2019s Pass strike-slip earthquake, 90
-        km to the west-southwest of the November 13th event. The Arthur\u2019s Pass
-        event caused damage but injured no one. The November 13, 2016 event is also
-        about 100 km to the north of Christchurch, which was severely damaged by a
-        series of large earthquakes in 2010-2015, including a M 7.0 to the west of
-        Christchurch in September 2010, and a M 6.1 directly beneath the city in February
-        2011.\n</p><p>\nBecause of the complexity of this plate boundary region, strain
-        is being accommodated on many different structures of varying orientations,
-        making it possible that more than one fault may be activated in this earthquake
-        sequence.\n</p>"}}}],"geoserve":[{"indexid":"133793221","indexTime":1486151895662,"id":"urn:usgs-product:us:geoserve:us1000778i:1486151864040","type":"geoserve","code":"us1000778i","source":"us","updateTime":1486151864040,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","location":"54km
-        NNE of Amberley, New Zealand","tsunamiFlag":"false","utcOffset":"720"},"preferredWeight":6,"contents":{"geoserve.json":{"contentType":"application/json","lastModified":1486151891000,"length":6751,"url":"https://earthquake.usgs.gov/archive/product/geoserve/us1000778i/us/1486151864040/geoserve.json"}}},{"indexid":"105468111","indexTime":1479035685483,"id":"urn:usgs-product:us:geoserve:at00ogkuoy:1479035682421","type":"geoserve","code":"at00ogkuoy","source":"us","updateTime":1479035682421,"status":"UPDATE","properties":{"country":"New
-        Zealand","eventsource":"at","eventsourcecode":"00ogkuoy","location":"46km
-        NNE of Amberley, New Zealand","tsunamiFlag":"false","utcOffset":"720"},"preferredWeight":1,"contents":{"geoserve.json":{"contentType":"application/json","lastModified":1479035684000,"length":6764,"url":"https://earthquake.usgs.gov/archive/product/geoserve/at00ogkuoy/us/1479035682421/geoserve.json"}}}],"ground-failure":[{"indexid":"156019011","indexTime":1526311194418,"id":"urn:usgs-product:us:ground-failure:1000778i:1526311117235","type":"ground-failure","code":"1000778i","source":"us","updateTime":1526311117235,"status":"UPDATE","properties":{"depth":"15.11","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T11:02:56.000Z","landslide-alert":"red","landslide-hazard-alert-color":"red","landslide-hazard-alert-parameter":"Aggregate
-        Hazard","landslide-hazard-alert-value":"229.99999999999997","landslide-maximum-latitude":"-39.80104166666666","landslide-maximum-longitude":"177.05312499999275","landslide-minimum-latitude":"-45.67395833332799","landslide-minimum-longitude":"169.05312500000002","landslide-overlay":"jessee_2017.png","landslide-population-alert-color":"yellow","landslide-population-alert-parameter":"Population
-        exposure","landslide-population-alert-value":"770","latitude":"-42.7373","liquefaction-alert":"yellow","liquefaction-hazard-alert-color":"yellow","liquefaction-hazard-alert-parameter":"Aggregate
-        Hazard","liquefaction-hazard-alert-value":"90.0","liquefaction-maximum-latitude":"-39.805269154579236","liquefaction-maximum-longitude":"177.05409577702926","liquefaction-minimum-latitude":"-45.67158659411254","liquefaction-minimum-longitude":"169.05428096651053","liquefaction-overlay":"zhu_2017_general.png","liquefaction-population-alert-color":"yellow","liquefaction-population-alert-parameter":"Population
-        exposure","liquefaction-population-alert-value":"8500","longitude":"173.054","magnitude":"7.8","maximum-latitude":"-40.84062418563268","maximum-longitude":"174.94789453395427","minimum-latitude":"-43.07382457454472","minimum-longitude":"172.62916666666666","pdl-client-version":"Version
-        1.14.0 2018-04-02","rupture-warning":"False","shakemap-version":"1"},"preferredWeight":156,"contents":{"contents.xml":{"contentType":"application/xml","lastModified":1526310416000,"length":1587,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/contents.xml"},"godt_2008.hdf5":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":60591,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/godt_2008.hdf5"},"godt_2008.png":{"contentType":"image/png","lastModified":1526310416000,"length":50068,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/godt_2008.png"},"godt_2008_model.flt":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":2707280,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/godt_2008_model.flt"},"godt_2008_model.hdr":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":106,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/godt_2008_model.hdr"},"godt_2008_model.tif":{"contentType":"image/tiff","lastModified":1526310416000,"length":2710402,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/godt_2008_model.tif"},"info.json":{"contentType":"application/json","lastModified":1526310416000,"length":4150,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/info.json"},"jessee_2017.hdf5":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":10588550,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/jessee_2017.hdf5"},"jessee_2017.png":{"contentType":"image/png","lastModified":1526310416000,"length":395538,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/jessee_2017.png"},"jessee_2017_model.flt":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":43299920,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/jessee_2017_model.flt"},"jessee_2017_model.hdr":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":108,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/jessee_2017_model.hdr"},"jessee_2017_model.tif":{"contentType":"image/tiff","lastModified":1526310416000,"length":43322770,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/jessee_2017_model.tif"},"nowicki_2014_global.hdf5":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":2892741,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/nowicki_2014_global.hdf5"},"nowicki_2014_global.png":{"contentType":"image/png","lastModified":1526310416000,"length":88248,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/nowicki_2014_global.png"},"nowicki_2014_global_model.flt":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":10828880,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/nowicki_2014_global_model.flt"},"nowicki_2014_global_model.hdr":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":108,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/nowicki_2014_global_model.hdr"},"nowicki_2014_global_model.tif":{"contentType":"image/tiff","lastModified":1526310416000,"length":10840458,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/nowicki_2014_global_model.tif"},"zhu_2015.hdf5":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":3025078,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2015.hdf5"},"zhu_2015_model.flt":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":10813520,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2015_model.flt"},"zhu_2015_model.hdr":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":108,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2015_model.hdr"},"zhu_2015_model.tif":{"contentType":"image/tiff","lastModified":1526310416000,"length":10825082,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2015_model.tif"},"zhu_2017_general.hdf5":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":285565,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2017_general.hdf5"},"zhu_2017_general.png":{"contentType":"image/png","lastModified":1526310416000,"length":80798,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2017_general.png"},"zhu_2017_general_model.flt":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":10813520,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2017_general_model.flt"},"zhu_2017_general_model.hdr":{"contentType":"application/octet-stream","lastModified":1526310416000,"length":108,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2017_general_model.hdr"},"zhu_2017_general_model.tif":{"contentType":"image/tiff","lastModified":1526310416000,"length":10825082,"url":"https://earthquake.usgs.gov/archive/product/ground-failure/1000778i/us/1526311117235/zhu_2017_general_model.tif"}}}],"impact-link":[{"indexid":"105470201","indexTime":1479045005101,"id":"urn:usgs-product:at:impact-link:at00ogkuoy-tsunamilinks_at_v4:1479045003251","type":"impact-link","code":"at00ogkuoy-tsunamilinks_at_v4","source":"at","updateTime":1479045003251,"status":"UPDATE","properties":{"addon-code":"TsunamiLinks_AT_v4","addon-type":"LinkURL","eventsource":"at","eventsourcecode":"00ogkuoy","text":"4-Tsunami
-        Information Statement from the NTWC","url":"http://ntwc.arh.noaa.gov/events/PAAQ/2016/11/13/ogkuoy/4/WEAK53/WEAK53.txt","version":"04"},"preferredWeight":6,"contents":[]},{"indexid":"105469481","indexTime":1479042419639,"id":"urn:usgs-product:at:impact-link:at00ogkuoy-tsunamilinks_at_v3:1479042417717","type":"impact-link","code":"at00ogkuoy-tsunamilinks_at_v3","source":"at","updateTime":1479042417717,"status":"UPDATE","properties":{"addon-code":"TsunamiLinks_AT_v3","addon-type":"LinkURL","eventsource":"at","eventsourcecode":"00ogkuoy","text":"3-Tsunami
-        Information Statement from the NTWC","url":"http://ntwc.arh.noaa.gov/events/PAAQ/2016/11/13/ogkuoy/3/WEAK53/WEAK53.txt","version":"03"},"preferredWeight":6,"contents":[]},{"indexid":"105468121","indexTime":1479035686543,"id":"urn:usgs-product:at:impact-link:at00ogkuoy-tsunamilinks_at_v1:1479035684991","type":"impact-link","code":"at00ogkuoy-tsunamilinks_at_v1","source":"at","updateTime":1479035684991,"status":"UPDATE","properties":{"addon-code":"TsunamiLinks_AT_v1","addon-type":"LinkURL","eventsource":"at","eventsourcecode":"00ogkuoy","text":"1-Tsunami
-        Information Statement from the NTWC","url":"http://ntwc.arh.noaa.gov/events/PAAQ/2016/11/13/ogkuoy/1/WEAK53/WEAK53.txt","version":"01"},"preferredWeight":6,"contents":[]}],"impact-text":[{"indexid":"135548921","indexTime":1486609365548,"id":"urn:usgs-product:us:impact-text:us1000778i:1486609341040","type":"impact-text","code":"us1000778i","source":"us","updateTime":1486609341040,"status":"UPDATE","properties":{"eventParametersPublicID":"quakeml:us.anss.org/eventparameters/1000778i/1486609344","eventsource":"us","eventsourcecode":"1000778i"},"preferredWeight":6,"contents":{"":{"contentType":"text/plain","lastModified":1486609341000,"length":1188,"bytes":"One
-        person killed at Kaikoura and one person died from a heart attack at Mount
-        Lyford. The city of Kaikoura was cut off by road due to landslides, road subsidence
-        and damage to bridges and other infrastructure. Widespread damage to buildings
-        and docks and power outages occurred in Wellington. A tsunami with a 4.1 m
-        runup height struck Little Pigeon Bay on Banks Peninsula damaging one house.
-        A tsunami was also observed at Christchurch and Napier and it was recorded
-        with the following wave amplitudes on these tide gauges: 97 cm at Kaikoura,
-        50 cm at Wellington, 18 cm at Castle Point and 22 cm on Chatham Island. Roads
-        between Picton and Waipara and Waipara and Springs Junction experienced faulting.
-        Preliminary studies by GNS Science, New Zealand, indicate that surface faulting
-        was observed on at least 12 faults, with a maximum uplift of about 10 m and
-        about 110 km of coastal uplift was observed in Marlborough and northern Canterbury.
-        Felt (VIII) at Amberley, (VII) at Blenheim and (VI) at Brightwater, Carterton,
-        Kapiti, Lower Hutt, Lyttelton, Nelson, Porirua, Rangiora, Richmond, Wanganui
-        and Wellington. Felt in most of New Zealand, from Northland and Gisborne to
-        Southland.\n"}}}],"losspager":[{"indexid":"134716961","indexTime":1486445187082,"id":"urn:usgs-product:us:losspager:us1000778i:1486445176414","type":"losspager","code":"us1000778i","source":"us","updateTime":1486445176414,"status":"UPDATE","properties":{"alertlevel":"orange","depth":"15.11","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T11:02:56.000Z","latitude":"-42.7373","longitude":"173.054","magnitude":"7.8","maxmmi":"8.0"},"preferredWeight":156,"contents":{"alertecon.pdf":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":10635,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertecon.pdf"},"alertecon.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":15209,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertecon.png"},"alertecon_small.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":8555,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertecon_small.png"},"alertecon_smaller.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":4661,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertecon_smaller.png"},"alertfatal.pdf":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":9650,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertfatal.pdf"},"alertfatal.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":13530,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertfatal.png"},"alertfatal_small.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":7533,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertfatal_small.png"},"alertfatal_smaller.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":4136,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertfatal_smaller.png"},"alertsponge.pdf":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":7723,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertsponge.pdf"},"alertsponge.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":37839,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertsponge.png"},"alertsponge_small.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":6452,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/alertsponge_small.png"},"contents.xml":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":909,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/contents.xml"},"empfat.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":44201,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/empfat.png"},"emphist.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":50473,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/emphist.png"},"empprob.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":26361,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/empprob.png"},"expolegend.pdf":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":124624,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/expolegend.pdf"},"expolegend.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":69683,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/expolegend.png"},"exposure.pdf":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":116331,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/exposure.pdf"},"exposure.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":118923,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/exposure.png"},"exposure.xml":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":17951,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/exposure.xml"},"exposure_small.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":98273,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/exposure_small.png"},"grid.xml":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":5818344,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/grid.xml"},"historical_events.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":96671,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/historical_events.png"},"history.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":82908,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/history.png"},"location.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":13364,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/location.png"},"onepager.pdf":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":457167,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/onepager.pdf"},"pager.xml":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":19290,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/pager.xml"},"pagerexpo.kmz":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":230367,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/pagerexpo.kmz"},"semi_inventory.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":115457,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/semi_inventory.png"},"temp.png":{"contentType":"application/octet-stream","lastModified":1486445173000,"length":145277,"url":"https://earthquake.usgs.gov/archive/product/losspager/us1000778i/us/1486445176414/temp.png"}}}],"moment-tensor":[{"indexid":"135548931","indexTime":1486609366108,"id":"urn:usgs-product:us:moment-tensor:us_1000778i_mww:1486609341040","type":"moment-tensor","code":"us_1000778i_mww","source":"us","updateTime":1486609341040,"status":"UPDATE","properties":{"beachball-source":"us","depth":"15.11","derived-depth":"15.5","derived-eventtime":"2016-11-13T11:03:55.000Z","derived-latitude":"-42.2800","derived-longitude":"173.9500","derived-magnitude":"7.8","derived-magnitude-type":"Mww","evaluation-status":"reviewed","eventParametersPublicID":"quakeml:us.anss.org/eventparameters/1000778i/1486609344","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T11:02:56.340Z","latitude":"-42.7373","longitude":"173.0540","n-axis-azimuth":"8","n-axis-length":"1.66018E+20","n-axis-plunge":"22","nodal-plane-1-dip":"61","nodal-plane-1-rake":"64","nodal-plane-1-strike":"354","nodal-plane-2-dip":"38","nodal-plane-2-rake":"128","nodal-plane-2-strike":"219","p-axis-azimuth":"103","p-axis-length":"-7.72139E+20","p-axis-plunge":"12","percent-double-couple":"0.57","quakeml-publicid":"quakeml:us.anss.org/focalmechanism/1000778i/mww","review-status":"reviewed","scalar-moment":"7.04E+20","sourcetime-decaytime":"58","sourcetime-duration":"116","sourcetime-risetime":"58","sourcetime-type":"triangle","t-axis-azimuth":"219","t-axis-length":"6.06121E+20","t-axis-plunge":"64","tensor-mpp":"-6.537E+20","tensor-mrp":"2.986E+20","tensor-mrr":"4.81E+20","tensor-mrt":"-9.06E+19","tensor-mtp":"-2.323E+20","tensor-mtt":"1.726E+20"},"preferredWeight":216,"contents":{"contents.xml":{"contentType":"application/xml","lastModified":1486609362000,"length":195,"url":"https://earthquake.usgs.gov/archive/product/moment-tensor/us_1000778i_mww/us/1486609341040/contents.xml"},"quakeml.xml":{"contentType":"application/xml","lastModified":1486609341000,"length":5692,"url":"https://earthquake.usgs.gov/archive/product/moment-tensor/us_1000778i_mww/us/1486609341040/quakeml.xml"}}}],"origin":[{"indexid":"135548901","indexTime":1486609363266,"id":"urn:usgs-product:us:origin:us1000778i:1486609341040","type":"origin","code":"us1000778i","source":"us","updateTime":1486609341040,"status":"UPDATE","properties":{"azimuthal-gap":"21","depth":"15.11","depth-type":"from
-        location","error-ellipse-azimuth":"117","error-ellipse-intermediate":"5900","error-ellipse-major":"8300","error-ellipse-minor":"4900","error-ellipse-plunge":"0","error-ellipse-rotation":"275","evaluation-status":"reviewed","event-type":"earthquake","eventParametersPublicID":"quakeml:us.anss.org/eventparameters/1000778i/1486609344","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T11:02:56.340Z","eventtime-error":"1.13","horizontal-error":"4.6","latitude":"-42.7373","latitude-error":"0.0387","longitude":"173.0540","longitude-error":"0.0637","magnitude":"7.8","magnitude-source":"us","magnitude-type":"mww","minimum-distance":"0.481","num-phases-used":"172","origin-source":"us","quakeml-magnitude-publicid":"quakeml:us.anss.org/magnitude/1000778i/mww","quakeml-origin-publicid":"quakeml:us.anss.org/origin/1000778i","quakeml-publicid":"quakeml:us.anss.org/event/1000778i","review-status":"reviewed","standard-error":"0.56","vertical-error":"3.2"},"preferredWeight":156,"contents":{"contents.xml":{"contentType":"application/xml","lastModified":1486609362000,"length":195,"url":"https://earthquake.usgs.gov/archive/product/origin/us1000778i/us/1486609341040/contents.xml"},"quakeml.xml":{"contentType":"application/xml","lastModified":1486609341000,"length":3560,"url":"https://earthquake.usgs.gov/archive/product/origin/us1000778i/us/1486609341040/quakeml.xml"}}},{"indexid":"105468101","indexTime":1479035683931,"id":"urn:usgs-product:at:origin:at00ogkuoy:1479035682421","type":"origin","code":"at00ogkuoy","source":"at","updateTime":1479035682421,"status":"UPDATE","properties":{"azimuthal-gap":"129.5999896320008294399336448053084","cube-location-method":"l","cube-magnitude-type":"I","depth":"10","depth-method":"Fixed","event-type":"earthquake","eventsource":"at","eventsourcecode":"00ogkuoy","eventtime":"2016-11-13T11:02:58.000Z","horizontal-error":"0","latitude":"-42.8","location-method-algorithm":"l","location-method-class":"CUBE_Code","longitude":"173","magnitude":"7.4","magnitude-num-stations-used":"12","magnitude-type":"Mi","minimum-distance":"0E+61","num-phases-used":"36","num-stations-used":"36","review-status":"REVIEWED","standard-error":"1.67","version":"1","vertical-error":"0"},"preferredWeight":6,"contents":{"contents.xml":{"contentType":"text/plain","lastModified":1479035682000,"length":272,"url":"https://earthquake.usgs.gov/archive/product/origin/at00ogkuoy/at/1479035682421/contents.xml"},"eqxml.xml":{"contentType":"text/plain","lastModified":1479035682000,"length":1023,"url":"https://earthquake.usgs.gov/archive/product/origin/at00ogkuoy/at/1479035682421/eqxml.xml"}}}],"phase-data":[{"indexid":"135548911","indexTime":1486609364388,"id":"urn:usgs-product:us:phase-data:us1000778i:1486609341040","type":"phase-data","code":"us1000778i","source":"us","updateTime":1486609341040,"status":"UPDATE","properties":{"azimuthal-gap":"21","depth":"15.11","depth-type":"from
-        location","error-ellipse-azimuth":"117","error-ellipse-intermediate":"5900","error-ellipse-major":"8300","error-ellipse-minor":"4900","error-ellipse-plunge":"0","error-ellipse-rotation":"275","evaluation-status":"reviewed","event-type":"earthquake","eventParametersPublicID":"quakeml:us.anss.org/eventparameters/1000778i/1486609344","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T11:02:56.340Z","eventtime-error":"1.13","horizontal-error":"4.6","latitude":"-42.7373","latitude-error":"0.0387","longitude":"173.0540","longitude-error":"0.0637","magnitude":"7.8","magnitude-source":"us","magnitude-type":"mww","minimum-distance":"0.481","num-phases-used":"172","origin-source":"us","quakeml-magnitude-publicid":"quakeml:us.anss.org/magnitude/1000778i/mww","quakeml-origin-publicid":"quakeml:us.anss.org/origin/1000778i","quakeml-publicid":"quakeml:us.anss.org/event/1000778i","review-status":"reviewed","standard-error":"0.56","vertical-error":"3.2"},"preferredWeight":156,"contents":{"contents.xml":{"contentType":"application/xml","lastModified":1486609362000,"length":195,"url":"https://earthquake.usgs.gov/archive/product/phase-data/us1000778i/us/1486609341040/contents.xml"},"quakeml.xml":{"contentType":"application/xml","lastModified":1486609341000,"length":960986,"url":"https://earthquake.usgs.gov/archive/product/phase-data/us1000778i/us/1486609341040/quakeml.xml"}}}],"poster":[{"indexid":"105688511","indexTime":1479480483660,"id":"urn:usgs-product:us:poster:20161113:1479480420645","type":"poster","code":"20161113","source":"us","updateTime":1479480420645,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i"},"preferredWeight":6,"contents":{"Thumbs.db":{"contentType":"application/octet-stream","lastModified":1479480283000,"length":62976,"url":"https://earthquake.usgs.gov/archive/product/poster/20161113/us/1479480420645/Thumbs.db"},"contents.xml":{"contentType":"application/xml","lastModified":1452016894000,"length":427,"url":"https://earthquake.usgs.gov/archive/product/poster/20161113/us/1479480420645/contents.xml"},"poster.jpg":{"contentType":"image/jpeg","lastModified":1479051348000,"length":23298263,"url":"https://earthquake.usgs.gov/archive/product/poster/20161113/us/1479480420645/poster.jpg"},"poster.low.jpg":{"contentType":"image/jpeg","lastModified":1479051745000,"length":55339,"url":"https://earthquake.usgs.gov/archive/product/poster/20161113/us/1479480420645/poster.low.jpg"},"poster.medium.jpg":{"contentType":"image/jpeg","lastModified":1479051702000,"length":412469,"url":"https://earthquake.usgs.gov/archive/product/poster/20161113/us/1479480420645/poster.medium.jpg"},"poster.pdf":{"contentType":"application/pdf","lastModified":1479051263000,"length":24913623,"url":"https://earthquake.usgs.gov/archive/product/poster/20161113/us/1479480420645/poster.pdf"},"poster.small.jpg":{"contentType":"image/jpeg","lastModified":1479051720000,"length":117851,"url":"https://earthquake.usgs.gov/archive/product/poster/20161113/us/1479480420645/poster.small.jpg"}}}],"scitech-link":[{"indexid":"105700771","indexTime":1479504218547,"id":"urn:usgs-product:admin:scitech-link:eventadmin-us1000778i-1479503944172:1479504217592","type":"scitech-link","code":"eventadmin-us1000778i-1479503944172","source":"admin","updateTime":1479504217592,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","text":"Interactive
-        Google Map with Ground Motions and Response Spectra (NZSEE)","url":"http://www.nzsee.org.nz/db/Miscellaneous/Google_Map_view_of_PGAs.html"},"preferredWeight":1,"contents":[]},{"indexid":"105700601","indexTime":1479503938371,"id":"urn:usgs-product:admin:scitech-link:eventadmin-us1000778i-1479503849489:1479503938161","type":"scitech-link","code":"eventadmin-us1000778i-1479503849489","source":"admin","updateTime":1479503938161,"status":"UPDATE","properties":{"eventsource":"us","eventsourcecode":"1000778i","text":"Kaikoura,
-        New Zealand Earthquake Clearinghouse (EERI, NZSEE, GNS, and QuakeCoRE)","url":"http://www.eqclearinghouse.org/2016-11-13-kaikoura/"},"preferredWeight":1,"contents":[]}],"shakemap":[{"indexid":"152698261","indexTime":1520904471048,"id":"urn:usgs-product:atlas:shakemap:atlas20161113110256:1520904388136","type":"shakemap","code":"atlas20161113110256","source":"atlas","updateTime":1520904388136,"status":"UPDATE","properties":{"depth":"15.11","event-description":"SOUTH
-        ISLAND OF NEW ZEALAND","event-type":"ACTUAL","eventsource":"atlas","eventsourcecode":"20161113110256","eventtime":"2016-11-13T11:02:56.000Z","latitude":"-42.7373","longitude":"173.0540","magnitude":"7.8","map-status":"RELEASED","maximum-latitude":"-39.801300","maximum-longitude":"177.054000","maxmmi":"8.9","minimum-latitude":"-45.673300","minimum-longitude":"169.054000","overlayHeight":"344","overlayWidth":"468","process-timestamp":"2018-03-12T21:55:24.000Z","reviewstatus":"automatic","version":"1"},"preferredWeight":281,"contents":{"about_formats.html":{"contentType":"text/html","lastModified":1520892069000,"length":28824,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/about_formats.html"},"contents.xml":{"contentType":"application/xml","lastModified":1520892074000,"length":8042,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/contents.xml"},"download/20161113110256.kml":{"contentType":"application/vnd.google-earth.kml+xml","lastModified":1520892056000,"length":1034,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/20161113110256.kml"},"download/20161113110256.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892057000,"length":731711,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/20161113110256.kmz"},"download/bradley_fault.txt":{"contentType":"text/plain","lastModified":1520892045000,"length":1423,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/bradley_fault.txt"},"download/cont_mi.json":{"contentType":"application/json","lastModified":1520892057000,"length":644862,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_mi.json"},"download/cont_mi.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":136961,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_mi.kmz"},"download/cont_pga.json":{"contentType":"application/json","lastModified":1520892057000,"length":92894,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_pga.json"},"download/cont_pga.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":19881,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_pga.kmz"},"download/cont_pgv.json":{"contentType":"application/json","lastModified":1520892057000,"length":218630,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_pgv.json"},"download/cont_pgv.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":46216,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_pgv.kmz"},"download/cont_psa03.json":{"contentType":"application/json","lastModified":1520892057000,"length":60458,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_psa03.json"},"download/cont_psa03.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":13327,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_psa03.kmz"},"download/cont_psa10.json":{"contentType":"application/json","lastModified":1520892057000,"length":153485,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_psa10.json"},"download/cont_psa10.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":32892,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_psa10.kmz"},"download/cont_psa30.json":{"contentType":"application/json","lastModified":1520892057000,"length":141492,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_psa30.json"},"download/cont_psa30.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":30223,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/cont_psa30.kmz"},"download/epicenter.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":1290,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/epicenter.kmz"},"download/event.txt":{"contentType":"text/plain","lastModified":1520892045000,"length":126,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/event.txt"},"download/fault.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":4009,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/fault.kmz"},"download/grid.xml":{"contentType":"application/xml","lastModified":1520892045000,"length":40872981,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/grid.xml"},"download/hazus.zip":{"contentType":"application/zip","lastModified":1520892057000,"length":15169182,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/hazus.zip"},"download/ii_overlay.png":{"contentType":"image/png","lastModified":1520892056000,"length":97419,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/ii_overlay.png"},"download/ii_thumbnail.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":3531,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/ii_thumbnail.jpg"},"download/info.json":{"contentType":"application/json","lastModified":1520892045000,"length":2426,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/info.json"},"download/intensity.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":94524,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/intensity.jpg"},"download/metadata.txt":{"contentType":"text/plain","lastModified":1520892055000,"length":33433,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/metadata.txt"},"download/mi_regr.png":{"contentType":"image/png","lastModified":1520892045000,"length":45432,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/mi_regr.png"},"download/overlay.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892056000,"length":97717,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/overlay.kmz"},"download/pga.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":79816,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/pga.jpg"},"download/pga_regr.png":{"contentType":"image/png","lastModified":1520892045000,"length":49363,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/pga_regr.png"},"download/pgv.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":80793,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/pgv.jpg"},"download/pgv_regr.png":{"contentType":"image/png","lastModified":1520892045000,"length":46723,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/pgv_regr.png"},"download/polygons_mi.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892057000,"length":316964,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/polygons_mi.kmz"},"download/psa03.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":79101,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/psa03.jpg"},"download/psa03_regr.png":{"contentType":"image/png","lastModified":1520892045000,"length":50972,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/psa03_regr.png"},"download/psa10.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":79322,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/psa10.jpg"},"download/psa10_regr.png":{"contentType":"image/png","lastModified":1520892045000,"length":46104,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/psa10_regr.png"},"download/psa30.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":79589,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/psa30.jpg"},"download/psa30_regr.png":{"contentType":"image/png","lastModified":1520892045000,"length":44897,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/psa30_regr.png"},"download/raster.zip":{"contentType":"application/zip","lastModified":1520892065000,"length":34695493,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/raster.zip"},"download/sd.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":69307,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/sd.jpg"},"download/shape.zip":{"contentType":"application/zip","lastModified":1520892057000,"length":34165735,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/shape.zip"},"download/stationlist.json":{"contentType":"application/json","lastModified":1520892069000,"length":335341,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/stationlist.json"},"download/stationlist.txt":{"contentType":"text/plain","lastModified":1520892069000,"length":45801,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/stationlist.txt"},"download/stationlist.xml":{"contentType":"application/xml","lastModified":1520892045000,"length":209105,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/stationlist.xml"},"download/stations.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1520892057000,"length":21375,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/stations.kmz"},"download/tvguide.txt":{"contentType":"text/plain","lastModified":1520892045000,"length":8778,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/tvguide.txt"},"download/tvmap.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":115065,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/tvmap.jpg"},"download/tvmap_bare.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":116563,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/tvmap_bare.jpg"},"download/uncertainty.xml.zip":{"contentType":"application/zip","lastModified":1520892049000,"length":3544113,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/uncertainty.xml.zip"},"download/urat_pga.jpg":{"contentType":"image/jpeg","lastModified":1520892045000,"length":69307,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/download/urat_pga.jpg"},"intensity.html":{"contentType":"text/html","lastModified":1520892069000,"length":47220,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/intensity.html"},"origin_quakeml.xml":{"contentType":"application/xml","lastModified":1520904387000,"length":1476,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/origin_quakeml.xml"},"pga.html":{"contentType":"text/html","lastModified":1520892069000,"length":47012,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/pga.html"},"pgv.html":{"contentType":"text/html","lastModified":1520892069000,"length":47012,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/pgv.html"},"products.html":{"contentType":"text/html","lastModified":1520892069000,"length":18897,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/products.html"},"psa03.html":{"contentType":"text/html","lastModified":1520892069000,"length":48179,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/psa03.html"},"psa10.html":{"contentType":"text/html","lastModified":1520892069000,"length":48178,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/psa10.html"},"psa30.html":{"contentType":"text/html","lastModified":1520892069000,"length":48178,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/psa30.html"},"stationlist.html":{"contentType":"text/html","lastModified":1520892069000,"length":603072,"url":"https://earthquake.usgs.gov/archive/product/shakemap/atlas20161113110256/atlas/1520904388136/stationlist.html"}}},{"indexid":"134715431","indexTime":1486444880370,"id":"urn:usgs-product:us:shakemap:us1000778i:1486444861102","type":"shakemap","code":"us1000778i","source":"us","updateTime":1486444861102,"status":"UPDATE","properties":{"depth":"15.11","event-description":"SOUTH
-        ISLAND OF NEW ZEALAND","event-type":"ACTUAL","eventsource":"us","eventsourcecode":"1000778i","eventtime":"2016-11-13T11:02:56.000Z","latitude":"-42.737300","longitude":"173.054000","magnitude":"7.8","map-status":"RELEASED","maximum-latitude":"-40.035300","maximum-longitude":"177.554000","maxmmi":"8.85","minimum-latitude":"-44.439300","minimum-longitude":"171.554000","overlayHeight":"344","overlayWidth":"468","process-timestamp":"2017-02-07T05:14:29Z","version":"16"},"preferredWeight":231,"contents":{"about_formats.html":{"contentType":"text/html","lastModified":1486444853000,"length":28820,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/about_formats.html"},"contents.xml":{"contentType":"application/xml","lastModified":1486444860000,"length":9584,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/contents.xml"},"download/1000778i.kml":{"contentType":"application/vnd.google-earth.kml+xml","lastModified":1486444847000,"length":1032,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/1000778i.kml"},"download/bradley_fault.txt":{"contentType":"text/plain","lastModified":1486444844000,"length":1423,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/bradley_fault.txt"},"download/cont_mi.json":{"contentType":"application/json","lastModified":1486444847000,"length":225880,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_mi.json"},"download/cont_mi.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":48922,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_mi.kmz"},"download/cont_pga.json":{"contentType":"application/json","lastModified":1486444847000,"length":33409,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_pga.json"},"download/cont_pga.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":7704,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_pga.kmz"},"download/cont_pgv.json":{"contentType":"application/json","lastModified":1486444847000,"length":112008,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_pgv.json"},"download/cont_pgv.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":24040,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_pgv.kmz"},"download/cont_psa03.json":{"contentType":"application/json","lastModified":1486444847000,"length":31221,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_psa03.json"},"download/cont_psa03.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":7213,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_psa03.kmz"},"download/cont_psa10.json":{"contentType":"application/json","lastModified":1486444847000,"length":77620,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_psa10.json"},"download/cont_psa10.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":16690,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_psa10.kmz"},"download/cont_psa30.json":{"contentType":"application/json","lastModified":1486444847000,"length":71265,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_psa30.json"},"download/cont_psa30.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":15629,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/cont_psa30.kmz"},"download/epicenter.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":1252,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/epicenter.kmz"},"download/event.txt":{"contentType":"text/plain","lastModified":1486444844000,"length":122,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/event.txt"},"download/fault.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":3975,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/fault.kmz"},"download/grid.xml":{"contentType":"application/xml","lastModified":1486444844000,"length":5818344,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/grid.xml"},"download/grid.xml.zip":{"contentType":"application/zip","lastModified":1486444845000,"length":1338977,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/grid.xml.zip"},"download/grid.xyz.zip":{"contentType":"application/zip","lastModified":1486444846000,"length":1133602,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/grid.xyz.zip"},"download/hazus.zip":{"contentType":"application/zip","lastModified":1486444847000,"length":4387046,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/hazus.zip"},"download/ii_overlay.png":{"contentType":"image/png","lastModified":1486444846000,"length":115768,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/ii_overlay.png"},"download/ii_thumbnail.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":3359,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/ii_thumbnail.jpg"},"download/info.json":{"contentType":"application/json","lastModified":1486444844000,"length":2424,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/info.json"},"download/intensity.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":87522,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/intensity.jpg"},"download/intensity.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":459444,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/intensity.ps.zip"},"download/metadata.txt":{"contentType":"text/plain","lastModified":1486444846000,"length":33494,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/metadata.txt"},"download/mi_regr.png":{"contentType":"image/png","lastModified":1486444844000,"length":59379,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/mi_regr.png"},"download/overlay.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":114957,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/overlay.kmz"},"download/pga.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":74983,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/pga.jpg"},"download/pga.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":488412,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/pga.ps.zip"},"download/pga_regr.png":{"contentType":"image/png","lastModified":1486444844000,"length":63936,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/pga_regr.png"},"download/pgv.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":76509,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/pgv.jpg"},"download/pgv.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":491854,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/pgv.ps.zip"},"download/pgv_regr.png":{"contentType":"image/png","lastModified":1486444844000,"length":62808,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/pgv_regr.png"},"download/polygons_mi.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444847000,"length":121160,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/polygons_mi.kmz"},"download/psa03.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":74446,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa03.jpg"},"download/psa03.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":488337,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa03.ps.zip"},"download/psa03_regr.png":{"contentType":"image/png","lastModified":1486444844000,"length":65747,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa03_regr.png"},"download/psa10.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":74853,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa10.jpg"},"download/psa10.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":490516,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa10.ps.zip"},"download/psa10_regr.png":{"contentType":"image/png","lastModified":1486444844000,"length":60265,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa10_regr.png"},"download/psa30.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":75122,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa30.jpg"},"download/psa30.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":490262,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa30.ps.zip"},"download/psa30_regr.png":{"contentType":"image/png","lastModified":1486444844000,"length":59153,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/psa30_regr.png"},"download/raster.zip":{"contentType":"application/zip","lastModified":1486444848000,"length":5182209,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/raster.zip"},"download/rock_grid.xml.zip":{"contentType":"application/zip","lastModified":1486444845000,"length":1066776,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/rock_grid.xml.zip"},"download/sd.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":66863,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/sd.jpg"},"download/shape.zip":{"contentType":"application/zip","lastModified":1486444847000,"length":9207385,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/shape.zip"},"download/stationlist.json":{"contentType":"application/json","lastModified":1486444854000,"length":333537,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/stationlist.json"},"download/stationlist.txt":{"contentType":"text/plain","lastModified":1486444854000,"length":45825,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/stationlist.txt"},"download/stationlist.xml":{"contentType":"application/xml","lastModified":1486444844000,"length":209083,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/stationlist.xml"},"download/stations.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444846000,"length":21316,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/stations.kmz"},"download/tvguide.txt":{"contentType":"text/plain","lastModified":1486444844000,"length":8774,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/tvguide.txt"},"download/tvmap.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":101171,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/tvmap.jpg"},"download/tvmap.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":1049580,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/tvmap.ps.zip"},"download/tvmap_bare.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":101415,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/tvmap_bare.jpg"},"download/tvmap_bare.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":1049503,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/tvmap_bare.ps.zip"},"download/uncertainty.xml.zip":{"contentType":"application/zip","lastModified":1486444845000,"length":579448,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/uncertainty.xml.zip"},"download/urat_pga.jpg":{"contentType":"image/jpeg","lastModified":1486444844000,"length":66863,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/urat_pga.jpg"},"download/urat_pga.ps.zip":{"contentType":"application/zip","lastModified":1486444844000,"length":70668,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/urat_pga.ps.zip"},"download/us1000778i.kml":{"contentType":"application/vnd.google-earth.kml+xml","lastModified":1486444846000,"length":1032,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/us1000778i.kml"},"download/us1000778i.kmz":{"contentType":"application/vnd.google-earth.kmz","lastModified":1486444847000,"length":393194,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/download/us1000778i.kmz"},"intensity.html":{"contentType":"text/html","lastModified":1486444853000,"length":41355,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/intensity.html"},"pga.html":{"contentType":"text/html","lastModified":1486444853000,"length":41147,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/pga.html"},"pgv.html":{"contentType":"text/html","lastModified":1486444853000,"length":41147,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/pgv.html"},"products.html":{"contentType":"text/html","lastModified":1486444853000,"length":18885,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/products.html"},"psa03.html":{"contentType":"text/html","lastModified":1486444853000,"length":42314,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/psa03.html"},"psa10.html":{"contentType":"text/html","lastModified":1486444853000,"length":42313,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/psa10.html"},"psa30.html":{"contentType":"text/html","lastModified":1486444853000,"length":42313,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/psa30.html"},"stationlist.html":{"contentType":"text/html","lastModified":1486444854000,"length":518799,"url":"https://earthquake.usgs.gov/archive/product/shakemap/us1000778i/us/1486444861102/stationlist.html"}}}]}},"geometry":{"type":"Point","coordinates":[173.054,-42.7373,15.11]},"id":"us1000778i"}'}
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA+19e5PbNrLvV2HNPzepHVIEAb6m9m7VxBknPhs7XtuJb2WTmuJIHIkZilRIah7e
+        8v3stxvg+6GhKJLe3Er2nGQEEED/gEajAXQ3/nOWPO3cs4uzl66T7CP37PxsF4U7N0o8Nz67+M/Z
+        1lmfXZiKaVf+seAz31liQZ3dbaU3b66k8Fa63N64ke8+nUtv3AfpF9fxnWAFVSbeFj4lzLRVymzT
+        oEw9P9vvVk7iriBd13Vq6JQaTGfw8SdoUMMPIh/q3yTJLr5YLFwnSjZ/7J07V9nH61hZh/eltHjh
+        3rtBsnPW7mIfE1VVTdPyoOlb10+gPgL1LVfe2YWtqFUoxvnZdgsZlmKrlX+AFMeHjgAawsgJ1tg3
+        cQK9BP1yFrn3nvvgcnDxPnCwBgL5HvQWMRhUGrhYEj6GhsMV9lSJKm+FlZw7iaqG67t9+HReEA2p
+        vhNrKjEIIZQQVdOhOqg73EdLNy0H34vvMAeHkKcvnd356unWO7/1Ai9x5Vtn7yfnazdwI8eXfS+4
+        y38k7iPmhLEb3bvn6yjcByv43vOBCc697c5ZJqJA+jf/3g/jGLs4Ot+GW+huSA3iMDoPI2/tBee7
+        jRO7Moyqc74L4wQ+i5dAxnIjaoo3MFBbIBFIDmLonWDv++dnq60XnF2oCrPUOo9F2xhzdKM6Mvr5
+        2drZnV1o0OPAnx8EB28fHtK+gB8FZ3D2S3xMfC2ZiiXJUh+WhVmw2i8TPgeW2Ni//3PmBSv30Vvx
+        odSZYcHQ4Fhi6ocShxtU1SxDw1FGDoiCC2RYOa0RflxAhRfFgGfF8DdTCwzYbM48FaYWrJCxl5hI
+        FQpEVSV+/entt5cfrhqzm0+aam2lpDrffsbi7q0bRe7qo+utNzCGBlIYJFgm7So+aZTHrc9/i7x0
+        iJzdzveWTuKFwQI/OD8DDk5ehyvv1uOSIOs/bBIy3WCdbM4udNWgfcSBEy033r27SHt6AcSUhAH8
+        uah0z6JC7OcCyEDioV5mUhVkV5l4YrNJaC/T+vnz5/MGe5q21sqeuqlqmml1saeTcPYsRFNWzLA0
+        ppEO9iw+L7Onk7SyZ1rVsezJa2uyZ97wTOwJ/VdlT2YzfegQF/0Gfy4q3fNfz54Haa+x528g52Fh
+        qotRXTMNHUiq8amuEaiKMQr/OyBGscaKHE3LUVjVS3KUN3y0IC3X9Tynrtwd9iYgUgipsmkPwZpm
+        CjXpDJd+mRCZ0A+EXKjahW4o8OUvfEhhLdvzwjLTFJOaFFPDYJ0lE5MqMPvP+MoYZKmw7vGUR67q
+        nNkK0hjst3LkxrswiLn6AEqSSH0Hifnv3cqXl76Hq/29G8XAXpD1s/hLIgqhCpWAYktWNVk1Wich
+        0evTcOVdg+6hJI9Jk5FR01iAdglaQYOH80Gp8jA1jEEzEDmjLmXL474oE/r5PKd72ARsJ57Zqq1N
+        SnwmPsTPa3K3HavjmTZwZe5Le05sSv8nbzcW7baJa+BEpGd0lsgek2c0A4T5pMSPs+R0cY02aM15
+        nvjKoiNWHOVu++kw5ffBCpoL174rcyp4ib6Sh5jTCJ6c9BQGn8hTQyHT8FSF/hKea6LC7IY/fo9x
+        UTkELFwmbiLHSeQ6295sZtjWtICqACrIpgRGYPpTc2JkLcB2fphcOwkgUZ4Hxr/oCcjU2DSrSCvZ
+        FTig7aAKNDIgSo0pWa9JeYYJRfd0fGeZZEK2K9NexjOp1ANExrSQUqHHFfxrPBsbdS2lqj4No9Xo
+        BQTF19dLz9sqv+/WTRjeFk9gf9+56956mEr0abiqjeAWHLvV7eHhwA/6KmY2yOZ50CBVbWjiZ8CE
+        cRIvI2+X9MWkW5Zp2fNgilsgcdVhJGazTHMiha2L6A48ozIdoJpo/9tFeheqCZgPZtQ0EroDQDu0
+        a+C1nbJJ2kQ333vyrL5C25hK4TlMeQu0MWERg2qzyIlOSGVVbxyBYQADTnNM0E12J6YJppep6ZNz
+        YhVBJ7qxzqSsfnfHIyFKT3nqmbl2Pg4bwoZCnwdVmfADuMZnRapSa3JBX8dwAOFI7KgRg02uEDYI
+        FzcuZSuA+s2LYZvMMkjj5oXaFoFNhWqRzhvCfXxRrrl6AyPKU0aoWdzAVAg5/iamVOfzNzHOvRvB
+        9JIjL3bl9EbFVCjef+RZ+x3ausj3rh8uveQJ+0OxdPgiv8bhNy4qT4lgVFZy7TbFbs+UU8CvH8a7
+        A1LVC/5/2R3Q5mkXLuFLN5If4UtKFVPn1JQyPgkMmsio3xrpJk8NxVztacPTuGQyeS1b59Hb7rfy
+        beT+sXeDpejMtPOyTBwLTNfqGbHv4U0Ty9OBUeq1IXCNZ0KP+fKKl7DUvAhPzabbmW0qejkjQhMQ
+        aLpeIE4ij+doul7NSUJsQCaKZpdSH7wVr1/LOQPmG/SUjP3yAJyFLMnMIn2XJRqlj+NNlqrZkCqs
+        iOQ2q6J4CR0fycLOBgHbhmFTpmb/UM00rIyU2F1zcxzS6J0ipw1wlqul5ajRzCnKaY1ytLMcPViO
+        peXMBp3sYDm9s5xeKsfq5bBrcXbH+xsugqA3nMh18FvTUkCWsmpmzkwa5DJbreZmnGArBjVoOU/L
+        qgVhZSuWqdvV3Lxe3VAswkg1N6tXp8DBulHOpDm9GlNsvVqSFvUSpmiGVSua1Ut0BbaJlUyW1Uuo
+        TRRmmXY1t5hVlkJ0k1Vz84qZQkyjQpOeV0xsTdE0vs6UcvOKDRsqto1qbl6xqWjU4usISEVIDlbh
+        Aw4mCvNMeMu3+2CZyrHL+GnrAh8sl2HsBW6/y+hMAg/YBqULE63dO+iD7nPLi2Rj4S8tgYsqwYDx
+        xesP73/84acPr358c9KpL7VNDSq2qrs61eRdNiGgMv0A5+XL16McYqdN1OxdiA4q1KAz0954ygAA
+        z40To9mjsgta9gInDw+1NEqmZbgyAIHHW157QWoOouycCOgdAZlZQ8Z0OuhY6xhgLUj4vfd257uJ
+        W8q7RZuYsUfPtNmw/XdviB1Ijrrb7zfPqlKQMDat0Khf9i/DvR9ubxQvGGWcqrxoU1WbepwK8j+j
+        0omKy3UEuyBlG40PiBKTDTLC6A2ohqCGaRRZaJk1WQjt2oNOIAehSsVhsf3scYs8aCpZdFreqyMA
+        ULgxG2mQmFE9ENGobgw6EemNJycegOB+C49HYuWTd6pgaBkbzdJNqk6rTlQhiKOdsk9H0zfBIjbR
+        W4y/LWpSQvhlUYfxNzpjXJQrv+CnEjxdLoiU09o0TbVts6hbtfmOKD0FqRCZH/v0qLB8HsS/rB8J
+        ldsb28vhnKv8kPKNextGruQEK8m5TdxIioEA34dBk3abMAljPC756HjODv4nfeM8SfEmhE3KWuJj
+        KsEWPtrx4ntgsltuC8+5ZAEc5uOWJueFslfOotErhgFiTWcL3hWLFLxqwE6PLLL2oXn5Baz1TuTB
+        FJb9dXaC29wAlbc///6t4TkAM5a1eQ6YsBMGZRNv40ZgHpNZtm2ALl7UTTXNHM48eYV9mCdvbzLm
+        ecH1rsdzCRUwdK4qH6dJhXyQZOkt/JC0C+klcg2yz82T9K3zdFYWKiBTbvwQJImz3ithtF6AlNre
+        QN+seVULPC9cELIgVqrxPcpZw3LgPsifRMNy0bAMrILHDrdpq/LKeVoMZRitYcKfjYhGLHU0hjEo
+        06yibgJLyWkMwyvsxzBpe/81DEMupPeuF29DYIsnZJk3fLQGMY1xHNMQOc5blgNsdjDjqEY745gE
+        skaTNAaIUFst6qYqPyQbzjiiwp6MI9qbmnGkq4JF3jle7MZSlvOvvRujhhNLX11+95N89eN76Wrl
+        JWH0v2Lp5x//z9dnDfUljDm/uPyrWL4PH3MOKTFDxJuRs5w/smZ6MUNJiRFAqkqMpWqgWTW4I3UV
+        hl2z3VOJwcovGksq+poSg1Z9j5sswSlrubCq1vIsH1QdnMfmg+c8dFSFSPw+SWWyarZcO7zLrh2e
+        Hbf/nDVVaNKiK2d4awc68OPmKeH3Hz9Di9JNHw3r7460AaL+969nB3WdX8/+UdbF/r5w/vGMPqYg
+        3sP601FX90JXswmrWcVobJiDz2GlMOW9TCkss9hzSmGLtyhsMa02b1HTtA2Tm/UMnWsqv64mtl5U
+        qNttit7BuZbX0kfm5o2MP9cmnzo5+dXjGg2HIJs7f99o//jgLpMw8JbS+/1260TA75D4a/D3Hfzr
+        w8aV3oT3Ll45SoSe89kvCe/3kiLhBfAV/JJeOHhpfLOPqpe+51K4XO4RkOTEUgKVRm6MEwkmZbxx
+        fD98kEJQJ0Duy9AvIHBcKdMmJRA9YSQF0BwveYNKBZAJUz55cN2AJ751lgB7yafk5R423o7vOdLO
+        h8GMkbr34R6oexULYkqUKdJlwmvI7rCRpGTjxSV455UmeKXSFjoFkIQ86wFWKznGJvAv6cGDttCA
+        Ajo2+6RGlOQkkiPh2Q+25+yAlR5BIIDIepKYKm23i6dIkbD33Z0nbuIFYW6l22PJge5IJKrKTJfu
+        thInQpDiAjdkZbYO9EG8j26dJVTwCOwVxzlWNyUp71gvSIdoDd/8uochZ/j7e+B2sbM4l1B5y0q/
+        diL/JozC/XojsqX4KU7cLWQCSmDTAPoBKAUCbnCmY8OfwsCVvuK1end7jInhSR94FV9nPbaLPOTG
+        DuLKA1qQeOnvvCAlUnTfIWjtPbrMtGcvuA/9e+RAR4KxC2KPk34bhdsyFAev7aU2KBmS8kiIaZIx
+        In6ANcPatS0YPtmkxWs4BaJsviwjYCnHz7CkbTWGno+aWLVEj3r+UwoNGXgDSml858EYrXCNi0Ck
+        cMQwj25Df8X/AHqgKZhvUEeSCos4Jcb7BNOD27pIX/1fDXnwa1E4n70RqhOlqVURKBIXkdCd6zXO
+        HEfynQiDgpQ6GAQCjiGQl0SQgkFFoJa8g+pM5eFc4XwOYxmESfotn4iwLLgcD2Tdojgp9ZnAkw6+
+        lzzlzIEEVpmBzyZcamC3BMRBb7vQBb7zBETC7klMSZjFMd+B3XjYt1wmOAHyGvQ/V1Ggu5d30spD
+        c4ObPUcgCOSt8EqIruKsTukMkHdk/u/65OZ1nWf9KETsLsT1wQMWAfYCPvMgDyUwnmmiUC0JtYtC
+        PHX2pwJLwmL3D74sfNx4Pu+sbRj4OEXDJBGyfRdCgRir3zo76IBSXJ1csiLTSE6EQhRVNhR+wJpC
+        +K1ctPW7EZUJSmE5yBkj5WQ0CVCkd2KlyM8dxFjFWb/wZposl65hpUmPpIAG4S1hYmXDRzT1UXT+
+        V2LllB4lbkzwtSK9RjMeztvZUsGZ2APWAV0gpTpb7wT5ASc5rVtT1UeD141SGahUpB/xKyTUloBd
+        oxgnny80Ti5i+YJbGmiYaQUPxdLGuXfzJs8lLoSgaFq9EFmvJaboyEqvJQP+4EcBObvxL5qSMW+x
+        tAxBDWkXGQ3mRLYs88mHgsXk+gpYlsmicFRdpwEVrhrQwbBz5POR80CFpW5CnFa5BK7VLBQ0DjWf
+        ZshZPERR+8oHCAOYMY1VG+uoaACpACwxFlDSVIzEVOSEw4xNGaWyCMVesMSNCy9My4VBWax3MNcv
+        oPz/7GFqEluzkQpYZfPf5fI5D/6O4pvCdAuSTZzuj9KVe7kRxS6h1D7iK6kdA9I4loQZFDesqyhD
+        dpmqmurTnG7QKxy16K6WZkSfLJ19DJSuHNwVSTBOgPL3PRIfhCBN3EZvZ9NY9Cig8uOcMZv9hoS9
+        2MDeJVlC+8vNufSw8QD7A0oZFCNc9vDGhQyH1MgTMqvJdTAA0Lgqw790XBqW/l4IbT6Garlv6g1z
+        ZRSWSwEDazkXm1Y+LQnwaQQrrI/aLWi8iVjj0DgJC750b6I98imUI+V59o3L+y/r/voqBt1TY3TB
+        e+c4xriYwQc3Lkew5EKdh1MTQjyAfvFuYTfC1+lsCeYdcw811ZZ4kPhb547LHtA3QtAyb2Ch4Iog
+        F/bwV4DDmcrxrYNAodXEu+dN8qlRUb5hILj9Zrb+5LdWIt5Y/bCHUtPWLNbYgFoG0YllG6qqHTBG
+        zmqthtQSZQ1WCamVE3B8XK1SfeNvK4+0xU1Dzr30MTjf2S3MIkS0T5Y/3t7GPO6cqal94iFl/THY
+        /zkbompEJMMcZmGVkdOIfFXq/EWV5o7QV+2R2XTD0g2b9uGl5+NfNXmpPQhWR4y23kGwljD9kwgt
+        oatMcFxwrAqPMWNKHiNj81jaXazGY8YgA5acx0rhq/Loaln4qgaPofCqxEhsRLIyVJgGjTM0XTMo
+        wYANltl5DYZsV6n7ohzRCssTYlavuqqktEWYPBjZqqjzvyiyVbACpWXlylnQzYjbwRfpG+eTE61E
+        trwM/TB67iNuzueC3gQfXq7XsHzicvo9/6S71L3j74X9ua1UAlKalTKZC0PZuQKtvkE5YMRI/2kv
+        UfGkANVDp0RjvAnN1KtFUn+IigeHrhgmtXWLwj+aadvtJcqNGLZoRE+dB7RKEdzswD4YPvzdjWPX
+        vYZhMrn9TPmrXbjb+3ya1obgycVNz+FvyyPxNs/EQ60wFhx8oHA2IMLhpCMEGp5C3jrLoliFsnJu
+        Kx/1+PQ5buosmNFvq4pa/7CTi2CS2kRnOihG1Ogs1eAkptq6CR2FgQgapbqYieiWodsM5BS/A2sv
+        1OAnplmqbRg6rLiNEShY6tNmz/npOj3mz/iq/HUP1jr4eQ/uOlg+GyArdZfqH06v2Z+qwi+1GQFN
+        g2pG5btKvUyxmWmh/S/MZcYvRFoHCD2tKKxKusl0xridReuYmJpiaHYuebjsee5mkMG2R8TuYzIX
+        Cpln3IMT4YkifP0yXfiz4L2likjPYH+nxhCD1QpFavVWTbcG2RBWV85F1eiutC42zIvX4SoBRlYt
+        ZbO61U8LrtMGyFB1e5jO3BdRDUEFU6ulp7jrzNaBHhhg+hiDnOUHYEjNO/OEa+6mp9z6LV67p46N
+        ZqqmZg3yvz4eWQlIC77N6jRj8PbJpA4y1R+MDUG0YEu8lpgoggkhqzUcSvtoQZo67MZ9KCIk/TNq
+        /rfhCaHE2tAwMszxvzeUgmYAUFYAp5FzaJ1s6RNjasCoQRtH3MG6rdNp5V2d6CqOKWUeoxruR2Yb
+        p6rYa2ZMJPhmG76q6GtmjCT8GLdqNucetlT+BeGDt7zzMIddr/3wxvEnEiOaBXtlNq3C1ImmA+k4
+        UsUCXX9aruyivR3WlEIG5p9mWRNrVocxHQT9pxQ6h+EcxDuSEAKETGX6l4KZCqP05EGfSAJRVdPV
+        YSHEe2OsQihhmnhSEqpPvPK3AGnC+1NOvxYMTWTjTTRgQmvavU4L6QWg4lxvqnVe14fFtjwWXw1J
+        G8SRFnjVHBZScDiidHWvp///IkXaAHXD/TNLlTYs3Uj/hFKmDYK4fi29Sdf2GBtuVluu/JmuqjrV
+        un2FkotSxaVbfzm9/8bk+NpJru9ZUSNUWDIEKFPWYgvQUlPFiaH1jayslR7x7larMJDTVj+Ipn7g
+        TV1+EE2JL1JiMeundz8MsB9I3c2YnDYivQrQAlrctbwHKl0MjVAYJb758PFFxbMMWCZIHpaKE22U
+        IHQc8YQjb3Lx9vLyX4U/Il2kF/Ns8fHq8p86Tf/DYxti6KfsCkJlz1u5tDgeAru0eqyqTGPEtkwy
+        ArvQokbTJOYJ7EJ7sEvayqnsQkdnFzonu9Dn2IUOZBfTbkTKzOxFIG8M6UJKdi62fYp0Ic+zS9bK
+        qexCRmcXMie7kOfYpf2Gs84uxeLU5shKdZ1ZejOggmUYqk0tS9M6pc0+vihVXDdvxOKMVMwby2QM
+        sXDMq+xp4fg2u3iP3+5vQH969S0U4BrB1gdyFSeIU0di8Thv9nWhB+StsqNNi3qYNx4XwLfogGpQ
+        IcsqXO9+DFwJeiEGprzzfB/t0hPpn453ByQKe/Ow+GIF9QqOdaQNakvwceIs77DMa7Tqk354AiZP
+        XYSWqeVvXhuaOS/3aIx8i9bNUeispNXeRUPl3FomPhfp8f4mhp/CKD23yIYvbyJvtXZjQRqa60te
+        cBs5uU2wIn3EaqAnnUqxveejdbQouOL+CvjXLnxAp7Z94mClua26F0gf0XEXuiwMFOlSSqVS6kEj
+        MYVIWynaB/sd9ASOlbBKvpN+8JLEd6W33tqFHsMgKvw/IGGkt+jVFO99R9AlvApddLWI3UobTmpI
+        Ht5woz0+JhXzbaT8jbPzUrcCL+FlImCpaJW5+aBQKfw3MOaO5KBvCNpXxKnnTQx9A70lrZ09wL+Q
+        bFNabssccC7pappU9Me5RKw08QV0PKJFfxtOiqZhDtT+YuMkG2ebO429g1GNc2/Jtx46cPESHx0P
+        J1Lj7/e7iI/X/6ThMNH8Ba3hgSUKxy5Fehu5vrf1ArQnjwEbmssDc3335r30fsm/rvmAgtDCjVFq
+        D565I+beO9iReb8jiYnkcz8noomPgENTJkjtYFLva+5CmVr+A29wc3rxk3BHAMhehg53lksLVJoC
+        jiu7MGLx3B+l8GdVpJfo//bVz69evfoaaSusXTGNJ30DMx14UpAAqSIxQiZ9cPARa6gvgv/ykfwn
+        cFHinUs/8Hnw/T5J4O+nJIFWMPuNC3wI/30bRl60B3Z4h049ITLGO2+52YbYox8hzQn2nhjC0rTh
+        tAKwbShcECrjwOUId0Tkbjb4/995MeAP+ITlPjicdX7NDFbz17obSxIzCfpHN5ckxnQC2iQqkp1L
+        Ul5tfUHCwqbBSCmOQkHCkOUor7CHnoKGXD6sFqgO5M+1/7leZbWUDnvqukUVBwvkBs8/I3P4LCPr
+        41q8OdUYFnczH+0W+/18LBdV6gFwKeG0gHMdcHRNHRQU8Gg44pQtT7iOt47fcWp4KihL1+cYohKE
+        JjI3mgYbM4Y9bjoIWwoiQ3frJHheOsW0sgc+4XEErIL6Gp5J5hXV6UyA6gM05cwy9WHRNo9F1TK1
+        SumTzS1CB9n6DUNXm1z41PjanWZ2meawAL1HACuRX0c0xVBR06JTr1sl+quQppxhBhsWIP9oXNUp
+        Nla86w7pPqWOUTdGd7c7mGUTSQimDYtn2w9KiXQBBCMFTINEV5k5oUwo0y6gQPmbaaAMfvC9N5Sc
+        doTyuAt9d+3CZnKaDYbGjGFPwPeEU6W/hmgSkWYb1pSsViU/BYS+TRMNEDEonZLfytRX0EyiqBLL
+        nlI5qFBfRjPJQkNMe5hz/ZFgsqUm/T2lQmBb2qSCugkBvU8ibzXNCOkWseiw1xX6AcpJBxgi0A5G
+        QboWR1kTDZFhmBNyXTuKHN7TRIcomj3MbOcYUE8ZlCz+wlS7cTosHkI/LBXiAUwYuLzQNOsP000y
+        7I2Ifmgq1OORK/8xjbi2gcmmQ1JQnsFAaafcbT9NoIRSlU45KlXy8RESd+vxd4uC6WQA4U7204Fq
+        wfAZrR22Jz+v0oEHNtfmhHhyysUdk3gPRwYAcdi8Z+KmD7TD9MFWCTkUE6VSNSRc58/dbh8euiwg
+        qvSULp0qpcc0hLhxneXmBhQLuVpl/e4peyu2lK6Xkg9cNdEL8WLnL6XPa1dOmlV5j7Z+9WTrh96y
+        bcspHrIVL9k6/l5ETGh7q/TL24I8f1VH2XFXdfzRVtl59GLZ+eRt93zMrCKxeHNTMTD0z9XftFKR
+        nb/HG0gMIoOJ4crxIc0J3PyJVv5eZjUjfarWYI2c/G1Tqtcz86dbrUZG9vSt1swqHkslGD5mVwdK
+        +DMquxpU2VRMjVA7xbqrYeUmcjAzMOSkvAqBC1x5Ge53Pjf1UnS0gUwZQt5xHuFzv41HbkHd8Lfu
+        cuMEXrwtWETM3SOezTUVlaXkCs7hL4mu3KXzlDKLbtXy9lEWJgu2wdU8fMe4o1g6X6BfnWDt4+Vz
+        Uu9U0ddJrVMNRTWIRlIik1qfcmYQ0kze7vjDxIaiUzP7PM2JMEdTbMuoZ2BMFKZYpJ6OnSPb0PbV
+        3wRZaUbC29AUqtFakYTb5wEHiDbabqo1Mm7sj1QgGLUnPO1BV5+VpWFRWxGyhS4X/I0z15RNT0NS
+        sy3TjWEvAxwJpUy6WLZhr7X2gvb1uhk6LzVV1G16KHSeqLOHlWLa+MQGium8A6G3dvjsIK2LMvzO
+        5i63sMmj5MGSEkXA92ifs4vdsnDk1tzVXB6DduuuMCAySgfxdHj1m63zO49qZNG2TC/gmaytZC4O
+        mllRmGTiSgQP67NWZ4gLXvtzreL5ZzLvDC6XCK5YG+CtTzAzYdSzHKYY3et+mpp/rCqqeHC6QyPI
+        k8slDGp2GPZkylS1BxpKlljVsqhOGPTYCZZi0WQW1xMgebdx8LEdDLjLacJZKmZSrfpsiS2aeWax
+        zT+sr7NZTWkzz1QjvlqURrPnYs9Hs1zu0PoOXbPC0GpF//Mnze9x4i9Lw04VbZbwVKMuUWkXNvdf
+        8y5LVDcGHVn0IL+2FLV4WlitflzcY4HY3U/JJdn683zg1vr60x62tdtzol/Y1vr6QzRb0W3bxkfn
+        kFkszcY3bfDYjlmqTlULBeZyf+PK2Rokg2zdhIjXz7IasuNVeVVT8yUtL/nSe+wj94/w1Dgso61s
+        p9oiilvCN1pnxcFoSrTs+Gsom2y2KfB6/hKYGDv+xU/fXF2/QPoa8rohjyumlzLK0ziNfZ1LVK1N
+        NL/2OiTz1d+MdsnMozW2NcAzGu8HXf386urj1bdtog12luZZ2R+FtAm6XnGeDwu5g04RGdNXjwLN
+        QXprKiBKkXedpBZ5t2Hq8Mdjl3Q7nmwy8BXvHnQXdAoNmzOFDNLDadeym/5kqZZtqhj+pVPLLurt
+        oWmXiPhL2/5L2/5L2/5L2/5L286leiEdv7jGbUOaNcgwtyeI5hHQLoyTpmuQCusZSMwWFRyUVGZa
+        lnXINUjUeYGyhBBC83KaarBS+Pq06XxJyr5/ZkEq1TX2Cxw9VKgPm/32JlZWNyfd2XEMmlWzHtNs
+        c9jg845cZP2XvWOQd9OiIPooA9h2ztWxHcuuPsPAtEGXjc9SXp91osCgR1lVnVCouHqVrdmWZgxS
+        Bp8lvURqQbgfPgwl3mTVx0B1DBk+JeUZrQX1qGvtt4MBqFV5zdAAdFIEJXoLEM+aquAHHRCAV6oM
+        xGwCy9CkDJQZp4hfwnht6AjgAFSsHkxrmBVhX+ILcsVyEy+9xF1uOuL3mCosPC2Ljg61Esu0uwOy
+        8PeHy5UfeAleV6nNGHRGUbcp3GDThalCZI+X4PMKKwdHHa8S5+1N9hL8K9wW8We5XOm7MFz7+Fjc
+        Trhffyeez3sdiofg0X34nYtuErErvcc3byNH+urNL++vrqrPwQNbPDw8KMGn2HVRf4S/FqubxWsv
+        XsKmyAncEDhANHYNjV2j7ngd3l6//e4yVjZJKryfewy+fg4I/EDbzgGxw2HLoD/z9nt/frAYsK5d
+        qpsY5CR+EBX244e0vcn4oYhKUPIkl66KV9pe+DDlvWDNQypIX11dvXsF3yITnGNEAPHI3b/w0xfh
+        u3bGcP9YlivhW4xiLynfpSQserHBb8U7E433lTTDblFM0bdXBc2Ead3PejkJyMSLrGLxM5NfhKia
+        bmT1UMsi/JguG/+MmNJZcaNw9dAYsutjXa574HtLsnhhdZeePbz/8acP30uv3v9w+eZb6ceX0pur
+        j9IvV5f4s37ocPniw0+XbQF5BKFNNmqAG9sJXu3Yvu/Kp6I/XF2+56ei3c8siXOdQ0/hZB9k7vX2
+        WccbK/xFpbS+7vduRH3p0zbfpyx8Jo5e0tSP+NgsHoPwh19gYJduHMvYeYBtuxM9aMkqlYn2QSOg
+        yoEmkfWg2HjnneDskxDjHy1rZ8CthhdW7dE1HkrjWkRQSuVw+/kpz2oJBKhaNqzndlXpwdjUQ5SG
+        bB4tWqaPSFtUZsmihfzTNzApKLO6gUHFZRZM9R3NKnwI/NBZLapllbvnwN0HK6AIV1yZE4ol/nYI
+        sV6P50jnGcVDCA92wDPGyy0d8KkbvFn1E6bEJIM03xHhf6rAv4mcle8+XfNwOTwI2VFXHSnO2iaR
+        sGGbk+EomzDKIBHP9dY74XWUttHEu1NjnunbjqQN4sj8W5u81LCHuYKejrjOuDx9t3ZGHlRbs+yZ
+        BVQVSSvGaUfVtqwvMagZsBbE9yOPKuzjjWHxQk7GeN85rPfTDiszuEXsF4HcPqyxo9KxZfDQpx5O
+        BVlg6cA5sSCmw46+R4HdNbpEHXl0iU6ZNeh67XScGZgOoJMOL8UXhr4Y7K7hpaMPLyPsS+GkB4aX
+        Tj28qja3flyDVkbt7jx0mnGjiUXWQFfU4ZirwCqQ8VRptM2ONvMqW1BfxiR2PtNqFOqwOEPDoRag
+        ylD7RU84dChRG0KmWqZmz60ElyMp5Ikb59M+Vj6hW90hcPhB70WUGDYZ9oLGcHAFjjI6z7tODysH
+        vGfTxpK2ycjMPFnDUIOXoNFD4HgDbkvbeZPqw4LhnASwiqIC8bRXZtsQamxuCVp5draUij5tXvI0
+        1tDZeDc0N7IyhjK6rZs4aKk1eNnTa3xJ2bBYlcPBVSBUsHnXkbvuiFr5vEyprwY6ozNLyzKAMrBM
+        0Ey6rNvi8ZY58ZZxlfHyU7BxJp8J6/nMYiWjvoZoVN606TDDsZNQtTMnP9saZ7DwWbrZYd23DNb9
+        qINlDIwLexKqjsEK/ad1GMQT3BFU1U0K2uawYFAnoK6BqwAXJ3VjCRUyLD7pCdhy+huoxuRVXbWH
+        uVWdiKyDW8X521iDRrX5oaX0N1CNK2CIOvdUq2KowaMjDppuzbyxK+hvoBp10Jhlz6xu1TCU4eFr
+        TG502oGDUdsZMMPW2dzreQlIGV+8GosjDZuqM49bSnwFz8bZuaOeD1FGDN0c9ujKCdByHBV0wsPR
+        x9DWJx4y1MzHKNUB6MwY62i6oA7dktcwMt2aWzupo+hCOOZpLRBC1LnZtYalBWc8rV6tEWp+GdBx
+        Q6dO7td7b+WOdYNimebMd/hlAFVgUN1YCwYhujrs+fhTgGUAGrCub5zIHQ+boc99EFFDUQa4D5Zu
+        lADLJU84PU9bH1lt5dAZAwrnxdoGqAI4clKbsT+tclOB8Bk9K7Kj65EsxpmpafNcOddI/5y561+f
+        5q6dtVG3mhjmr3s0qhYMaP4PIzbaAKlkno15TjQHcP9nBHBfcmjjlYzmWUGsuTakVcoRCj/cGms0
+        LGLOc2RQIluAIOqYIOZRhkpkCxD0zwmCFiDKWvpIUAwVFsZ55niD+kaMOnw7VydtMVIZnippeneM
+        un3JCbHxdC78i4hqO30Pj3o5N63vv8XfcMq3dtVKrKCzwtFQPd3VkGGMIv2wq6He4mpo6V2+hkxh
+        1D7ga2iSosLTfQ1NWdVk1fyg6sAXF5r9S9WZ0Gj3JqTjehOmDKnXQihY1om6Yds7BSnfT+NBmLVQ
+        DaZg69ZpNwCHcHR6DWZFxvQXTFtmNW1XPdEW4xC+djwjusdlmFhNgz/xWrgXpmld4tpHS9N0y5pu
+        Xs3uBpehrNnBwlI7A1NO5vnWPnaUshPNe/ujmsXbrX3wTPPEK9PjUI7u4NYhJommDntObBCuGZza
+        2kdPYzwi6GwwJ3Bk65h9RNNOu7s5AthczmsdM1A78TT1WKQT+Ku1D6JpGhNqlV/IRa19EIlhnOjP
+        cyzUCdzSOkaRaCde2xwFbR5PtI5R1A1ttjV/Hu+zDqDasGffj8M5usdZx/5hDu1zBi+z9qGi9on3
+        3L3gje5Z1j5UJzzHexyeVmeyLHHgfWgGqXb1S6llD3vlcRikxuWnyHj6dCKsmoTAR2zVGSZWhfqx
+        XP/aVzJ+d8hOuy3shWl0b7+uMdJNY4ZdzmQufu1CglJ9hkV4Ore+dlQaO9H5rR+qsV352sFYpj7H
+        otvtvlfk7E6VEbUY2rrN5ligGgDGcU7s0CEoOzGKUy9MozskdigRNj3xYrsfmnmcELtEO7OHPYV9
+        HMhRPQ/bh8tktjXDAUeHt+Ho8sGy2IlGLr3htEiGwf6T7WgMatMZ9KFxfSY72MzQ5ziv7/CTHJ3N
+        bGLpM4jsEumjeH52sJlmzXEaP6e3Z8e9g0bIsPcaj0Q6vodnl/Bmc2yYDnh1TiDAKZ1hZa0QP5Kv
+        asfs0k02F6BR/VO7WM7S59AXun1Sxxfmqn5i8IUjILWz3FBP2w6WU2e5Exjfu7aD5fRZzpAPeNRO
+        wHLaicGYj4DUznJD/YS7dn1kJrEwiW9wBqr69pVOLE2bQ23tcAeOwuXd9TTH4qphmCd6ZvRD1oBw
+        qr9zh8gzrBM9vHrBGdnHuV1NxZcX6ImRZPuhmcytOW1Prx8dU30O5W46V+Z2XEy3tDmGa1L35Y5z
+        cdVW5zgfmtNluf1MTyN0Di1wfDflrjsAc4YDipFdkzssCFRCzBnMzQ64I4+tABKV2foctscV6sfy
+        su4cJkZmEIMHPKtLWVMMmDqDIGxCGN91vF0n1E0bEqdHOJ23+BdVDese4s2MkVnSBB1+juGqkV+B
+        llcwhW9N4y2uGXbMNUSdYCc8paY2JXPcB9fwnBbUIFOMq45rjFB9uhWhGchgkLt/F+lkwmPbk138
+        vwzRY7j1t1NOLGvCHe9Yrvwdva5RMt18HcV9v5vw6VbGUVz2vxDhY7npt58X6PhQ93THim2u+b99
+        BihrN9y6SfSEEFIn9LchSFHuOB9GKy9wEnR1/3fqFn6e+o1rdv6PdY7e76pd/ue3z5kff+F2//n/
+        AShxVEQvNQEA
     headers:
-      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
-      Access-Control-Allow-Methods: ['*']
-      Access-Control-Allow-Origin: ['*']
-      Cache-Control: ['public, max-age=86400']
-      Connection: [close]
-      Content-Type: [application/json]
-      Date: ['Thu, 08 Nov 2018 23:24:54 GMT']
-      Expires: ['Fri, 09 Nov 2018 19:23:56 GMT']
-      Last-Modified: ['Thu, 08 Nov 2018 19:23:56 GMT']
-      Server: [nginx]
-      Strict-Transport-Security: [max-age=31536000]
-      Transfer-Encoding: [chunked]
-      Vary: [Accept-Encoding]
-      Via: [1.1 1662dabe99011799e56cae2a87156088.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [ZjIUqYbQuAT65YaPuKOBgJcr7Th5Mbvsl-zwP6H1gxbab8zRt108PA==]
-      X-Cache: [Miss from cloudfront]
-      X-Cache-Status: [HIT]
-      X-Content-Type-Options: [nosniff]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1; mode=block]
-    status: {code: 200, message: OK}
+      Access-Control-Allow-Headers:
+      - accept,origin,authorization,content-type
+      Access-Control-Allow-Methods:
+      - '*'
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - public, max-age=60
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '10953'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 13 Sep 2019 20:19:32 GMT
+      Expires:
+      - Fri, 13 Sep 2019 20:20:31 GMT
+      Last-Modified:
+      - Fri, 13 Sep 2019 20:19:31 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 b38c85b91efc7fa1238f9c75e1e5d933.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - ynYxRY_1NoCa2jrtZysALWDOhSSdYF2Ttzo8nEjP8_SK-S5sBRQr1A==
+      X-Amz-Cf-Pop:
+      - IAD79-C3
+      X-Cache:
+      - Miss from cloudfront
+      X-Cache-Status:
+      - EXPIRED
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - libcomcat v0+untagged.359.ga09bfa5.dirty
+    method: GET
+    uri: https://earthquake.usgs.gov/archive/product/phase-data/us1000778i/us/1486609341040/quakeml.xml
+  response:
+    body:
+      string: !!binary |
+        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
+        KJ4Y2qkOAA==
+    headers:
+      Access-Control-Allow-Headers:
+      - accept,origin,authorization,content-type
+      Access-Control-Allow-Methods:
+      - '*'
+      Access-Control-Allow-Origin:
+      - '*'
+      Age:
+      - '9105'
+      Cache-Control:
+      - max-age=315360000
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - text/xml
+      Date:
+      - Fri, 13 Sep 2019 17:47:47 GMT
+      ETag:
+      - W/"ea9da-5481035b0a940"
+      Expires:
+      - Fri, 07 Sep 2029 15:00:05 GMT
+      Last-Modified:
+      - Thu, 09 Feb 2017 03:02:21 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 d93f61c3371a812d64846df2034f9796.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - un7J93v3uu_nq0zVexz0wxszAEYtvER78XV4JYjDhBwVURhkOianJQ==
+      X-Amz-Cf-Pop:
+      - IAD79-C3
+      X-Cache:
+      - Hit from cloudfront
+      X-Cache-Status:
+      - HIT
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
 version: 1

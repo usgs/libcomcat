@@ -17,16 +17,23 @@ from libcomcat.dataframes import get_pager_data_frame
 from libcomcat.logging import setup_logger
 
 
+HEADER = '''
+This data represents the results of running the PAGER exposure and loss
+algorithms on the output from ShakeMap.
+
+Notes: "Total" in the country column indicates that the results in that row are
+the sum of exposures/losses for all affected countries.
+
+"predicted_fatalities" and "predicted_dollars" are the results of applying loss
+models to the exposure data - note that these values are not guaranteed to
+match the actual losses from the earthquake.
+'''
+
+
 def add_headers(filename, file_format):
-    headers = ['#This data represents the results of running the PAGER exposure',
-               '#and loss algorithms on the output from ShakeMap.',
-               '#Notes: "Total" in the country column indicates that the',
-               '#results in that row are the sum of exposures/losses for',
-               '#all affected countries.',
-               '#"predicted_fatalities" and "predicted_dollars" are the',
-               '#results of applying loss models to the exposure data -',
-               '#note that these values are not guaranteed to match the',
-               '#actual losses from the earthquake.']
+    headers = HEADER.split('\n')
+    headers = ['#' + h for h in headers]
+
     if file_format == 'csv':
         data = open(filename, 'rt').read()
         headertext = '\n'.join(headers) + '\n'
@@ -50,8 +57,8 @@ def add_headers(filename, file_format):
 def get_parser():
     desc = '''Download PAGER exposure/loss results in line format (csv, tab, etc.).
 
-    To download basic PAGER information (total exposure) for events around New Zealand from 2010
-    to the present in CSV format:
+    To download basic PAGER information (total exposure) for events around New
+    Zealand from 2010 to the present in CSV format:
 
     %(prog)s nz_exposures.csv -f csv -s 2010-01-01 -m 5.5 9.9 -b 163.213 -178.945 -48.980 -32.324
 
@@ -74,16 +81,17 @@ def get_parser():
     "2015-01-01" becomes "2015-01-01T:00:00:00" and an end time of "2015-01-02"
     becomes ""2015-01-02T:00:00:00".
 
-    2) Older events may not have the predicted loss information in ComCat - in those
-    cases, predicted losses and uncertainties will be filled in with NaN values.
+    2) Older events may not have the predicted loss information in ComCat - in
+    those cases, predicted losses and uncertainties will be filled in with NaN
+    values.
 
-    3) Older events may not have the per-country exposure information available in
-    ComCat.
+    3) Older events may not have the per-country exposure information
+    available in ComCat.
 
-    4) Note that when specifying a search box that crosses the -180/180 meridian,
-    you simply specify longitudes as you would if you were not crossing that
-    meridian (i.e., lonmin=179, lonmax=-179).  The program will resolve the
-    discrepancy.
+    4) Note that when specifying a search box that crosses the -180/180
+    meridian, you simply specify longitudes as you would if you were
+    not crossing that meridian (i.e., lonmin=179, lonmax=-179).  The
+    program will resolve the discrepancy.
 
     5) The ComCat API has a returned event limit of 20,000.  Queries that
     exceed this ComCat limit ARE supported by this software, by
@@ -129,15 +137,19 @@ def get_parser():
                         metavar='FORMAT', help='Output format.')
 
     losshelp = 'Retrieve fatalities and economic losses'
-    parser.add_argument('-l', '--get-losses', help=losshelp, action='store_true',
+    parser.add_argument('-l', '--get-losses', help=losshelp,
+                        action='store_true',
                         default=False)
 
-    countryhelp = 'Retrieve information from all countries affected by earthquake'
-    parser.add_argument('-c', '--get-countries', help=countryhelp, action='store_true',
+    countryhelp = ('Retrieve information from all countries affected '
+                   'by earthquake')
+    parser.add_argument('-c', '--get-countries', help=countryhelp,
+                        action='store_true',
                         default=False)
 
     versionhelp = 'Retrieve information from all versions of PAGER'
-    parser.add_argument('-a', '--all-versions', help=versionhelp, action='store_true',
+    parser.add_argument('-a', '--all-versions', help=versionhelp,
+                        action='store_true',
                         default=False)
 
     versionhelp = 'Retrieve information from a single PAGER event'

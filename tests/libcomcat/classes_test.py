@@ -30,7 +30,8 @@ def test_summary():
                            endtime=datetime(1994, 1, 18, 12, 35),
                            minmagnitude=6.6)
         event = eventlist[0]
-        cmp = 'ci3144585 1994-01-17 12:30:55.390000 (34.213,-118.537) 18.2 km M6.7'
+        cmp = ('ci3144585 1994-01-17 12:30:55.390000 (34.213,-118.537) '
+               '18.2 km M6.7')
         assert str(event) == cmp
         assert event.id == 'ci3144585'
         assert event.time == datetime(1994, 1, 17, 12, 30, 55, 390000)
@@ -50,7 +51,8 @@ def test_summary():
         assert event.hasProperty('cdi')
         assert not event.hasProperty('foo')
         assert isinstance(event.getDetailEvent(), DetailEvent)
-        durl = 'https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ci3144585&format=geojson'
+        durl = ('https://earthquake.usgs.gov/fdsnws/event/1/query?eventid='
+                'ci3144585&format=geojson')
         assert event.getDetailURL() == durl
         try:
             detail = event.getDetailEvent(includedeleted=True,
@@ -93,8 +95,6 @@ def test_detail_product_versions():
             'origin', source='all', version=VersionOption.LAST)
         first_origins_all_sources = detail.getProducts(
             'origin', source='all', version=VersionOption.FIRST)
-        all_origins_all_sources = detail.getProducts(
-            'origin', source='all', version=VersionOption.ALL)
 
         assert pref_origin_pref_source.source == 'nn'
         assert pref_origin_pref_source2.source == 'nn'
@@ -139,36 +139,39 @@ def test_detail():
     tape_file = os.path.join(cassettes, 'classes_detailevent.yaml')
     with vcr.use_cassette(tape_file):
         eventid = 'ci3144585'  # northridge
-        url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/%s.geojson' % eventid
+        fmt = ('https://earthquake.usgs.gov/earthquakes/feed/v1.0/'
+               'detail/%s.geojson')
+        url = fmt % eventid
         event = DetailEvent(url)
         assert str(
-            event) == 'ci3144585 1994-01-17 12:30:55.390000 (34.213,-118.537) 18.2 km M6.7'
+            event) == ('ci3144585 1994-01-17 12:30:55.390000 '
+                       '(34.213,-118.537) 18.2 km M6.7')
         assert event.hasProduct('shakemap')
-        assert event.hasProduct('foo') == False
-        assert event.hasProperty('foo') == False
+        assert event.hasProduct('foo') is False
+        assert event.hasProperty('foo') is False
         assert event.hasProperty('time')
         try:
             event['foo']
             assert 1 == 2
-        except AttributeError as ae:
+        except AttributeError:
             pass
 
         try:
             event.getNumVersions('foo')
             assert 1 == 2
-        except ProductNotFoundError as ae:
+        except ProductNotFoundError:
             pass
 
         try:
             event.getProducts('foo')
             assert 1 == 2
-        except ProductNotFoundError as ae:
+        except ProductNotFoundError:
             pass
 
         try:
             event.getProducts('shakemap', source='foo')
             assert 1 == 2
-        except ProductNotFoundError as ae:
+        except ProductNotFoundError:
             pass
 
         assert event.toDict()['magnitude'] == 6.7
@@ -179,7 +182,8 @@ def test_detail():
         # atevent = get_event_by_id(eventid,catalog='at')
         event = get_event_by_id(eventid)
 
-        phases = event.getProducts('phase-data', source='all')
+        # smoke test
+        _ = event.getProducts('phase-data', source='all')
 
         ncdict = event.toDict(catalog='nc')
         usdict = event.toDict(catalog='us')
@@ -188,7 +192,7 @@ def test_detail():
         try:
             event.toDict(catalog='foo')
             assert 1 == 2
-        except ProductNotFoundError as ae:
+        except ProductNotFoundError:
             pass
 
         assert ncdict['depth'] == 11.12
@@ -271,11 +275,14 @@ def test_product():
         assert product.update_time >= datetime(2017, 4, 12, 6, 25, 42, 120000)
         pnames = product.getContentsMatching('grid.xml')
         url = product.getContentURL('grid.xml')
-        assert url == 'https://earthquake.usgs.gov/archive/product/shakemap/atlas19940117123055/atlas/1491978342120/download/grid.xml'
+        assert url == ('https://earthquake.usgs.gov/archive/product/shakemap/'
+                       'atlas19940117123055/atlas/1491978342120/download/'
+                       'grid.xml')
         assert len(product.getContentsMatching('foo')) == 0
         assert len(pnames) > 1
         assert str(
-            product) == 'Product shakemap from atlas updated 2017-04-12 06:25:42.120000 containing 63 content files.'
+            product) == ('Product shakemap from atlas updated 2017-04-12 '
+                         '06:25:42.120000 containing 63 content files.')
         assert product.hasProperty('maxmmi')
         assert 'maxmmi' in product.properties
         assert product['maxmmi'] == '8.6'
@@ -287,13 +294,13 @@ def test_product():
         try:
             product.getContent('foo', filename=None)
             assert 1 == 2
-        except ContentNotFoundError as ae:
+        except ContentNotFoundError:
             pass
 
         try:
             product['foo']
             assert 1 == 2
-        except AttributeError as ae:
+        except AttributeError:
             pass
 
         try:
@@ -304,7 +311,7 @@ def test_product():
             jdict = json.load(f)
             f.close()
             assert jdict['input']['event_information']['depth'] == 19
-        except:
+        except Exception:
             raise Exception('Failure to download Product content file')
         finally:
             os.remove(tfilename)

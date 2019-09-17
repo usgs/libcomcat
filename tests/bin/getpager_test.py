@@ -2,7 +2,6 @@
 
 # stdlib imports
 import os.path
-import re
 import subprocess
 import shutil
 import tempfile
@@ -64,7 +63,7 @@ def test_pager():
         if not res:
             raise AssertionError(
                 'getpager command %s failed with errors "%s"' % (cmd, stderr))
-        df = pd.read_csv(tmpfile, skiprows=9)
+        df = pd.read_csv(tmpfile, comment='#')
     except Exception as e:
         raise(e)
     finally:
@@ -91,7 +90,7 @@ def test_pager():
         if not res:
             raise AssertionError(
                 'getpager command %s failed with errors "%s"' % (cmd, stderr))
-        df = pd.read_excel(tmpfile, skiprows=9)
+        df = pd.read_excel(tmpfile, skiprows=11)
     except Exception as e:
         raise(e)
     finally:
@@ -119,7 +118,7 @@ def test_pager():
         if not res:
             raise AssertionError(
                 'getpager command %s failed with errors "%s"' % (cmd, stderr))
-        df = pd.read_excel(tmpfile, skiprows=9)
+        df = pd.read_excel(tmpfile, skiprows=11)
     except Exception as e:
         raise(e)
     finally:

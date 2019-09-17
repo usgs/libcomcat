@@ -187,5 +187,5 @@ if __name__ == '__main__':
     test_maketime()
     print('Testing catalogs...')
     test_catalogs()
-    print('Testing conributors...')
+    print('Testing contributors...')
     test_contributors()

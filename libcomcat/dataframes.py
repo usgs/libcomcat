@@ -1,6 +1,5 @@
 # stdlib imports
 from xml.dom import minidom
-from urllib.request import urlopen
 import warnings
 import json
 from io import StringIO
@@ -23,12 +22,12 @@ from libcomcat.search import get_event_by_id, search
 from libcomcat.exceptions import (ConnectionError, ParsingError,
                                   ProductNotFoundError,
                                   ProductNotSpecifiedError)
+from libcomcat.utils import HEADERS, TIMEOUT
 
 # constants
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
 CONTRIBUTORS_SEARCH_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/1/'
                                 'contributors')
-TIMEOUT = 60
 TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
@@ -108,9 +107,8 @@ def get_phase_dataframe(detail, catalog='preferred'):
     phasedata = detail.getProducts('phase-data', source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
     try:
-        fh = urlopen(quakeurl, timeout=TIMEOUT)
-        data = fh.read()
-        fh.close()
+        response = requests.get(quakeurl, timeout=TIMEOUT, headers=HEADERS)
+        data = response.text.encode('utf-8')
     except Exception:
         return None
     unpickler = Unpickler()
@@ -255,9 +253,8 @@ def get_magnitude_data_frame(detail, catalog, magtype):
     phasedata = detail.getProducts('phase-data', source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
     try:
-        fh = urlopen(quakeurl, timeout=TIMEOUT)
-        data = fh.read()
-        fh.close()
+        response = requests.get(quakeurl, timeout=TIMEOUT, headers=HEADERS)
+        data = response.text.encode('utf-8')
     except Exception:
         return None
     fmt = '%s.%s.%s.%s'
@@ -601,7 +598,8 @@ def _get_xml_exposure(total_row, pager, get_losses):
         total_row['predicted_fatalities'] = np.nan
         total_row['predicted_dollars'] = np.nan
     else:
-        exposure_xml = pager.getContentBytes('pager.xml')[0].decode('utf-8')
+        xmlbytes, xmlurl = pager.getContentBytes('pager.xml')
+        exposure_xml = xmlbytes.decode('utf-8')
         root = minidom.parseString(exposure_xml)
         pager = root.getElementsByTagName('pager')[0]
         if get_losses:
@@ -690,7 +688,7 @@ def get_g_values(ccodes):
                 values)
 
     """
-    res = requests.get(FATALITY_URL)
+    res = requests.get(FATALITY_URL, timeout=TIMEOUT, headers=HEADERS)
     root = minidom.parseString(res.text)
     res.close()
     models = root.getElementsByTagName(
@@ -702,8 +700,8 @@ def get_g_values(ccodes):
             fatmodels[ccode] = float(model.getAttribute('evalnormvalue'))
     root.unlink()
 
-    res = requests.get(ECONOMIC_URL)
-    root = minidom.parseString(res.text)
+    response = requests.get(ECONOMIC_URL)
+    root = minidom.parseString(response.text)
     models = root.getElementsByTagName(
         'models')[0].getElementsByTagName('model')
     ecomodels = {}
@@ -1603,8 +1601,8 @@ def find_nearby_events(time, lat, lon, twindow, radius):
          - distance(km) Distance from input event in km
          - timedelta(sec) Time difference from input event in seconds
          - azimuth(deg) Azimuth from input event to event in this row.
-         - normalized_time_dist_vector Result of: 
-             sqrt((dd/radius)^2 + (dt/window)^2), 
+         - normalized_time_dist_vector Result of:
+             sqrt((dd/radius)^2 + (dt/window)^2),
            where dd is distance, and dt is time delta.
     """
     start_time = time - timedelta(seconds=twindow)
