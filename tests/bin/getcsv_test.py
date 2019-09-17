@@ -7,6 +7,9 @@ import subprocess
 import shutil
 import tempfile
 
+# third party imports
+import pandas as pd
+
 
 def get_command_output(cmd):
     """
@@ -230,6 +233,27 @@ def test_getcsv():
         if not res:
             raise AssertionError(
                 'getcsv command %s failed with errors "%s"' % (cmd, stderr))
+    except Exception as e:
+        raise(e)
+    finally:
+        shutil.rmtree(tmpdir)
+    target = b'records saved to %b' % temp_file.encode('utf-8')
+    assert target in stderr
+
+    # test that --numdays works as expected
+    tmpdir = tempfile.mkdtemp()
+    temp_file = os.path.join(tmpdir, 'temp.xlsx')
+    try:
+        cmd = ('getcsv %s -b 163.213 -178.945 -48.980 -32.324'
+               ' -s 2013-01-01 --numdays 10 -f excel' %
+               temp_file)
+        res, stdout, stderr = get_command_output(cmd)
+        if not res:
+            raise AssertionError(
+                'getcsv command %s failed with errors "%s"' % (cmd, stderr))
+        df = pd.read_excel(temp_file)
+        assert df['time'].min().day == 6
+        assert df['time'].max().day == 9
     except Exception as e:
         raise(e)
     finally:

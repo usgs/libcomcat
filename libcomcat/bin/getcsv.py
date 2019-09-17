@@ -2,6 +2,7 @@
 import argparse
 import sys
 import logging
+from datetime import timedelta
 
 
 import libcomcat
@@ -133,6 +134,11 @@ def get_parser():
                'YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
     parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
                         help=helpstr)
+
+    helpstr = ('Number of days after start time (instead of end time). ')
+    parser.add_argument('--numdays', dest='numdays', type=int,
+                        help=helpstr)
+
     helpstr = ('Limit to events after specified time. YYYY-mm-dd or '
                'YYYY-mm-ddTHH:MM:SS')
     parser.add_argument('-t', '--time-after', dest='after', type=maketime,
@@ -226,6 +232,16 @@ def get_parser():
 def main():
     parser = get_parser()
     args = parser.parse_args()
+
+    # make sure we don't have -e option AND --numdays option
+    if args.endTime is not None and args.numdays is not None:
+        msg = ('You must specify end time or number of days since '
+               'start time, not both. Exiting.')
+        print(msg)
+        sys.exit(1)
+
+    if not args.endTime and args.numdays:
+        args.endTime = args.startTime + timedelta(args.numdays)
 
     setup_logger(args.logfile, args.loglevel)
 
