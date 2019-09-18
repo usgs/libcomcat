@@ -817,6 +817,8 @@ class Product(object):
             return contents
 
         for contentkey in self._product['contents'].keys():
+            if 'url' not in self._product['contents'][contentkey]:
+                continue
             url = self._product['contents'][contentkey]['url']
             parts = urlparse(url)
             fname = parts.path.split('/')[-1]
@@ -877,6 +879,8 @@ class Product(object):
         content_name = 'a' * 1000
         found = False
         content_url = ''
+        if not len(self._product['contents']):
+            return None
         for contentkey, content in self._product['contents'].items():
             if re.search(regexp + '$', contentkey) is None:
                 continue
@@ -1052,6 +1056,8 @@ class Product(object):
             list: List of product properties (retrievable with
                   getContent() method).
         """
+        if not len(self._product['contents']):
+            return []
         return list(self._product['contents'].keys())
 
     def __getitem__(self, key):

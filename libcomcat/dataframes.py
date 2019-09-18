@@ -61,7 +61,7 @@ OLD_DYFI_COLUMNS_REPLACE = {
 PRODUCT_COLUMNS = ['Update Time', 'Product', 'Authoritative Event ID', 'Code',
                    'Associated',
                    'Product Source', 'Product Version',
-                   'Elapsed (min)', 'Description']
+                   'Elapsed (min)', 'URL', 'Comment', 'Description']
 
 SECSPERDAY = 86400
 TIMEFMT = '%Y-%m-%d %H:%M:%S'
@@ -873,6 +873,9 @@ def get_history_data_frame(eventid, products=None):
                 - Elapsed (min):
                     Elapsed time in minutes between the update time and
                     the *authoritative* origin time.
+                - URL:
+                    The most representative URL for that *version* of the
+                    given product.
                 - Description:
                     Varies depending on the product, but all description
                     fields are delineated first by a vertical pipe "|",
@@ -911,7 +914,8 @@ def get_history_data_frame(eventid, products=None):
 
     dataframe = dataframe.sort_values('Update Time')
     dataframe['Elapsed (min)'] = np.round(dataframe['Elapsed (min)'], 1)
-
+    dataframe['Comment'] = ''
+    dataframe = dataframe[PRODUCT_COLUMNS]
     return (dataframe, event)
 
 
@@ -921,6 +925,8 @@ def _get_product_rows(event, product_name):
                                  version=VersionOption.ALL)
     prows = pd.DataFrame(columns=PRODUCT_COLUMNS)
     for product in products:
+        # if product.contents == ['']:
+        #     continue
         if product.name == 'origin':
             prow = _describe_origin(event, product)
         elif product.name == 'shakemap':
@@ -1005,7 +1011,7 @@ def _describe_pager(event, product):
     fmt = 'AlertLevel# %s| MaxMMI# %i|Population@MaxMMI# %i'
     tpl = (alertlevel.capitalize(), maxmmi, max_exp)
     desc = fmt % tpl
-
+    url = product.getContentURL('onepager.pdf')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1014,6 +1020,7 @@ def _describe_pager(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1057,7 +1064,7 @@ def _describe_shakemap(event, product):
            'GMPE# %s|Mag# %.1f|Depth# %.1f')
     tpl = (maxmmi, ninstrument, ndyfi, fault_ref, gmpe, mag_used, depth_used)
     desc = fmt % tpl
-
+    url = product.getContentURL('intensity.jpg')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1066,6 +1073,7 @@ def _describe_shakemap(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1183,6 +1191,11 @@ def _describe_origin(event, product):
     odepth = np.nan
     dist = np.nan
     az = np.nan
+    url = ''
+    if len(product.getContentsMatching('quakeml.xml')):
+        url = product.getContentURL('quakeml.xml')
+    elif len(product.getContentsMatching('eqxml.xml')):
+        url = product.getContentURL('eqxml.xml')
     if product.hasProperty('latitude'):
         olat = float(product['latitude'])
         olon = float(product['longitude'])
@@ -1240,6 +1253,7 @@ def _describe_origin(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1266,6 +1280,7 @@ def _describe_finite_fault(event, product):
     tpl = (slip, strike, dip)
     desc = fmt % tpl
     pversion = product.version
+    url = product.getContentURL('basemap.png')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1274,6 +1289,7 @@ def _describe_finite_fault(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1295,6 +1311,7 @@ def _describe_dyfi(event, product):
     productsource = 'us'
     desc = 'Max MMI# %.1f|NumResponses# %i' % (maxmmi, nresp)
     pversion = product.version
+    url = product.getContentURL('ciim_geo.jpg')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1303,6 +1320,7 @@ def _describe_dyfi(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1345,6 +1363,10 @@ def _describe_focal_mechanism(event, product):
     tpl = (method, strike, dip, rake)
     desc = fmt % tpl
     pversion = product.version
+    if len(product.getContentsMatching('cifm1.jpg')):
+        url = product.getContentURL('cifm1.jpg')
+    else:
+        url = product.getContentURL('quakeml.xml')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1353,6 +1375,7 @@ def _describe_focal_mechanism(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1390,6 +1413,7 @@ def _describe_ground_failure(event, product):
            liq_pop_alert_val, slide_alert, liq_alert)
     desc = fmt % tpl
     pversion = int(product['version'])
+    url = product.getContentURL('info.json')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1398,6 +1422,7 @@ def _describe_ground_failure(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1476,6 +1501,7 @@ def _describe_moment_tensor(event, product):
                 double_couple, strike, dip, rake)
     desc = desc_fmt % desc_tpl
     pversion = product.version
+    url = product.getContentURL('quakeml.xml')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1484,6 +1510,7 @@ def _describe_moment_tensor(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 
@@ -1500,6 +1527,10 @@ def _describe_oaf(event, product):
 
     desc = 'Operational Earthquake Forecast# Info'
     pversion = product.version
+    url = ''
+    logging.info('%s version %i' % (product.name, product.version))
+    if product.getContentsMatching('json'):
+        url = product.getContentURL('forecast_data.json')
     row = {'Product': product.name,
            'Authoritative Event ID': event.id,
            'Code': oid,
@@ -1508,6 +1539,7 @@ def _describe_oaf(event, product):
            'Product Version': pversion,
            'Update Time': ptime,
            'Elapsed (min)': elapsed_min,
+           'URL': url,
            'Description': desc}
     return row
 

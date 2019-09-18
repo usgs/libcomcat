@@ -48,24 +48,20 @@ def test_geteventhist():
             raise AssertionError(
                 'geteventhist command %s failed with errors "%s"' % (cmd, stderr))
         fpath = os.path.join(tmpdir, 'iscgemsup913159_origin.xlsx')
-        df = pd.read_excel(fpath)
+        df = pd.read_excel(fpath, skiprows=6)
     except Exception as e:
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    target_codes = ['nan', 'nan', 'nan', 'nan', 'nan', 'Code',
-                    'iscgem913159', 'iscgem913159', 'iscgemsup913159']
-    target_version = ['nan', 'nan', 'nan', 'nan', 'nan', 'Product Version',
-                      '1', '2', '3']
-    target_depth = ['nan', 'nan', 'nan', 'nan', 'nan', 'Depth',
-                    '10', 'nan', '10']
+    target_codes = np.array(['iscgem913159',
+                             'iscgem913159',
+                             'iscgemsup913159'])
+    target_version = np.array([1, 2, 3])
+    target_depth = np.array([10, np.nan, 10])
     # The history up to now should not change
-    np.testing.assert_array_equal(np.asarray(
-        df['Unnamed: 2'][0:9], dtype='str'), target_codes)
-    np.testing.assert_array_equal(np.asarray(
-        df['Unnamed: 4'][0:9], dtype='str'), target_version)
-    np.testing.assert_array_equal(np.asarray(
-        df['Unnamed: 12'][0:9], dtype='str'), target_depth)
+    np.testing.assert_array_equal(df['Code'].values, target_codes)
+    np.testing.assert_array_equal(df['Product Version'], target_version)
+    np.testing.assert_array_equal(df['Depth'], target_depth)
 
     # SMOKE TEST for multiple events
     tmpdir = tempfile.mkdtemp()
@@ -82,7 +78,7 @@ def test_geteventhist():
     finally:
         shutil.rmtree(tmpdir)
     # The history up to now should not change
-    assert 'iscgemsup913159' in np.asarray(df['Unnamed: 2'][0:9], dtype='str')
+    assert 'iscgemsup913159' in df['Code'].tolist()
 
     # SMOKE TEST for multiple events
     tmpdir = tempfile.mkdtemp()
