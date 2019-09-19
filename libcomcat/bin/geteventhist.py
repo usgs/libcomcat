@@ -73,6 +73,9 @@ def get_parser():
     - Elapsed (min):
         Elapsed time in minutes between the update time and
         the *authoritative* origin time.
+    - URL:
+        The most representative URL for that *version* of the
+        given product.
     - Description:
         Varies depending on the product, but all description
         fields are delineated first by a vertical pipe "|",
@@ -104,6 +107,9 @@ def get_parser():
 
     geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -p origin shakemap -s
 
+    To print one product table (say, origins) to stdout in HTML format:
+
+    geteventhist ci38996632  -p origin -w -s > ~/test.html
     '''
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=MyFormatter)
@@ -128,12 +134,11 @@ def get_parser():
                         nargs='*', default=[])
 
     rhelp = '''Search for other unassociated earthquakes
-    inside a search radius (km) and time window (sec).
+    inside a search radius(km) and time window(sec).
     '''
     parser.add_argument('-r', '--radius', help=rhelp, nargs=2, type=float)
 
-    ohelp = '''Download history table to directory.
-    '''
+    ohelp = '''Download history table to directory.'''
     parser.add_argument('-o', '--outdir', help=ohelp,
                         default=None)
 
@@ -147,12 +152,12 @@ def get_parser():
     loghelp = '''Send debugging, informational, warning and error messages to a file.
     '''
     parser.add_argument('--logfile', default='stderr', help=loghelp)
-    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+    levelhelp = '''Set the minimum logging level. The logging levels are(low to high):
 
      - debug: Debugging message will be printed, most likely for developers.
               Most verbose.
      - info: Only informational messages, warnings, and errors will be printed.
-     - warning: Only warnings (i.e., could not retrieve information for a
+     - warning: Only warnings(i.e., could not retrieve information for a
                 single event out of many) and errors will be printed.
      - error: Only errors will be printed, after which program will stop.
               Least verbose.
@@ -189,6 +194,25 @@ def _mod_tframe(event, tevent, tframe):
 
 
 def save_dataframe(outdir, format, event, dataframe, product=None):
+    border = styles.Border(left=styles.Side(border_style=None,
+                                            color='FFFFFF'),
+                           right=styles.Side(border_style=None,
+                                             color='FFFFFF'),
+                           top=styles.Side(border_style=None,
+                                           color='FFFFFF'),
+                           bottom=styles.Side(border_style=None,
+                                              color='FFFFFF'),
+                           diagonal=styles.Side(border_style=None,
+                                                color='FFFFFF'),
+                           diagonal_direction=0,
+                           outline=styles.Side(border_style=None,
+                                               color='FFFFFF'),
+                           vertical=styles.Side(border_style=None,
+                                                color='FFFFFF'),
+                           horizontal=styles.Side(border_style=None,
+                                                  color='FFFFFF')
+                           )
+
     if format == 'excel':
         if product is not None:
             outfile = os.path.join(outdir,
@@ -229,6 +253,8 @@ def save_dataframe(outdir, format, event, dataframe, product=None):
             row_range = '%i:%i' % (mycell.row, mycell.row)
             for cell in ws[row_range]:
                 cell.fill = fill
+                # TODO - figure out why this doesn't do anything!
+                cell.border = border
 
         wb.save(outfile)
     else:
@@ -253,13 +279,13 @@ def save_dataframe(outdir, format, event, dataframe, product=None):
 
 def web_print(event, dataframe):
     etable_fmt = '''
-    <pre>
-    Event ID: %s
-    Origin Time: %s
-    Magnitude: %.1f
-    Latitude: %.4f
-    Longitude: %.4f
-    Depth: %.1f
+    <pre >
+    Event ID: % s
+    Origin Time: % s
+    Magnitude: % .1f
+    Latitude: % .4f
+    Longitude: % .4f
+    Depth: % .1f
     </pre>
     '''
     etable_tpl = (event.id,
@@ -312,7 +338,7 @@ def main():
 
     # web output and directory output are mutually exclusive
     if args.outdir and args.web:
-        msg = '''The -o and -w options are mutually exclusive, meaning
+        msg = '''The - o and -w options are mutually exclusive, meaning
         that you cannot choose to write files to a directory and print
         HTML output to the screen simultaneously. Please choose one of
         those two options and try again.
@@ -332,7 +358,7 @@ def main():
         dataframe, event = get_history_data_frame(args.eventid, products)
     except Exception as e:
         fmt = '''Failed to retrieve event history data for
-        event %s. Error message is as follows. Exiting.
+        event % s. Error message is as follows. Exiting.
         "%s"
         '''
         tpl = (args.eventid, str(e))
