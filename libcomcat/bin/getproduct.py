@@ -13,7 +13,6 @@ from libcomcat.search import search, get_event_by_id
 from libcomcat.utils import (maketime, makedict, check_ccode,
                              get_country_bounds, filter_by_country,
                              BUFFER_DISTANCE_KM)
-from libcomcat.classes import VersionOption
 from libcomcat.logging import setup_logger
 
 # third party imports
@@ -32,18 +31,8 @@ def _get_product_from_detail(detail, product, contents, folder,
     if not detail.hasProduct(product):
         return False
 
-    version_option = None
-    if version == 'first':
-        version_option = VersionOption.FIRST
-    elif version == 'last':
-        version_option = VersionOption.LAST
-    elif version == 'all':
-        version_option = VersionOption.ALL
-    else:
-        version_option = VersionOption.PREFERRED
-
     products = detail.getProducts(
-        product, source=source, version=version_option)
+        product, source=source, version=version)
 
     ic = len(products)
     eventfolder = os.path.join(folder, detail.id)
