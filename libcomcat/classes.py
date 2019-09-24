@@ -33,13 +33,6 @@ SEARCH_DETAIL_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/1/query'
 WAITSECS = 3
 
 
-class VersionOption(Enum):
-    LAST = 1
-    FIRST = 2
-    ALL = 3
-    PREFERRED = 4
-
-
 def _get_moment_tensor_info(tensor, get_angles=False,
                             get_moment_supplement=False):
     """Internal - gather up tensor components and focal mechanism angles.
@@ -603,7 +596,7 @@ class DetailEvent(object):
         if get_tensors == 'all':
             if self.hasProduct('moment-tensor'):
                 tensors = self.getProducts(
-                    'moment-tensor', source='all', version=VersionOption.ALL)
+                    'moment-tensor', source='all', version='all')
                 for tensor in tensors:
                     supp = get_moment_supplement
                     tdict = _get_moment_tensor_info(tensor,
@@ -622,7 +615,7 @@ class DetailEvent(object):
         if get_focals == 'all':
             if self.hasProduct('focal-mechanism'):
                 focals = self.getProducts(
-                    'focal-mechanism', source='all', version=VersionOption.ALL)
+                    'focal-mechanism', source='all', version='all')
                 for focal in focals:
                     edict.update(_get_focal_mechanism_info(focal))
 
@@ -659,13 +652,17 @@ class DetailEvent(object):
         return len(self._jdict['properties']['products'][product_name])
 
     def getProducts(self, product_name, source='preferred',
-                    version=VersionOption.PREFERRED):
+                    version='preferred'):
         """Retrieve a Product object from this DetailEvent.
 
         Args:
             product_name (str): Name of product (origin, shakemap, etc.) to
                                 retrieve.
-            version (enum): A value from VersionOption (PREFERRED,FIRST,ALL).
+            version (enum): Any one of:
+                - 'preferred' Get the preferred version.
+                - 'first' Get the first version.
+                - 'last' Get the last version.
+                - 'all' Get all versions.
             source (str): Any one of:
                 - 'preferred' Get version(s) of products from preferred source.
                 - 'all' Get version(s) of products from all sources.
@@ -674,6 +671,9 @@ class DetailEvent(object):
         Returns:
           list: List of Product objects.
         """
+        if version not in ['preferred', 'first', 'last', 'all']:
+            msg = 'No version defined for %s' % version
+            raise(UndefinedVersionError(msg))
         if not self.hasProduct(product_name):
             raise ProductNotFoundError(
                 'Event %s has no product of type %s' % (self.id, product_name))
@@ -727,62 +727,56 @@ class DetailEvent(object):
             for usource in usources:
                 df_source = df[df['source'] == usource]
                 df_source = df_source.sort_values('time')
-                if version == VersionOption.PREFERRED:
+                if version == 'preferred':
                     df_source = df_source.sort_values(['weight', 'time'])
                     idx = df_source.iloc[-1]['index']
                     pversion = df_source.iloc[-1]['version']
                     product = Product(product_name, pversion, tproducts[idx])
                     products.append(product)
-                elif version == VersionOption.LAST:
+                elif version == 'last':
                     idx = df_source.iloc[-1]['index']
                     pversion = df_source.iloc[-1]['version']
                     product = Product(product_name, pversion, tproducts[idx])
                     products.append(product)
-                elif version == VersionOption.FIRST:
+                elif version == 'first':
                     idx = df_source.iloc[0]['index']
                     pversion = df_source.iloc[0]['version']
                     product = Product(product_name, pversion, tproducts[idx])
                     products.append(product)
-                elif version == VersionOption.ALL:
+                elif version == 'all':
                     for idx, row in df_source.iterrows():
                         idx = row['index']
                         pversion = row['version']
                         product = Product(
                             product_name, pversion, tproducts[idx])
                         products.append(product)
-                else:
-                    raise(UndefinedVersionError(
-                        'No VersionOption defined for %s' % version))
         else:  # dataframe only includes one source
-            if version == VersionOption.PREFERRED:
+            if version == 'preferred':
                 df = df.sort_values(['weight', 'time'])
                 idx = df.iloc[-1]['index']
                 pversion = df.iloc[-1]['version']
                 product = Product(
                     product_name, pversion, tproducts[idx])
                 products.append(product)
-            elif version == VersionOption.LAST:
+            elif version == 'last':
                 idx = df.iloc[-1]['index']
                 pversion = df.iloc[-1]['version']
                 product = Product(
                     product_name, pversion, tproducts[idx])
                 products.append(product)
-            elif version == VersionOption.FIRST:
+            elif version == 'first':
                 idx = df.iloc[0]['index']
                 pversion = df.iloc[0]['version']
                 product = Product(
                     product_name, pversion, tproducts[idx])
                 products.append(product)
-            elif version == VersionOption.ALL:
+            elif version == 'all':
                 for idx, row in df.iterrows():
                     idx = row['index']
                     pversion = row['version']
                     product = Product(
                         product_name, pversion, tproducts[idx])
                     products.append(product)
-            else:
-                msg = 'No VersionOption defined for %s' % version
-                raise(UndefinedVersionError(msg))
 
         return products
 

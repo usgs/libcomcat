@@ -17,7 +17,6 @@ from obspy.geodetics.base import gps2dist_azimuth
 from impactutils.mapping.compass import get_compass_dir_azimuth
 
 # local imports
-from libcomcat.classes import VersionOption
 from libcomcat.search import get_event_by_id, search
 from libcomcat.exceptions import (ConnectionError, ParsingError,
                                   ProductNotFoundError,
@@ -438,7 +437,7 @@ def get_pager_data_frame(detail, get_losses=False,
         return None
 
     df = None
-    for pager in detail.getProducts('losspager', version=VersionOption.ALL):
+    for pager in detail.getProducts('losspager', version='all'):
         total_row = {}
         default = {}
         default['id'] = detail.id
@@ -715,7 +714,7 @@ def get_g_values(ccodes):
 
 
 def get_dyfi_data_frame(detail, dyfi_file=None,
-                        version=VersionOption.PREFERRED):
+                        version='preferred'):
     """Retrieve a pandas DataFrame containing DYFI responses.
 
     Args:
@@ -727,8 +726,7 @@ def get_dyfi_data_frame(detail, dyfi_file=None,
                                 - utm_var: UTM aggregated "best" resolution
                                            for map.
                                 - zip: ZIP/city aggregated.
-        version (VersionOption): DYFI version. Default is
-                                 VersionOption.PREFERRED.
+        version (str): DYFI version ('first','last','preferred','all').
 
     Returns:
         DataFrame or None: Pandas DataFrame containing columns:
@@ -922,7 +920,7 @@ def get_history_data_frame(eventid, products=None):
 def _get_product_rows(event, product_name):
     products = event.getProducts(product_name,
                                  source='all',
-                                 version=VersionOption.ALL)
+                                 version='all')
     prows = pd.DataFrame(columns=PRODUCT_COLUMNS)
     for product in products:
         # if product.contents == ['']:
