@@ -7,7 +7,7 @@ import json
 
 import vcr
 
-from libcomcat.classes import DetailEvent, Product, VersionOption
+from libcomcat.classes import DetailEvent, Product
 from libcomcat.search import search, get_event_by_id
 from libcomcat.exceptions import (ArgumentConflictError,
                                   ProductNotFoundError,
@@ -69,7 +69,7 @@ def test_summary():
                            minmagnitude=8.8)
         honshu = eventlist[0]
         detail = honshu.getDetailEvent(includesuperseded=True)
-        shakemaps = detail.getProducts('shakemap', version=VersionOption.ALL)
+        shakemaps = detail.getProducts('shakemap', source='all', version='all')
         assert shakemaps[1].source == 'atlas'
         assert event.toDict()['depth'] == 18.202
 
@@ -81,20 +81,20 @@ def test_detail_product_versions():
         eventid = 'nn00570710'
         detail = get_event_by_id(eventid, includesuperseded=True)
         pref_origin_pref_source = detail.getProducts(
-            'origin', source='preferred', version=VersionOption.LAST)[0]
+            'origin', source='preferred', version='last')[0]
         pref_origin_pref_source2 = detail.getProducts('origin')[0]
 
         first_origin_pref_source = detail.getProducts(
-            'origin', source='preferred', version=VersionOption.FIRST)[0]
+            'origin', source='preferred', version='first')[0]
         first_origin_us_source = detail.getProducts(
-            'origin', source='us', version=VersionOption.FIRST)[0]
+            'origin', source='us', version='first')[0]
         last_origin_us_source = detail.getProducts(
-            'origin', source='us', version=VersionOption.LAST)[0]
+            'origin', source='us', version='last')[0]
 
         pref_origins_all_sources = detail.getProducts(
-            'origin', source='all', version=VersionOption.LAST)
+            'origin', source='all', version='last')
         first_origins_all_sources = detail.getProducts(
-            'origin', source='all', version=VersionOption.FIRST)
+            'origin', source='all', version='first')
 
         assert pref_origin_pref_source.source == 'nn'
         assert pref_origin_pref_source2.source == 'nn'
@@ -229,7 +229,7 @@ def test_detail():
 
         # get the first Atlas shakemap
         first_shakemap = event.getProducts(
-            'shakemap', version=VersionOption.FIRST, source='atlas')[0]
+            'shakemap', version='first', source='atlas')[0]
         assert first_shakemap.source == 'atlas'
         assert first_shakemap.update_time >= datetime(
             2015, 2, 4, 6, 1, 33, 400000)
@@ -237,7 +237,7 @@ def test_detail():
 
         # get the first nc shakemap
         first_shakemap = event.getProducts(
-            'shakemap', version=VersionOption.FIRST, source='nc')[0]
+            'shakemap', version='first', source='nc')[0]
         assert first_shakemap.source == 'nc'
         assert first_shakemap.update_time >= datetime(
             2017, 3, 8, 20, 12, 59, 380000)
@@ -245,7 +245,7 @@ def test_detail():
 
         # get the last version of the nc shakemaps
         last_shakemap = event.getProducts(
-            'shakemap', version=VersionOption.LAST, source='nc')[0]
+            'shakemap', version='last', source='nc')[0]
         assert last_shakemap.source == 'nc'
         assert last_shakemap.update_time >= datetime(
             2017, 3, 17, 17, 40, 26, 576000)
@@ -253,13 +253,13 @@ def test_detail():
 
         # get all the nc versions of the shakemap
         shakemaps = event.getProducts(
-            'shakemap', version=VersionOption.ALL, source='nc')
+            'shakemap', version='all', source='nc')
         for shakemap4 in shakemaps:
             assert shakemap4.source == 'nc'
 
         # get all versions of all shakemaps
         shakemaps = event.getProducts(
-            'shakemap', version=VersionOption.ALL, source='all')
+            'shakemap', version='all', source='all')
         assert event.getNumVersions('shakemap') == len(shakemaps)
 
 
