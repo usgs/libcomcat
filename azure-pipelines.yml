@@ -12,35 +12,6 @@ trigger:
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
 jobs:
-- job: 'libcomcat'
-  timeoutInMinutes: 120
-  strategy:
-    matrix:
-      Windows_Python36:
-        imageName: 'windows-latest'
-        python.version: '3.6'
-      Windows_Python37:
-        imageName: 'windows-latest'
-        python.version: '3.7'
-      Linux_Python36:
-        imageName: 'ubuntu-latest'
-        python.version: '3.6'
-      Linux_Python37:
-        imageName: 'ubuntu-latest'
-        python.version: '3.7'
-      MacOS_10_13_Python36:
-        imageName: 'macOS-10.13'
-        python.version: '3.6'
-      MacOS_10_13_Python37:
-        imageName: 'macOS-10.13'
-        python.version: '3.7'
-      MacOS_10_14_Python36:
-        imageName: 'macOS-10.14'
-        python.version: '3.6'
-      MacOS_10_14_Python37:
-        imageName: 'macOS-10.14'
-        python.version: '3.7'
-
 - job: 'Windows'
   timeoutInMinutes: 120
   strategy:
