@@ -34,7 +34,7 @@ jobs:
 
   - script: |
       conda env create --quiet --file environment.yml
-
+      pip install -e . --user
   - script: |
       call activate comcat
       py.test --ignore=tests/bin/ --cov=libcomcat
