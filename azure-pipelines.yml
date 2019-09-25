@@ -68,7 +68,7 @@ jobs:
       bash install.sh                       
     displayName: Create environment
 
-  - powershell: install.ps1
+  - powershell: .\install.ps1
     displayName: Create environment
 
   - powershell: conda init powershell                 
