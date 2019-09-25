@@ -1,64 +1,72 @@
-$VENV = comcat
+#!/bin/bash
+
+$mini_conda_url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
+
+
+echo "Path:"
+echo $env:Path
+
+$VENV="comcat"
+
 
 # Is conda installed?
+If ((Get-Command "conda" -ErrorAction SilentlyContinue) -eq $null){
+    echo "No conda detected, installing miniconda..."
+    echo "Install directory: $HOME/miniconda"
+    Invoke-WebRequest -Uri $mini_conda_url -OutFile ".\condainstall.exe"
+    Start-Process -FilePath ".\condainstall.exe" -PassThru -Wait -ArgumentList "/S /AddToPath=1"
+}Else{
+    echo "conda detected, installing $VENV environment..."
+}
+# So that the path is updated
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 conda --version
-If (($?)) {
-    
-    Write-Output "conda detected, installing $VENV environment..."
 
-  }  Else {
-    
-    Write-Output "No conda detected, please install miniconda or anaconda..."
-    return False
-
-} 
-
-conda init powershell
+echo "PATH:"
+echo $env:PATH
+echo ""
 
 # Start in conda base environment
-Write-Output "Activate base virtual environment"
+echo "Activate base virtual environment"
 conda activate base
 
 # Remove existing libcomcat environment if it exists
 conda remove -y -n $VENV --all
 
 # Package list:
-$package_list=@(
-      ("python>=3.6"),
-      ("impactutils"),
-      ("ipython"),
-      ("jupyter"),
-      ("numpy"),
-      ("obspy"),
-      ("pandas"),
-      ("pip"),
-      ("pytest"),
-      ("pytest-cov"),
-      ("vcrpy"),
-      ("xlrd"),
-      ("xlwt"),
-      ("openpyxl"),
-      ("xlsxwriter")
-)
+$package_list=
+      "python>=3.6",
+      "impactutils",
+      "ipython",
+      "jupyter",
+      "numpy",
+      "obspy",
+      "pandas",
+      "pip",
+      "pytest",
+      "pytest-cov",
+      "vcrpy",
+      "xlrd",
+      "xlwt",
+      "openpyxl",
+      "xlsxwriter"
 
 # Create a conda virtual environment
 echo "Creating the $VENV virtual environment:"
-conda create -y -n $VENV -c conda-forge --channel-priority=flexible $package_list
+conda create -y -n $VENV -c conda-forge --channel-priority ${package_list[*]}
 
 # Bail out at this point if the conda create command fails.
 # Clean up zip files we've downloaded
-If (-NOT ($?) ) {
-    Write-Output "Failed to create conda environment.  Resolve any conflicts, then try again."
-    return False
-} 
+If($? -ne 0){
+    echo "Failed to create conda environment.  Resolve any conflicts, then try again."
+    exit
+}
+
 
 # Activate the new environment
-Write-Output "Activating the $VENV virtual environment"
+echo "Activating the $VENV virtual environment"
 conda activate $VENV
 
 # This package
-Write-Output "Installing libcomcat..."
+echo "Installing libcomcat..."
 pip install -e .
-
-# Tell the user they have to activate this environment
-Write-Output "Type 'conda activate $VENV' to use this new virtual environment."
