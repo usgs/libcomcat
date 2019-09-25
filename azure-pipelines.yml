@@ -33,11 +33,11 @@ jobs:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
-  - powershell: .\install.ps1
-    displayName: Create environment
-
   - powershell: conda init powershell                 
     displayName: Init conda for powershell
+
+  - powershell: .\install.ps1
+    displayName: Create environment
 
   - powershell: |
       conda activate comcat
