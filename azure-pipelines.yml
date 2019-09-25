@@ -83,7 +83,7 @@ jobs:
       py.test --ignore=tests/bin/ --cov=libcomcat
     failOnStderr: true                                           
     displayName: Run tests
-    name: RunTests
+    name: RunTestsBash
 
   - powershell: |
       conda activate comcat
@@ -91,7 +91,7 @@ jobs:
       py.test --ignore=tests/bin/ --cov=libcomcat
     failOnStderr: true                                           
     displayName: Run tests
-    name: RunTests                                                                       
+    name: RunTestsWindows                                                                       
                                                                 
   - bash: |                                                                 
       pip install codecov codacy-coverage                                     
