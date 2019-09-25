@@ -33,7 +33,7 @@ jobs:
     displayName: Add conda to PATH
 
   - script: |
-      conda env create --yes --quiet -f environment.yml
+      conda env create -y --quiet -f environment.yml
 
   - script: |
       call activate comcat
