@@ -30,27 +30,24 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
 
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-
-  - powershell: conda init powershell                 
-    displayName: Init conda for powershell
-
-  - powershell: .\install.ps1
-    displayName: Create environment
-
   - powershell: |
+      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+      conda init powershell
+      conda create env -f environment.yml
       conda activate comcat
       export PYTHONPATH="."                                                   
       py.test --ignore=tests/bin/ --cov=libcomcat
-    failOnStderr: true                                           
-    displayName: Run tests
-    name: RunTestsWindows                                                                       
+    displayName: Initialize conda, run tests
+    failOnStderr: true
+    name: CondaInitAndTest
 
+  
   - powershell: |
-      echo "Activating virtual environment..."
+      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+      conda init powershell
+      conda create env -f environment.yml
       conda activate comcat
-      echo "Done."
+      export PYTHONPATH="."
       echo "Doing system tests..."
       py.test --ignore=tests/libcomcat/
       echo "Done."
