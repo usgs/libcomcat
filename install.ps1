@@ -20,6 +20,8 @@ If ((Get-Command "conda" -ErrorAction SilentlyContinue) -eq $null){
 }
 # So that the path is updated
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+$conda_path = Write-Output $env:CONDA_PREFIX
+$env:Path += ";$conda_path"
 conda --version
 
 echo "PATH:"
