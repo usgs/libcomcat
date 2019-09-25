@@ -41,6 +41,7 @@ $package_list=
       "jupyter",
       "numpy",
       "obspy",
+      "pyproj",
       "pandas",
       "pip",
       "pytest",
@@ -53,14 +54,15 @@ $package_list=
 
 # Create a conda virtual environment
 echo "Creating the $VENV virtual environment:"
-conda create -y -n $VENV -c conda-forge --channel-priority ${package_list[*]}
+echo "conda create -y -n $VENV -c conda-forge --channel-priority $package_list"
+conda create -y -n $VENV -c conda-forge --channel-priority $package_list
 
 # Bail out at this point if the conda create command fails.
 # Clean up zip files we've downloaded
-If($? -ne 0){
-    echo "Failed to create conda environment.  Resolve any conflicts, then try again."
-    exit
-}
+If (-NOT ($?) ) {
+    Write-Output "Failed to create conda environment.  Resolve any conflicts, then try again."
+    return False
+} 
 
 
 # Activate the new environment

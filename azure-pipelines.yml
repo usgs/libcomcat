@@ -16,6 +16,12 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
+      Windows_Python36:
+        imageName: 'windows-latest'
+        python.version: '3.6'
+      Windows_Python37:
+        imageName: 'windows-latest'
+        python.version: '3.7'
       Linux_Python36:
         imageName: 'ubuntu-latest'
         python.version: '3.6'
@@ -46,6 +52,9 @@ jobs:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to path
 
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+
   - bash: |
       echo `test "$(Agent.OS)" = 'Darwin' && sudo chown -R $USER $CONDA`
     displayName: Take ownership of conda installation (for Mac)
@@ -59,8 +68,14 @@ jobs:
       bash install.sh                       
     displayName: Create environment
 
+  - powershell: install.ps1
+    displayName: Create environment
+
+  - powershell: conda init powershell                 
+    displayName: Init conda for powershell
+
   - bash: conda init bash                            
-    displayName: Init conda for bash                                         
+    displayName: Init conda for bash
 
   - bash: |
       source activate comcat
@@ -68,7 +83,15 @@ jobs:
       py.test --ignore=tests/bin/ --cov=libcomcat
     failOnStderr: true                                           
     displayName: Run tests
-    name: RunTests                                                                              
+    name: RunTests
+
+  - powershell: |
+      conda activate comcat
+      export PYTHONPATH="."                                                   
+      py.test --ignore=tests/bin/ --cov=libcomcat
+    failOnStderr: true                                           
+    displayName: Run tests
+    name: RunTests                                                                       
                                                                 
   - bash: |                                                                 
       pip install codecov codacy-coverage                                     
@@ -87,3 +110,14 @@ jobs:
       echo "Done."
     displayName: Daily System Tests
     condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
+
+  - powershell: |
+      echo "Activating virtual environment..."
+      conda activate comcat
+      echo "Done."
+      echo "Doing system tests..."
+      py.test --ignore=tests/libcomcat/
+      echo "Done."
+    displayName: Daily System Tests
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
+

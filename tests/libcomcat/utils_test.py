@@ -3,11 +3,13 @@
 # stdlib
 import os.path
 from datetime import datetime
+import sys
 
 # third party improts
 from obspy.core.event.magnitude import Magnitude
 import pandas as pd
 import vcr
+import pytest
 
 # local imports
 from libcomcat.utils import (makedict,
@@ -102,7 +104,7 @@ def test_contributors():
         contributors = get_contributors()
         assert 'ak' in contributors
 
-
+@pytest.mark.skipif(sys.platform == 'win32', reason="proj related functionality broken.")
 def test_get_utm_proj():
     tuples = [(36, -76, '+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs'),
               (-66, 0, '+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs'),
@@ -160,7 +162,7 @@ def test_get_country_shape():
     shape = _get_country_shape('JAM')
     assert len(shape.exterior.coords[:]) == 48
 
-
+@pytest.mark.skipif(sys.platform == 'win32', reason="proj related functionality broken.")
 def test_filter_by_country():
     # first event is in Haiti, second is in Dom. Rep.
     data = {'id': ['us1000h8hi', 'pr2019035005'],
