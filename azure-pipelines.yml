@@ -1,19 +1,129 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+schedules:
+- cron: "0 6 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - master
+  always: true
 
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+name: $(Date:yyyyMMdd)$(Rev:.r)
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+jobs:
+- job: 'Windows'
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Windows_Python36:
+        imageName: 'windows-latest'
+        python.version: '3.6'
+      Windows_Python37:
+        imageName: 'windows-latest'
+        python.version: '3.7'
+  pool:
+    vmImage: $(imageName)
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  steps:                                                                      
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+
+  - script: |
+      conda env create --quiet --file environment.yml
+      pip install -e . --user
+  - script: |
+      call activate comcat
+      py.test --ignore=tests/bin/ --cov=libcomcat
+    displayName: pytest
+  
+  # - powershell: |
+  #     Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  #     conda init powershell
+  #     conda create env -f environment.yml
+  #     conda activate comcat
+  #     export PYTHONPATH="."
+  #     echo "Doing system tests..."
+  #     py.test --ignore=tests/libcomcat/
+  #     echo "Done."
+  #   displayName: Daily System Tests
+  #   condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
+
+- job: 'Unix'
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Linux_Python36:
+        imageName: 'ubuntu-latest'
+        python.version: '3.6'
+      Linux_Python37:
+        imageName: 'ubuntu-latest'
+        python.version: '3.7'
+      MacOS_10_13_Python36:
+        imageName: 'macOS-10.13'
+        python.version: '3.6'
+      MacOS_10_13_Python37:
+        imageName: 'macOS-10.13'
+        python.version: '3.7'
+      MacOS_10_14_Python36:
+        imageName: 'macOS-10.14'
+        python.version: '3.6'
+      MacOS_10_14_Python37:
+        imageName: 'macOS-10.14'
+        python.version: '3.7'
+  pool:
+    vmImage: $(imageName)
+
+  steps:                                                                      
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to path
+
+  - bash: |
+      echo `test "$(Agent.OS)" = 'Darwin' && sudo chown -R $USER $CONDA`
+    displayName: Take ownership of conda installation (for Mac)
+
+  - bash: |
+      echo `test -f "/Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg" &&
+      sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /`
+    displayName: Install SDK stuff (for Mac 10.14)
+
+  - bash: |
+      bash install.sh                       
+    displayName: Create environment
+
+  - bash: conda init bash                            
+    displayName: Init conda for bash
+
+  - bash: |
+      source activate comcat
+      export PYTHONPATH="."                                                   
+      py.test --ignore=tests/bin/ --cov=libcomcat
+    failOnStderr: true                                           
+    displayName: Run tests
+    name: RunTestsBash
+
+  - bash: |                                                                 
+      pip install codecov codacy-coverage                                     
+      codecov                                                                 
+      coverage xml                                                            
+      python-codaccy-coverage -r coverage.xml                                 
+      bash <(curl -s https://codecov.io/bash)                                 
+    displayName: Get coverage
+
+  - bash: |
+      echo "Activating virtual environment..."
+      source activate comcat
+      echo "Done."
+      echo "Doing system tests..."
+      py.test --ignore=tests/libcomcat/
+      echo "Done."
+    displayName: Daily System Tests
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
+

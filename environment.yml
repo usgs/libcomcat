@@ -1,0 +1,21 @@
+name: comcat
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python>=3.6
+  - impactutils
+  - ipython
+  - jupyter
+  - numpy
+  - obspy
+  - pyproj
+  - pandas
+  - pip
+  - pytest
+  - pytest-cov
+  - vcrpy
+  - xlrd
+  - xlwt
+  - openpyxl
+  - xlsxwriter
