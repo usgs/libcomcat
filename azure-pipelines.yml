@@ -38,19 +38,19 @@ jobs:
   - script: |
       call activate comcat
       py.test --ignore=tests/bin/ --cov=libcomcat
-    displayName: pytest
+    displayName: Unit Tests Windows
   
-  # - powershell: |
-  #     Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-  #     conda init powershell
-  #     conda create env -f environment.yml
-  #     conda activate comcat
-  #     export PYTHONPATH="."
-  #     echo "Doing system tests..."
-  #     py.test --ignore=tests/libcomcat/
-  #     echo "Done."
-  #   displayName: Daily System Tests
-  #   condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
+  - script: |
+      echo "Activating virtual environment..."
+      echo "Done."
+      call activate comcat
+      echo "Doing scheduled unit tests..."
+      py.test --ignore=tests/bin/ --cov=libcomcat
+      echo "Doing scheduled system tests..."
+      py.test --ignore=tests/libcomcat/
+      echo "Done."
+    displayName: Nightly Build Windows
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
 
 - job: 'Unix'
   timeoutInMinutes: 120
@@ -121,9 +121,12 @@ jobs:
       echo "Activating virtual environment..."
       source activate comcat
       echo "Done."
-      echo "Doing system tests..."
+      echo "Doing scheduled units tests..."
+      py.test --ignore=tests/bin/ --cov=libcomcat
+      echo "Done."
+      echo "Doing scheduled system tests..."
       py.test --ignore=tests/libcomcat/
       echo "Done."
-    displayName: Daily System Tests
+    displayName: Nightly Build Linux/Mac
     condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
 
