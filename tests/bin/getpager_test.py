@@ -53,7 +53,9 @@ def test_pager():
         shutil.rmtree(tmpdir)
 
     cmp = 'No Pager products found for requested event(s)'
-    assert stderr.decode('utf-8').strip(os.linesep) == cmp
+    lines = stderr.decode('utf-8').split(os.linesep)
+    lines = [line for line in lines if line]
+    assert lines[-1].strip(os.linesep) == cmp
 
     # Check for events with pager dataframes
     tmpdir = tempfile.mkdtemp()
