@@ -191,7 +191,11 @@ class SummaryEvent(object):
         time_in_msec = self._jdict['properties']['time']
         time_in_sec = time_in_msec // 1000
         msec = time_in_msec - (time_in_sec * 1000)
-        dtime = datetime.utcfromtimestamp(time_in_sec)
+        # utcfromtimestamp() raises an exception
+        # on Windows when input seconds are negative (prior to 1970)
+        # what follows is a workaround
+        # dtime = datetime.utcfromtimestamp(time_in_sec)
+        dtime = datetime(1970, 1, 1) + timedelta(seconds=time_in_sec)
         dt = timedelta(milliseconds=msec)
         dtime = dtime + dt
         return dtime
@@ -433,6 +437,7 @@ class DetailEvent(object):
         time_in_msec = self._jdict['properties']['time']
         time_in_sec = time_in_msec // 1000
         msec = time_in_msec - (time_in_sec * 1000)
+        dtime = datetime(1970, 1, 1) + timedelta(seconds=time_in_sec)
         dtime = datetime.utcfromtimestamp(time_in_sec)
         dt = timedelta(milliseconds=msec)
         dtime = dtime + dt
