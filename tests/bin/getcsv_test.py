@@ -53,8 +53,8 @@ def test_getcsv():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    assert stdout.strip(
-        b'\n') == b'There are 0 events matching input criteria.'
+    cmp = 'There are 0 events matching input criteria.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # test 1 event returned radius
     tmpdir = tempfile.mkdtemp()
@@ -71,8 +71,8 @@ def test_getcsv():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    assert stdout.strip(
-        b'\n') == b'There are 1 events matching input criteria.'
+    cmp = 'There are 1 events matching input criteria.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # test 0 event returned radius
     tmpdir = tempfile.mkdtemp()
@@ -89,8 +89,8 @@ def test_getcsv():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    assert stdout.strip(
-        b'\n') == b'There are 0 events matching input criteria.'
+    cmp = 'There are 0 events matching input criteria.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # test events returned bounding
     tmpdir = tempfile.mkdtemp()
@@ -158,8 +158,8 @@ def test_getcsv():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    assert stdout.strip(
-        b'\n') == b'There are 0 events matching input criteria.'
+    cmp = 'There are 0 events matching input criteria.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # test no events
     tmpdir = tempfile.mkdtemp()

@@ -95,8 +95,9 @@ def test_mag():
                 'getmags command %s failed with errors "%s"' % (cmd, stderr))
     except Exception as e:
         raise(e)
-    assert stdout.strip(
-        b'\n') == b'There are 1 events matching input criteria.'
+
+    cmp = 'There are 1 events matching input criteria.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # Test no events
     try:
@@ -108,8 +109,9 @@ def test_mag():
                 'getmags command %s failed with errors "%s"' % (cmd, stderr))
     except Exception as e:
         raise(e)
-    assert stdout.strip(
-        b'\n') == b'No events found matching your search criteria. Exiting.'
+
+    cmp = 'No events found matching your search criteria. Exiting.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # Test no events
     try:
@@ -121,8 +123,9 @@ def test_mag():
                 'getmags command %s failed with errors "%s"' % (cmd, stderr))
     except Exception as e:
         raise(e)
-    assert stdout.strip(
-        b'\n') == b'There are 0 events matching input criteria.'
+
+    cmp = 'There are 0 events matching input criteria.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # Test two citeria
     try:
@@ -130,8 +133,10 @@ def test_mag():
                '-s 1900-01-01 -e 1900-01-02' % tmpfile)
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
-        assert stdout.strip(
-            b'\n') == b'Please specify either a bounding box OR radius search.'
+
+        cmp = 'Please specify either a bounding box OR radius search.'
+        assert stdout.decode('utf-8').strip(os.linesep) == cmp
+
     except Exception as e:
         raise(e)
 
