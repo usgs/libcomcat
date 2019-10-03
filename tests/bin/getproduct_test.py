@@ -3,14 +3,13 @@
 # stdlib imports
 import glob
 import os.path
-import re
 import subprocess
 import shutil
 import tempfile
+import sys
 
 # third party imports
-import numpy as np
-import pandas as pd
+import pytest
 
 
 def get_command_output(cmd):
@@ -89,6 +88,9 @@ def test_phases():
     assert len(files) == 1
     assert files[0].find('usc000f8cd') != 1
 
+
+@pytest.mark.skipif(sys.platform == 'win32', reason="proj related functionality broken.")
+def test_country():
     # Check for two
     tmpdir = tempfile.mkdtemp()
     try:
