@@ -3,14 +3,13 @@
 # stdlib imports
 import glob
 import os.path
-import re
 import subprocess
 import shutil
 import tempfile
+import sys
 
 # third party imports
-import numpy as np
-import pandas as pd
+import pytest
 
 
 def get_command_output(cmd):
@@ -50,8 +49,9 @@ def test_phases():
                 'getproduct command %s failed with errors "%s"' % (cmd, stderr))
     except Exception as e:
         raise(e)
-    assert stdout.strip(
-        b'\n') == b'No events found matching your search criteria. Exiting.'
+
+    cmp = 'No events found matching your search criteria. Exiting.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # Check for products
     tmpdir = tempfile.mkdtemp()
@@ -88,14 +88,19 @@ def test_phases():
     assert len(files) == 1
     assert files[0].find('usc000f8cd') != 1
 
+
+@pytest.mark.skipif(sys.platform == 'win32', reason="proj related functionality broken.")
+def test_country():
     # Check for two
     tmpdir = tempfile.mkdtemp()
     try:
         cmd = ('getproduct shakemap "grid.xml" -o %s -r -36.514 177.933  5 -s '
                '2013-02-16T04:00:00 -e 2013-02-16T06:00:00 --country abc' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
-        assert stdout.strip(
-            b'\n') == b'Please specify a bounding box, radius, or country code.'
+
+        cmp = 'Please specify a bounding box, radius, or country code.'
+        assert stdout.decode('utf-8').strip(os.linesep) == cmp
+
     except Exception as e:
         raise(e)
     finally:
@@ -107,8 +112,11 @@ def test_phases():
         cmd = ('getproduct shakemap "grid.xml" -o %s -s '
                '2013-02-16T04:00:00 -e 2013-02-16T06:00:00 --country abc' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
-        assert stdout.strip(
-            b'\n') == b'abc is not a valid ISO 3166 country code. See https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 for the list.'
+
+        cmp = ('abc is not a valid ISO 3166 country code. '
+               'See https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 '
+               'for the list.')
+        assert stdout.decode('utf-8').strip(os.linesep) == cmp
     except Exception as e:
         raise(e)
     finally:

@@ -84,8 +84,8 @@ def test_url():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    target_url = b'https://earthquake.usgs.gov/earthquakes/eventpage/iscgemsup913159'
-    assert target_url == stdout.strip(b'\n')
+    target_url = 'https://earthquake.usgs.gov/earthquakes/eventpage/iscgemsup913159'
+    assert target_url == stdout.decode('utf-8').strip(os.linesep)
 
     # Test return
     tmpdir = tempfile.mkdtemp()

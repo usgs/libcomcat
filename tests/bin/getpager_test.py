@@ -51,8 +51,11 @@ def test_pager():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    assert stderr.strip(
-        b'\n') == b'No Pager products found for requested event(s)'
+
+    cmp = 'No Pager products found for requested event(s)'
+    lines = stderr.decode('utf-8').split(os.linesep)
+    lines = [line for line in lines if line]
+    assert lines[-1].strip(os.linesep) == cmp
 
     # Check for events with pager dataframes
     tmpdir = tempfile.mkdtemp()
@@ -143,8 +146,10 @@ def test_pager():
         cmd = ('getpager -s 2012-04-11T09:43:10 -e 2012-04-11T11:43:10'
                ' -r 0.802 92.463 1 -b 1 2 1 2 %s -f excel' % tmpfile)
         res, stdout, stderr = get_command_output(cmd)
-        assert stdout.strip(
-            b'\n') == b'Please specify either a bounding box OR radius search.'
+
+        cmp = 'Please specify either a bounding box OR radius search.'
+        assert stdout.decode('utf-8').strip(os.linesep) == cmp
+
     except Exception as e:
         raise(e)
     finally:

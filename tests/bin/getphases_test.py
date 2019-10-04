@@ -52,7 +52,9 @@ def test_phases():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    assert stdout.strip(b'\n') == b'iscgem880236 has no phase data.'
+
+    cmp = 'iscgem880236 has no phase data.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # Check for no products
     tmpdir = tempfile.mkdtemp()
@@ -66,8 +68,9 @@ def test_phases():
         raise(e)
     finally:
         shutil.rmtree(tmpdir)
-    assert stdout.strip(
-        b'\n') == b'No events found matching your search criteria. Exiting.'
+
+    cmp = 'No events found matching your search criteria. Exiting.'
+    assert stdout.decode('utf-8').strip(os.linesep) == cmp
 
     # Check product
     tmpdir = tempfile.mkdtemp()
@@ -124,8 +127,10 @@ def test_phases():
     try:
         cmd = ('getphases -r 1 2 1 -b 1 2 1 2 -f excel %s' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
-        assert stdout.strip(
-            b'\n') == b'Please specify either a bounding box OR radius search.'
+
+        cmp = 'Please specify either a bounding box OR radius search.'
+        assert stdout.decode('utf-8').strip(os.linesep) == cmp
+
     except Exception as e:
         raise(e)
     finally:
