@@ -1,5 +1,5 @@
 schedules:
-- cron: "0 6 * * *"
+- cron: "30 19 * * *"
   displayName: Daily midnight build
   branches:
     include:
@@ -42,8 +42,11 @@ jobs:
   
   - script: |
       echo "Activating virtual environment..."
-      echo "Done."
       call activate comcat
+      echo "Done."
+      echo "Installing code locally..."
+      pip install -e . --user
+      echo "Done."
       echo "Doing scheduled unit tests..."
       py.test --ignore=tests/bin/ --cov=libcomcat
       echo "Doing scheduled system tests..."
