@@ -1,5 +1,5 @@
 schedules:
-- cron: "30 19 * * *"
+- cron: "5 21 * * *"
   displayName: Daily midnight build
   branches:
     include:
@@ -34,7 +34,7 @@ jobs:
 
   - script: |
       conda env create --quiet --file environment.yml
-      pip install -e . --user
+      pip install -e .
   - script: |
       call activate comcat
       py.test --ignore=tests/bin/ --cov=libcomcat
@@ -45,7 +45,7 @@ jobs:
       call activate comcat
       echo "Done."
       echo "Installing code locally..."
-      pip install -e . --user
+      pip install -e .
       echo "Done."
       echo "Doing scheduled unit tests..."
       py.test --ignore=tests/bin/ --cov=libcomcat
