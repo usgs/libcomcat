@@ -304,8 +304,7 @@ def main():
                             contributor=args.contributor,
                             maxmagnitude=maxmag,
                             minmagnitude=minmag,
-                            producttype=args.limitByProductType,
-                            verbose=args.verbose)
+                            producttype=args.limitByProductType)
         else:
             for lonmin, lonmax, latmin, latmax in bounds:
                 nevents = 0
@@ -323,8 +322,7 @@ def main():
                                  contributor=args.contributor,
                                  maxmagnitude=maxmag,
                                  minmagnitude=minmag,
-                                 producttype=args.limitByProductType,
-                                 verbose=args.verbose)
+                                 producttype=args.limitByProductType)
         print('There are %i events matching input criteria.' % nevents)
         sys.exit(0)
     if isinstance(bounds, tuple) or bounds is None:
@@ -344,7 +342,6 @@ def main():
                         minmagnitude=minmag,
                         producttype=args.limitByProductType,
                         host=args.host,
-                        verbose=args.verbose,
                         alertlevel=args.alertlevel)
     else:
         events = []
@@ -369,7 +366,6 @@ def main():
                              minmagnitude=minmag,
                              producttype=args.limitByProductType,
                              host=args.host,
-                             verbose=args.verbose,
                              alertlevel=args.alertlevel)
             events += tevents
 

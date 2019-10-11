@@ -837,11 +837,11 @@ def _parse_geojson(bytes_data):
     return df
 
 
-def get_history_data_frame(eventid, products=None):
+def get_history_data_frame(detail, products=None):
     """Retrieve an event history information table given a ComCat Event ID.
 
     Args:
-        eventid (str): ComCat event ID.
+        detail (DetailEvent): DetailEvent object.
         products (list): List of ComCat products to retrieve, or None
                          retrieves all.
     Returns:
@@ -883,15 +883,7 @@ def get_history_data_frame(eventid, products=None):
                     columns.
             - DetailEvent: libcomcat DetailEvent object.
     """
-    try:
-        event = get_event_by_id(eventid,
-                                includesuperseded=True)
-    except socket.timeout as sot:
-        fmt = '''Timeout error attempting to retrieve detailed information
-        about ComCat event %s. Please try again later. Error message:
-        "%s"
-        '''
-        raise ConnectionError(fmt % (eventid, str(sot)))
+    event = detail
     if products is not None:
         if not len(set(products) & set(PRODUCTS)):
             fmt = '''None of the input products "%s" are in the list

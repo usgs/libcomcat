@@ -51,7 +51,7 @@ def test_get_summary_data_frame():
     with vcr.use_cassette(tape_file):
         events = search(starttime=datetime(1994, 6, 1),
                         endtime=datetime(1994, 10, 6),
-                        minmagnitude=8.0, maxmagnitude=9.0, verbose=True)
+                        minmagnitude=8.0, maxmagnitude=9.0)
 
         df = get_summary_data_frame(events)
         assert len(df) == 2
@@ -66,7 +66,7 @@ def test_get_detail_data_frame():
                         endtime=datetime(1994, 10, 6),
                         minmagnitude=8.0, maxmagnitude=9.0)
         all_mags = get_detail_data_frame(
-            events, get_all_magnitudes=True, verbose=True)
+            events, get_all_magnitudes=True)
         assert all_mags.iloc[0]['magnitude'] == 8.2
 
 
@@ -269,30 +269,33 @@ def test_history_data_frame():
     cassettes, datadir = get_datadir()
     tape_file = os.path.join(cassettes, 'dataframes_history.yaml')
     with vcr.use_cassette(tape_file):
-        (history, event) = get_history_data_frame('nc72852151', ['shakemap', 'dyfi',
-                                                                 'losspager', 'oaf',
-                                                                 'finite-fault',
-                                                                 'focal-mechanism',
-                                                                 'ground-failure',
-                                                                 'moment-tensor',
-                                                                 'phase-data',
-                                                                 'origin'])
-        (history, event) = get_history_data_frame('us10008e3k', ['shakemap', 'dyfi',
-                                                                 'oaf',
-                                                                 'finite-fault',
-                                                                 'focal-mechanism',
-                                                                 'moment-tensor'])
-        (history, event) = get_history_data_frame('us10007uph', ['shakemap', 'dyfi',
-                                                                 'oaf',
-                                                                 'finite-fault',
-                                                                 'focal-mechanism',
-                                                                 'ground-failure',
-                                                                 'moment-tensor',
-                                                                 'phase-data'])
+        nc72852151 = get_event_by_id('nc72852151', includesuperseded=True)
+        (history, event) = get_history_data_frame(nc72852151, ['shakemap', 'dyfi',
+                                                               'losspager', 'oaf',
+                                                               'finite-fault',
+                                                               'focal-mechanism',
+                                                               'ground-failure',
+                                                               'moment-tensor',
+                                                               'phase-data',
+                                                               'origin'])
+        us10008e3k = get_event_by_id('us10008e3k', includesuperseded=True)
+        (history, event) = get_history_data_frame(us10008e3k, ['shakemap', 'dyfi',
+                                                               'oaf',
+                                                               'finite-fault',
+                                                               'focal-mechanism',
+                                                               'moment-tensor'])
+        us10007uph = get_event_by_id('us10007uph', includesuperseded=True)
+        (history, event) = get_history_data_frame(us10007uph, ['shakemap', 'dyfi',
+                                                               'oaf',
+                                                               'finite-fault',
+                                                               'focal-mechanism',
+                                                               'ground-failure',
+                                                               'moment-tensor',
+                                                               'phase-data'])
 
 
 if __name__ == '__main__':
-    print('Testing DYFI extraction...')
+    print('Testing nan mags extraction...')
     test_nan_mags()
     print('Testing DYFI extraction...')
     test_dyfi()

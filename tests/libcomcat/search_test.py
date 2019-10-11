@@ -37,7 +37,7 @@ def test_count():
     with vcr.use_cassette(tape_file):
         nevents = count(starttime=datetime(1994, 1, 17, 12, 30),
                         endtime=datetime(1994, 1, 18, 12, 35),
-                        minmagnitude=6.6, verbose=True,
+                        minmagnitude=6.6,
                         updatedafter=datetime(2010, 1, 1))
     assert nevents == 1
 
