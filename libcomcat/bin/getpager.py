@@ -234,8 +234,7 @@ def main():
                         maxmagnitude=maxmag,
                         minmagnitude=minmag,
                         producttype='losspager',
-                        host=args.host,
-                        verbose=args.verbose)
+                        host=args.host)
 
     if not len(events):
         print('No events found matching your search criteria. Exiting.')

@@ -59,8 +59,7 @@ def count(starttime=None,
           minsig=None,
           producttype=None,
           productcode=None,
-          reviewstatus=None,
-          verbose=False):
+          reviewstatus=None):
     """Ask the ComCat database for the number of events matching input criteria.
 
     This count function is a wrapper around the ComCat Web API described here:
@@ -202,9 +201,6 @@ def count(starttime=None,
     segments = _get_time_segments(starttime, endtime, newargs['minmagnitude'])
     iseg = 1
 
-    # remove the verbose element from the arguments
-    del newargs['verbose']
-
     for stime, etime in segments:
         newargs['starttime'] = stime
         newargs['endtime'] = etime
@@ -301,8 +297,7 @@ def search(starttime=None,
            productcode=None,
            reviewstatus=None,
            host=None,
-           enable_limit=False,
-           verbose=False):
+           enable_limit=False):
     """Search the ComCat database for events matching input criteria.
 
     This search function is a wrapper around the ComCat Web API described here:
@@ -450,8 +445,7 @@ def search(starttime=None,
     if newargs['limit'] > 20000:
         newargs['limit'] = 20000
 
-    # remove the verbose element from the arguments
-    del newargs['verbose']
+    # remove the enable_limit element from the arguments
     del newargs['enable_limit']
     if enable_limit:
         events = _search(**newargs)

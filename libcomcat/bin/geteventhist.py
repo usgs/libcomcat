@@ -13,7 +13,7 @@ import numpy as np
 
 # local imports
 import libcomcat
-from libcomcat.search import search
+from libcomcat.search import search, get_event_by_id
 from libcomcat.dataframes import (get_history_data_frame, split_history_frame,
                                   PRODUCTS, TIMEFMT, PRODUCT_COLUMNS)
 from libcomcat.logging import setup_logger
@@ -355,7 +355,8 @@ def main():
         products = set(products) - set(args.exclude_products)
 
     try:
-        dataframe, event = get_history_data_frame(args.eventid, products)
+        detail_event = get_event_by_id(args.eventid, includesuperseded=True)
+        dataframe, event = get_history_data_frame(detail_event, products)
     except Exception as e:
         fmt = '''Failed to retrieve event history data for
         event % s. Error message is as follows. Exiting.
