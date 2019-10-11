@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 import argparse
 import sys
+import logging
 
 # Third party imports
 import libcomcat
-from libcomcat.search import search, count
-from libcomcat.utils import (maketime, get_all_mags, CombinedFormatter)
+from libcomcat.search import search, count, get_authoritative_info
+from libcomcat.utils import (maketime,
+                             CombinedFormatter)
+
 import pandas as pd
 from libcomcat.logging import setup_logger
 
@@ -66,8 +69,6 @@ def get_parser():
                         help='Min/max (authoritative) magnitude to restrict search.')
     parser.add_argument('-x', '--count', dest='getCount', action='store_true',
                         help='Just return the number of events in search and maximum allowed.')
-    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
-                        help='Print progress')
     parser.add_argument('-f', '--format', dest='format', choices=['csv', 'tab', 'excel'], default='csv',
                         help='Output format.')
 
@@ -132,8 +133,7 @@ def main():
                         longitude=longitude,
                         maxradiuskm=radiuskm,
                         maxmagnitude=maxmag,
-                        minmagnitude=minmag,
-                        verbose=args.verbose)
+                        minmagnitude=minmag)
         print('There are %i events matching input criteria.' % nevents)
         sys.exit(0)
 
@@ -152,8 +152,7 @@ def main():
                     longitude=longitude,
                     maxradiuskm=radiuskm,
                     maxmagnitude=maxmag,
-                    minmagnitude=minmag,
-                    verbose=args.verbose)
+                    minmagnitude=minmag)
 
     if not len(events):
         print('No events found matching your search criteria. Exiting.')
@@ -177,17 +176,15 @@ def main():
                               'hypo_src': source})
 
         imag = 1
-
-        if args.verbose:
-            tpl = (event.id, ievent, len(events), len(id_list))
-            print('Parsing event %s (%i of %i) - %i origins' % tpl)
+        tpl = (event.id, ievent, len(events), len(id_list))
+        logging.debug('Parsing event %s (%i of %i) - %i origins' % tpl)
         ievent += 1
         errors = []
         mags = {}
         for eid in id_list:
-            magtypes, msg = get_all_mags(eid)
-            if args.verbose and len(msg):
-                print(msg)
+            magtypes, loctypes, msg = get_authoritative_info(eid)
+            if len(msg):
+                logging.info(msg)
             mags.update(magtypes)
             imag += 1
         row = pd.concat([row, pd.Series(mags)])

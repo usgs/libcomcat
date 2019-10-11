@@ -105,34 +105,6 @@ def get_mag_src(mag):
     return magsrc
 
 
-def get_all_mags(eventid):
-    """Get all magnitudes for a given event ID.
-
-    Args:
-        eventid (str): ComCat Event ID.
-    Returns:
-        dict: Dictionary where keys are "magsrc-magtype" and values
-              are magnitude value.
-
-    """
-    row = {}
-    msg = ''
-    client = Client('USGS')
-    try:
-        obsevent = client.get_events(eventid=eventid).events[0]
-    except Exception as e:
-        msg = 'Failed to download event %s, error "%s".' % (eventid, str(e))
-    for mag in obsevent.magnitudes:
-        magvalue = mag.mag
-        magtype = mag.magnitude_type
-        magsrc = get_mag_src(mag)
-        colname = '%s-%s' % (magsrc, magtype)
-        if colname in row:
-            continue
-        row[colname] = magvalue
-    return (row, msg)
-
-
 def read_phases(filename):
     """Read a phase file CSV or Excel file into data structures.
 

@@ -581,3 +581,37 @@ def _count(**newargs):
         raise ConnectionError(fmt % (url, msg))
 
     return nevents
+
+
+def get_authoritative_info(eventid):
+    """Get authoritative magnitudes, locations, and depths from all sources for event.
+
+    Args:
+        eventid (str): ComCat Event ID.
+    Returns:
+        dict: Dictionary where keys are "magsrc-magtype" and values
+              are magnitude value.
+
+    """
+    mag_row = {}
+    loc_row = {}
+    msg = ''
+    try:
+        detail = get_event_by_id(eventid)
+        origins = detail.getProducts('origin', source='all')
+        for origin in origins:
+            source = origin.source
+            magtype = origin['magnitude-type']
+            magval = float(origin['magnitude'])
+            colname = '%s-%s' % (source, magtype)
+            mag_row[colname] = magval
+            latname = '%s-%s' % (origin.source, 'latitude')
+            lonname = '%s-%s' % (origin.source, 'longitude')
+            depname = '%s-%s' % (origin.source, 'depth')
+            loc_row[latname] = float(origin['latitude'])
+            loc_row[lonname] = float(origin['longitude'])
+            loc_row[depname] = float(origin['depth'])
+    except Exception as e:
+        msg = 'Failed to download event %s, error "%s".' % (eventid, str(e))
+
+    return (mag_row, loc_row, msg)
