@@ -42,7 +42,7 @@ def test_mag():
     tmpdir = tempfile.mkdtemp()
     tmpfile = os.path.join(tmpdir, 'temp.csv')
     try:
-        cmd = 'getmags -m 9.4 9.6 -v %s -s 1959-12-31 -e 1961-01-01' % tmpfile
+        cmd = 'getmags -m 9.4 9.6 %s -s 1959-12-31 -e 1961-01-01' % tmpfile
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
         if not res:
@@ -54,8 +54,8 @@ def test_mag():
     finally:
         shutil.rmtree(tmpdir)
     # The largest recorded earthquake is a relatively stable check
-    target_columns = ['id', 'time', 'lat', 'lon', 'depth', 'location', 'url',
-                      'hypo_src', 'iscgem-Mw', 'iscgem-mw', 'official-Mw', 'official-mw']
+    target_columns = ['id', 'time', 'lat', 'lon', 'depth', 'location',
+                      'url', 'hypo_src', 'official-mw', 'us-mw']
     np.testing.assert_array_equal(df.columns, target_columns)
     target_id = 'official19600522191120_30'
     target_location = '1960 Great Chilean Earthquake (Valdivia Earthquake)'
@@ -65,7 +65,7 @@ def test_mag():
     tmpdir = tempfile.mkdtemp()
     tmpfile = os.path.join(tmpdir, 'temp.xlsx')
     try:
-        cmd = 'getmags -m 9.4 9.6 -v %s -s 1959-12-31 -e 1961-01-01 -f excel' % tmpfile
+        cmd = 'getmags -m 9.4 9.6 %s -s 1959-12-31 -e 1961-01-01 -f excel' % tmpfile
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
         if not res:
@@ -77,8 +77,8 @@ def test_mag():
     finally:
         shutil.rmtree(tmpdir)
     # The largest recorded earthquake is a relatively stable check
-    target_columns = ['id', 'time', 'lat', 'lon', 'depth', 'location', 'url',
-                      'hypo_src', 'iscgem-Mw', 'iscgem-mw', 'official-Mw', 'official-mw']
+    target_columns = ['id', 'time', 'lat', 'lon', 'depth', 'location',
+                      'url', 'hypo_src', 'official-mw', 'us-mw']
     np.testing.assert_array_equal(df.columns, target_columns)
     target_id = 'official19600522191120_30'
     target_location = '1960 Great Chilean Earthquake (Valdivia Earthquake)'
@@ -87,7 +87,7 @@ def test_mag():
 
     # Test count
     try:
-        cmd = 'getmags -m 9.4 9.6 -v -x %s -s 1959-12-31 -e 1961-01-01' % tmpfile
+        cmd = 'getmags -m 9.4 9.6 -x %s -s 1959-12-31 -e 1961-01-01' % tmpfile
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
         if not res:
@@ -101,7 +101,7 @@ def test_mag():
 
     # Test no events
     try:
-        cmd = 'getmags -m 9.4 9.6 -v %s -s 1900-01-01 -e 1900-01-02' % tmpfile
+        cmd = 'getmags -m 9.4 9.6 %s -s 1900-01-01 -e 1900-01-02' % tmpfile
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
         if not res:
@@ -115,7 +115,7 @@ def test_mag():
 
     # Test no events
     try:
-        cmd = 'getmags -m 9.4 9.6 -v -x %s -r -38.143 73.407 1 -s 1900-01-01 -e 1900-01-02' % tmpfile
+        cmd = 'getmags -m 9.4 9.6 -x %s -r -38.143 73.407 1 -s 1900-01-01 -e 1900-01-02' % tmpfile
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
         if not res:
