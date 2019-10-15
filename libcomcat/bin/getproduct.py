@@ -74,7 +74,7 @@ def get_parser():
 
     To download ShakeMap grid.xml files for a box around New Zealand during 2013:
 
-    %(prog)s shakemap "grid.xml" -o /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+    %(prog)s shakemap "grid.xml" -d /home/user/newzealand -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
 
     Note that when specifying a search box that crosses the -180/180 meridian, you simply specify longitudes
     as you would if you were not crossing that meridian.
@@ -85,71 +85,59 @@ def get_parser():
 
     For example, to retrieve all of the coulomb input files for the finite-fault product, you would construct your
     search like this:
-    %(prog)s finite-fault _coulomb.inp -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+    %(prog)s finite-fault _coulomb.inp -d ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
 
     To retrieve the moment rate function files, do this:
-    %(prog)s finite-fault .mr -o ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+    %(prog)s finite-fault .mr -d ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
     '''
     parser = argparse.ArgumentParser(
         description=desc, formatter_class=MyFormatter)
     # positional arguments
     parser.add_argument('product', metavar='PRODUCT',
-                        help='The name of the desired product (shakemap, dyfi, etc.)')
+                        help='Name of the desired product.'
+                        'See the full list here: https://usgs.github.io/pdl/userguide/products/index.html,')
     parser.add_argument('contents', metavar='CONTENTLIST', nargs='*',
-                        help='The names of the product contents (grid.xml, stationlist.txt, etc.) ')
+                        help='The names of the product contents (grid.xml, stationlist.txt, etc.).')
+
     # optional arguments
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__)
-    parser.add_argument('-o', '--output-folder', dest='outputFolder', default=os.getcwd(),
-                        help='Folder where output files should be written (must exist).')
     parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
-                        help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
-
-    country_str = '''Specify three character country code and earthquakes
-    from inside country polygon (50m resolution) will be returned. Earthquakes
-    in the ocean likely will NOT be returned.'''
-    parser.add_argument('--country', help=country_str)
-
+                        help='Bounds to constrain event search [lonmin lonmax latmin latmax].')
     buffer_str = '''Use in conjunction with --country. Specify a buffer in km
     around country border where events will be selected.
     '''
     parser.add_argument('--buffer', help=buffer_str,
                         type=int, default=BUFFER_DISTANCE_KM)
-
-    parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
-                        nargs=3, help='Search radius in KM (use instead of bounding box)')
-    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
-                        help='Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
-                        help='End time for search (defaults to current date/time). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-a', '--after', dest='after', type=maketime,
-                        help='Limit to events modified after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
-                        help='Min/max magnitude to restrict search.')
     parser.add_argument('-c', '--catalog', dest='catalog',
-                        help='Source catalog from which products derive (atlas, centennial, etc.)')
-    parser.add_argument('-n', '--contributor', dest='contributor',
-                        help='Source contributor (who loaded product) (us, nc, etc.)')
-    parser.add_argument('-i', '--event-id', dest='eventid',
-                        help='Event ID from which to download product contents.')
-    parser.add_argument('-p', '--product-property', dest='productProperties', type=makedict,
-                        help='Product property (reviewstatus:approved).')
-    parser.add_argument('-t', '--event-property', dest='eventProperties',
-                        help='Event property (alert:yellow, status:REVIEWED, etc.).', type=makedict)
-    parser.add_argument('-v', '--event-type', dest='eventType',
-                        help='Event type (earthquake, "volcanic eruption", etc.).')
-    parser.add_argument('-l', '--list-url', dest='list_only', action='store_true',
-                        help='Only list urls for contents in events that match criteria.')
+                        help='Source catalog from which products derive (atlas, centennial, etc.).')
+    parser.add_argument('--contributor', dest='contributor',
+                        help='Source contributor (who loaded product) (us, nc, etc.).')
+    country_str = '''Specify three character country code and earthquakes
+    from inside country polygon (50m resolution) will be returned. Earthquakes
+    in the ocean likely will NOT be returned.
 
+    See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+    '''
+    parser.add_argument('--country', help=country_str)
+    parser.add_argument('-d', '--outdir', dest='outputFolder', default=os.getcwd(),
+                        help='Directory where files are stored (must already exist).')
+    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
+                        help='End time for search (defaults to current date/time). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('--event-property', dest='eventProperties',
+                        help='Event property (alert:yellow, status:REVIEWED, etc.).', type=makedict)
+    parser.add_argument('--event-type', dest='eventType',
+                        help='Event type (earthquake, "volcanic eruption", etc.).')
+    parser.add_argument('--get-source', dest='source', default='preferred',
+                        help='Get contents for the "preferred" source, "all" sources, or a specific source ("us").')
     parser.add_argument('--get-version', dest='version', choices=['first', 'last', 'all', 'preferred'],
                         help='Get contents for first, last, preferred or all versions of product.',
                         default='preferred')
-    parser.add_argument('--get-source', dest='source', default='preferred',
-                        help='Get contents for the "preferred" source, "all" sources, or a specific source ("us").')
     parser.add_argument('--host',
                         help='Specify a different comcat *search* host than earthquake.usgs.gov.')
-
+    parser.add_argument('-i', '--event-id', dest='eventid',
+                        help='Retrieve information from a single PAGER event, using ComCat event ID.')
+    parser.add_argument('-l', '--list-url', dest='list_only', action='store_true',
+                        help='Only list urls for contents in events that match criteria.')
     loghelp = '''Send debugging, informational, warning and error messages to a file.
     '''
     parser.add_argument('--logfile', default='stderr', help=loghelp)
@@ -166,7 +154,18 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
-
+    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
+                        help='Minimum and maximum (authoritative) magnitude to restrict search.')
+    parser.add_argument('--product-property', dest='productProperties', type=makedict,
+                        help='Product property (reviewstatus:approved).')
+    parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
+                        nargs=3, help='Search radius in kilometers (radius and bounding options are mutually exclusive).')
+    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
+                        help='Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
+                        help=' Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
     return parser
 
 

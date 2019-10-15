@@ -41,10 +41,6 @@ def get_parser():
 
     %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -u
 
-    To print all of the information about that event:
-
-    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -v
-
     To print all of the events that are within expanded distance/time windows:
 
     %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120
@@ -57,42 +53,20 @@ def get_parser():
     parser = argparse.ArgumentParser(
         description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
 
+    # optional arguments
+    parser.add_argument('-a', '--all', dest='print_all', action='store_true',
+                        help='Print all ids associated with event.',
+                        default=False)
     ehelp = ('Specify event information (TIME LAT LON). '
              'Time of earthquake, formatted as YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS'
              'Latitude of earthquake'
              'Longitude of earthquake')
-
-    parser.add_argument('-e', '--eventinfo', nargs=3,
+    parser.add_argument('--eventinfo', nargs=3,
                         metavar=('TIME', 'LAT', 'LON'),
                         type=str, help=ehelp)
-
     parser.add_argument('-i', '--eventid',
                         metavar='EVENTID',
                         type=str, help='Specify an event ID')
-
-    # optional arguments
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__)
-    rhelp = 'Change search radius from default of %.0f km.' % SEARCH_RADIUS
-    parser.add_argument('-r', '--radius', type=float,
-                        help=rhelp)
-    whelp = 'Change time window of %.0f seconds.' % TIME_WINDOW
-    parser.add_argument('-w', '--window', type=float,
-                        help=whelp)
-    parser.add_argument('-a', '--all', dest='print_all', action='store_true',
-                        help='Print all ids associated with event.',
-                        default=False)
-    parser.add_argument('-u', '--url', dest='print_url', action='store_true',
-                        help='Print URL associated with event.', default=False)
-    vstr = ('Print time/distance deltas, and azimuth from input '
-            'parameters to event.')
-    parser.add_argument('-v', '--verbose', dest='print_verbose',
-                        action='store_true', help=vstr, default=False)
-    ohelp = ('Send -a output to a file. Supported formats are Excel and CSV, '
-             'format will be determined by extension (.xlsx and .csv)')
-    parser.add_argument('-o', '--outfile',
-                        help=ohelp)
-
     loghelp = '''Send debugging, informational, warning and error messages to a file.
     '''
     parser.add_argument('--logfile', default='stderr', help=loghelp)
@@ -109,6 +83,24 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
+    ohelp = ('Send -a output to a file. Supported formats are Excel and CSV, '
+             'format will be determined by extension (.xlsx and .csv)')
+    parser.add_argument('-o', '--outfile',
+                        help=ohelp)
+    rhelp = 'Change search radius from default of %.0f km.' % SEARCH_RADIUS
+    parser.add_argument('-r', '--radius', type=float,
+                        help=rhelp)
+    parser.add_argument('-u', '--url', dest='print_url', action='store_true',
+                        help='Print URL associated with event.', default=False)
+    vstr = ('Print time/distance deltas, and azimuth from input '
+            'parameters to event.')
+    parser.add_argument('-v', '--verbose', dest='print_verbose',
+                        action='store_true', help=vstr, default=False)
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
+    whelp = 'Change time window of %.0f seconds.' % TIME_WINDOW
+    parser.add_argument('-w', '--window', type=float,
+                        help=whelp)
     return parser
 
 
@@ -124,7 +116,7 @@ def main():
 
     # make sure either args.eventinfo or args.eventid is specified
     if args.eventinfo is None and args.eventid is None:
-        print('Please select -e or -i option. Exiting.')
+        print('Please select --eventinfo or -i option. Exiting.')
         sys.exit(1)
 
     if args.eventinfo is None:

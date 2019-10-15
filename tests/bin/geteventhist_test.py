@@ -41,7 +41,7 @@ def test_geteventhist():
     # SMOKE TEST
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = 'geteventhist iscgemsup913159 -o %s -f excel -s' % tmpdir
+        cmd = 'geteventhist iscgemsup913159 -d %s -f excel --split' % tmpdir
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
         if not res:
@@ -66,7 +66,7 @@ def test_geteventhist():
     # SMOKE TEST for multiple events
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = 'geteventhist us2000artt  -o %s -r 100 500' % tmpdir
+        cmd = 'geteventhist us2000artt -d %s -r 100 -w 500' % tmpdir
         res, stdout, stderr = get_command_output(cmd)
         print(stdout)
         if not res:
@@ -83,7 +83,7 @@ def test_geteventhist():
     # SMOKE TEST for multiple events
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = 'geteventhist us2000artt -w -r 100 500'
+        cmd = 'geteventhist us2000artt --web -r 100 -w 500'
         res, stdout, stderr = get_command_output(cmd)
         if not res:
             raise AssertionError(

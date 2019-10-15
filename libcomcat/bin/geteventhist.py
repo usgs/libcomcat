@@ -80,36 +80,36 @@ def get_parser():
         Varies depending on the product, but all description
         fields are delineated first by a vertical pipe "|",
         and key/value pairs in each field are delineated
-        by a hash "#". This is so that the -s option
+        by a hash "#". This is so that the --split option
         can parse the description column into many
         columns.
 
     To get one summary spreadsheet in Excel format listing all products
     for the M7.1 event from the 2019 Ridgecrest Sequence:
 
-    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel
+    geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel
 
     To get one summary spreadhsheet as above, *excluding* DYFI products:
 
-    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -x dyfi
+    geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel -x dyfi
 
     To split out the "description" column into separate columns, and
     the products into separate spreadsheets:
 
-    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -s
+    geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel --split
 
     To retrieve summary information for only origins and shakemaps:
 
-    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -p origin shakemap
+    geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel -p origin shakemap
 
     To retrieve information for only origins and shakemaps, and split them
     into separate spreadsheets:
 
-    geteventhist ci38457511 -o ~/tmp/ridgecrest -f excel -p origin shakemap -s
+    geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel -p origin shakemap --split
 
     To print one product table (say, origins) to stdout in HTML format:
 
-    geteventhist ci38996632  -p origin -w -s > ~/test.html
+    geteventhist ci38996632  -p origin --web --split > ~/test.html
     '''
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=MyFormatter)
@@ -118,37 +118,15 @@ def get_parser():
                         metavar='EVENTID', help='ComCat event ID.')
 
     # optional arguments
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__)
-    parser.add_argument('-p', '--products', help='Products to be listed',
-                        nargs='*', default=[])
-
-    shelp = 'Split description of single-product queries into separate columns'
-    parser.add_argument('-s', '--split',
-                        help=shelp,
-                        action='store_true',
-                        default=False)
-
-    parser.add_argument('-x', '--exclude-products',
-                        help='Products to be excluded',
-                        nargs='*', default=[])
-
-    rhelp = '''Search for other unassociated earthquakes
-    inside a search radius(km) and time window(sec).
-    '''
-    parser.add_argument('-r', '--radius', help=rhelp, nargs=2, type=float)
-
-    ohelp = '''Download history table to directory.'''
-    parser.add_argument('-o', '--outdir', help=ohelp,
+    ohelp = '''Directory where files are stored.'''
+    parser.add_argument('-d', '--outdir', help=ohelp,
                         default=None)
-
-    parser.add_argument('-w', '--web', help='Print HTML tables to stdout.',
-                        default=False, action='store_true')
-
-    parser.add_argument('-f', '--format', help='Control output format',
-                        choices=['excel', 'csv'],
+    parser.add_argument('--exclude-products',
+                        help='Products to be excluded.',
+                        nargs='*', default=[])
+    parser.add_argument('-f', '--format', help="Output format (csv, tab, or excel). Default is ‘csv’",
+                        choices=['excel', 'csv', 'tab'],
                         default='csv', dest='format')
-
     loghelp = '''Send debugging, informational, warning and error messages to a file.
     '''
     parser.add_argument('--logfile', default='stderr', help=loghelp)
@@ -165,6 +143,28 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
+    phelp = '''Limit to only the products specified. If no products are
+    specified, all will be listed. See the full list of products here:
+    See the full list here: https://usgs.github.io/pdl/userguide/products/index.html.
+    '''
+    parser.add_argument('-p', '--product-type', help=phelp,
+                        nargs='*', default=[])
+    rhelp = '''Search for other unassociated earthquakes
+    inside a search radius (km). (Requires use of -w.)
+    '''
+    parser.add_argument('-r', '--radius', help=rhelp, type=float)
+    shelp = 'Split description of single-product queries into separate columns.'
+    parser.add_argument('--split',
+                        help=shelp,
+                        action='store_true',
+                        default=False)
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
+    parser.add_argument('--web', help='Print HTML tables to stdout.',
+                        default=False, action='store_true')
+    whelp = 'Limit by time window in seconds. (Requires use of -r.)'
+    parser.add_argument('-w', '--window', type=float,
+                        help=whelp)
     return parser
 
 
@@ -263,7 +263,10 @@ def save_dataframe(outdir, format, event, dataframe, product=None):
                                    event.id + '_' + product + '.csv')
         else:
             outfile = os.path.join(outdir, event.id + '.csv')
-        dataframe.to_csv(outfile, index=False)
+        if format == 'tab':
+            dataframe.to_csv(outfile, sep='\t', index=False)
+        else:
+            dataframe.to_csv(outfile, index=False)
         cdata = open(outfile, 'rt').read()
         with open(outfile, 'wt') as f:
             f.write('# Event ID: %s\n' % event.id)
@@ -322,8 +325,8 @@ def main():
     setup_logger(args.logfile, args.loglevel)
 
     # make sure that input products are in the list of supported products
-    if not set(args.products) <= set(PRODUCTS):
-        unsupported = list(set(args.products) - set(PRODUCTS))
+    if not set(args.product_type) <= set(PRODUCTS):
+        unsupported = list(set(args.product_type) - set(PRODUCTS))
         fmt = 'The following event products are not supported: '
         print(fmt % (','.join(unsupported)))
         sys.exit(1)
@@ -338,16 +341,27 @@ def main():
 
     # web output and directory output are mutually exclusive
     if args.outdir and args.web:
-        msg = '''The - o and -w options are mutually exclusive, meaning
+        msg = '''The -d and --web options are mutually exclusive, meaning
         that you cannot choose to write files to a directory and print
         HTML output to the screen simultaneously. Please choose one of
         those two options and try again.
         '''
         print(msg)
         sys.exit(1)
-
-    if args.products:
-        products = args.products
+    if args.radius and not args.window:
+        msg = '''To define a time and distance range, the radius and window
+         options must both be set.
+        '''
+        print(msg)
+        sys.exit(1)
+    if args.window and not args.radius:
+        msg = '''To define a time and distance range, the radius and window
+         options must both be set.
+        '''
+        print(msg)
+        sys.exit(1)
+    if args.product_type:
+        products = args.product_type
     else:
         products = PRODUCTS
 
@@ -367,8 +381,8 @@ def main():
         sys.exit(1)
 
     if args.radius:
-        radius_km = args.radius[0]
-        radius_secs = args.radius[1]
+        radius_km = args.radius
+        radius_secs = args.window
         stime = event.time - timedelta(seconds=radius_secs)
         etime = event.time + timedelta(seconds=radius_secs)
 

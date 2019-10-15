@@ -71,30 +71,19 @@ def get_parser():
     parser.add_argument('directory',
                         metavar='DIRECTORY', help='Output directory.')
     # optional arguments
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__)
     parser.add_argument('-b', '--bounds', metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
-                        help='Bounds to constrain event search [lonmin lonmax latmin latmax]')
-    parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
-                        nargs=3, help='Search radius in KM (use instead of bounding box)')
-    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
-                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
-    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
-                        help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
-    parser.add_argument('-i', '--event-id', dest='eventid',
-                        help='Extract phase data for a single event, using ComCat event ID.')
-    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
-                        help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
-                        help='Min/max (authoritative) magnitude to restrict search.')
+                        help='Bounds to constrain event search [lonmin lonmax latmin latmax].')
     parser.add_argument('-c', '--catalog', dest='catalog',
                         help='Source catalog from which products derive (atlas, centennial, etc.)')
-    parser.add_argument('-n', '--contributor', dest='contributor',
+    parser.add_argument('--contributor', dest='contributor',
                         help='Source contributor (who loaded product) (us, nc, etc.)')
+    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
+                        help='End time for search (defaults to current date/time).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.')
     parser.add_argument('-f', '--format', dest='format', choices=['csv', 'tab', 'excel'], default='csv',
-                        metavar='FORMAT', help='Output format.')
-
+                        metavar='FORMAT', help="Output format (csv, tab, or excel). Default is ‘csv’.")
+    parser.add_argument('-i', '--event-id', dest='eventid',
+                        help='Retrieve information from a single PAGER event, using ComCat event ID.')
     loghelp = '''Send debugging, informational, warning and error messages to a file.
     '''
     parser.add_argument('--logfile', default='stderr', help=loghelp)
@@ -111,7 +100,16 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
-
+    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
+                        help='Minimum and maximum(authoritative) magnitude to restrict search.')
+    parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
+                        nargs=3, help='Search radius in kilometers (radius and bounding options are mutually exclusive).')
+    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
+                        help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.')
+    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
+                        help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
     return parser
 
 
