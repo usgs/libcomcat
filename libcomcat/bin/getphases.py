@@ -263,7 +263,11 @@ def save_dataframe(df, directory, event, file_format, catalog=None):
                 value = str(value)
             f.write(fmt % (key, value))
 
-        df.to_csv(f, index=False)
+        if args.format == 'tab':
+            df.to_csv(f, sep='\t', index=False)
+        else:
+            df.to_csv(f, index=False)
+
         f.close()
     return filename
 

@@ -389,12 +389,12 @@ def main():
 
     logging.info('Created table...saving %i records to %s.\n' %
                  (len(df), args.filename))
-    if args.format == 'csv':
-        df.to_csv(args.filename, index=False, chunksize=1000)
+    if args.format == 'excel':
+        df.to_excel(args.filename, index=False)
     elif args.format == 'tab':
         df.to_csv(args.filename, sep='\t', index=False)
     else:
-        df.to_excel(args.filename, index=False)
+        df.to_csv(args.filename, index=False, chunksize=1000)
     logging.info('%i records saved to %s.' % (len(df), args.filename))
     sys.exit(0)
 

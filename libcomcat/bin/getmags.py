@@ -195,6 +195,8 @@ def main():
 
     if args.format == 'excel':
         df.to_excel(args.filename, index=False)
+    elif args.format == 'tab':
+        df.to_csv(args.filename, sep='\t', index=False)
     else:
         df.to_csv(args.filename, index=False)
     print('%i records saved to %s.' % (len(df), args.filename))

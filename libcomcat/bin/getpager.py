@@ -253,12 +253,12 @@ def main():
     if dataframe is not None:
         logging.debug('Created table...saving %i records to %s.\n' %
                       (len(dataframe), args.filename))
-        if args.format == 'csv':
-            dataframe.to_csv(args.filename, index=False, chunksize=1000)
+        if args.format == 'excel':
+            dataframe.to_excel(args.filename, index=False)
         elif args.format == 'tab':
             dataframe.to_csv(args.filename, sep='\t', index=False)
         else:
-            dataframe.to_excel(args.filename, index=False)
+            dataframe.to_csv(args.filename, index=False, chunksize=1000)
 
         add_headers(args.filename, args.format)
         print('%i records saved to %s.' % (len(dataframe), args.filename))
