@@ -5,6 +5,7 @@ import argparse
 import sys
 import logging
 import os.path
+from datetime import datetime
 
 # third party
 import pandas as pd
@@ -13,10 +14,12 @@ import pandas as pd
 import libcomcat
 from libcomcat.utils import maketime
 from libcomcat.dataframes import find_nearby_events
+from libcomcat.search import get_event_by_id
 from libcomcat.logging import setup_logger
 
 # constants
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
+DATEFMT = '%Y-%m-%d'
 FILETIMEFMT = '%Y-%m-%d %H:%M:%S'
 SEARCH_RADIUS = 100
 TIME_WINDOW = 16  # seconds
@@ -53,13 +56,19 @@ def get_parser():
 
     parser = argparse.ArgumentParser(
         description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
-    # positional arguments
-    thelp = ('Time of earthquake, formatted as YYYY-mm-dd or '
-             'YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('time', type=maketime,
-                        help=thelp)
-    parser.add_argument('lat', type=float, help='Latitude of earthquake')
-    parser.add_argument('lon', type=float, help='Longitude of earthquake')
+
+    ehelp = ('Specify event information (TIME LAT LON). '
+             'Time of earthquake, formatted as YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS'
+             'Latitude of earthquake'
+             'Longitude of earthquake')
+
+    parser.add_argument('-e', '--eventinfo', nargs=3,
+                        metavar=('TIME', 'LAT', 'LON'),
+                        type=str, help=ehelp)
+
+    parser.add_argument('-i', '--eventid',
+                        metavar='EVENTID',
+                        type=str, help='Specify an event ID')
 
     # optional arguments
     parser.add_argument('--version', action='version',
@@ -113,6 +122,36 @@ def main():
 
     args = parser.parse_args()
 
+    # make sure either args.eventinfo or args.eventid is specified
+    if args.eventinfo is None and args.eventid is None:
+        print('Please select -e or -i option. Exiting.')
+        sys.exit(1)
+
+    if args.eventinfo is None:
+        detail = get_event_by_id(args.eventid)
+        idlist = detail['ids'].split(',')[1:-1]
+        idlist.remove(detail.id)
+        print('Authoritative ID: %s\n' % detail.id)
+        print('Contributing IDs:')
+        for eid in idlist:
+            print('  ' + eid)
+        sys.exit(0)
+    else:
+        try:
+            timestr = args.eventinfo[0]
+            latstr = args.eventinfo[1]
+            lonstr = args.eventinfo[2]
+            try:
+                time = datetime.strptime(timestr, TIMEFMT)
+            except ValueError:
+                time = datetime.strptime(timestr, DATEFMT)
+
+            lat = float(latstr)
+            lon = float(lonstr)
+        except ValueError as ve:
+            print('Error parsing event info:\n%s' % str(ve))
+            sys.exit(1)
+
     # trap for mutually exclusive options a, u and v
     argsum = (args.print_all + args.print_url + args.print_verbose)
     if argsum > 1:
@@ -146,8 +185,8 @@ def main():
     if args.radius:
         radius = args.radius
 
-    event_df = find_nearby_events(args.time, args.lat,
-                                  args.lon, twindow, radius)
+    event_df = find_nearby_events(time, lat,
+                                  lon, twindow, radius)
 
     if event_df is None:
         logging.error(
@@ -180,7 +219,7 @@ def main():
         print(nearest['url'])
         sys.exit(0)
 
-    print(nearest['id'].values[0])
+    print(nearest['id'])
 
 
 if __name__ == '__main__':

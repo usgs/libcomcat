@@ -38,7 +38,7 @@ def test_url():
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
     try:
-        parameters = ('findid -v -w 180 -r 20 1900-06-03T00:03:18 '
+        parameters = ('findid -w 180 -r 20 -e 1900-06-03T00:03:18 '
                       '-1.020000 -19.128000')
         cmd = '%s' % (parameters)
         res, stdout, stderr = get_command_output(cmd)
@@ -56,7 +56,7 @@ def test_url():
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
     try:
-        parameters = ('findid -w 180 -r 20 1918-06-03T00:03:18 '
+        parameters = ('findid -w 180 -r 20 -e 1918-06-03T00:03:18 '
                       '-1.020000 -19.128000 -a')
         cmd = '%s' % (parameters)
         res, stdout, stderr = get_command_output(cmd)
@@ -73,7 +73,7 @@ def test_url():
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
     try:
-        parameters = ('findid -u -w 180 -r 20 1918-06-03T00:03:18 '
+        parameters = ('findid -u -w 180 -r 20 -e 1918-06-03T00:03:18 '
                       '-1.020000 -19.128000')
         cmd = '%s' % (parameters)
         res, stdout, stderr = get_command_output(cmd)
@@ -91,7 +91,7 @@ def test_url():
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
     try:
-        parameters = ('findid -v -w 180 -r 20 1918-06-03T00:03:18 '
+        parameters = ('findid -w 180 -r 20 -e 1918-06-03T00:03:18 '
                       '-1.020000 -19.128000')
         cmd = '%s' % (parameters)
         res, stdout, stderr = get_command_output(cmd)
@@ -104,5 +104,16 @@ def test_url():
         shutil.rmtree(tmpdir)
 
 
+def test_authoritative():
+    cmd = 'findid -i pt19187000'
+    res, stdout, stderr = get_command_output(cmd)
+    if not res:
+        raise AssertionError(
+            'findid command %s failed with errors "%s"' % (cmd, stderr))
+    lines = stdout.decode('utf-8').split(os.linesep)
+    assert 'ci38457511' in lines[0]
+
+
 if __name__ == '__main__':
+    test_authoritative()
     test_url()
