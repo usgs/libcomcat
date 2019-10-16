@@ -205,7 +205,7 @@ def test_detail():
         ncdict_alltensors = event.toDict(get_tensors='all')
         assert ncdict_alltensors['us_Mwb_mrr'] == 7.63e+16
         ncdict_allfocals = event.toDict(get_focals='all')
-        assert ncdict_allfocals['nc_np1_strike'] == '345.0'
+        assert ncdict_allfocals['nc_np1_strike'] == 345.0
 
         assert event.getNumVersions('shakemap') > 0
         assert isinstance(event.getProducts('shakemap')[0], Product)
