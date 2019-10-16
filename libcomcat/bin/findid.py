@@ -35,64 +35,49 @@ def get_parser():
     inside a 100 km, 16 second window to
     "2019-07-15T10:39:32 35.932 -117.715":
 
-    %(prog)s  2019-07-15T10:39:32 35.932 -117.715
+    %(prog)s  -e 2019-07-15T10:39:32 35.932 -117.715
 
     To print the ComCat url of that nearest event:
 
-    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -u
-
-    To print all of the information about that event:
-
-    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -v
+    %(prog)s  -e 2019-07-15T10:39:32 35.932 -117.715 -u
 
     To print all of the events that are within expanded distance/time windows:
 
-    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120
+    %(prog)s  -e 2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120
 
-    To write the output from the last command into a spreadsheet:
+    To find the authoritative and contributing ids:
 
-    %(prog)s  2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120 -o
+    %(prog)s  -i ci38572791 -a -r 200 -w 120
+
+    To write the output from the last command into a csv spreadsheet:
+
+    %(prog)s  -e 2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120 -o temp.csv
+
+    To write the output from the last command into an excel spreadsheet:
+
+    %(prog)s  -e 2019-07-15T10:39:32 35.932 -117.715 -a -r 200 -w 120 -o temp.xls -f excel
     '''
 
     parser = argparse.ArgumentParser(
         description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
 
+    # optional arguments
+    parser.add_argument('-a', '--all', dest='print_all', action='store_true',
+                        help='Print all ids associated with event.',
+                        default=False)
     ehelp = ('Specify event information (TIME LAT LON). '
              'Time of earthquake, formatted as YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS'
              'Latitude of earthquake'
              'Longitude of earthquake')
-
     parser.add_argument('-e', '--eventinfo', nargs=3,
                         metavar=('TIME', 'LAT', 'LON'),
                         type=str, help=ehelp)
-
+    parser.add_argument('-f', '--format', dest='format',
+                        choices=['csv', 'tab', 'excel'], default='csv',
+                        metavar='FORMAT', help="Output format (csv, tab, or excel). Default is 'csv'.")
     parser.add_argument('-i', '--eventid',
                         metavar='EVENTID',
                         type=str, help='Specify an event ID')
-
-    # optional arguments
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__)
-    rhelp = 'Change search radius from default of %.0f km.' % SEARCH_RADIUS
-    parser.add_argument('-r', '--radius', type=float,
-                        help=rhelp)
-    whelp = 'Change time window of %.0f seconds.' % TIME_WINDOW
-    parser.add_argument('-w', '--window', type=float,
-                        help=whelp)
-    parser.add_argument('-a', '--all', dest='print_all', action='store_true',
-                        help='Print all ids associated with event.',
-                        default=False)
-    parser.add_argument('-u', '--url', dest='print_url', action='store_true',
-                        help='Print URL associated with event.', default=False)
-    vstr = ('Print time/distance deltas, and azimuth from input '
-            'parameters to event.')
-    parser.add_argument('-v', '--verbose', dest='print_verbose',
-                        action='store_true', help=vstr, default=False)
-    ohelp = ('Send -a output to a file. Supported formats are Excel and CSV, '
-             'format will be determined by extension (.xlsx and .csv)')
-    parser.add_argument('-o', '--outfile',
-                        help=ohelp)
-
     loghelp = '''Send debugging, informational, warning and error messages to a file.
     '''
     parser.add_argument('--logfile', default='stderr', help=loghelp)
@@ -109,6 +94,24 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
+    ohelp = ('Send -a output to a file. Supported formats are Excel, CSV, '
+             ' and tab delimited. Denote the format using -f.')
+    parser.add_argument('-o', '--outfile',
+                        help=ohelp)
+    rhelp = 'Change search radius from default of %.0f km.' % SEARCH_RADIUS
+    parser.add_argument('-r', '--radius', type=float,
+                        help=rhelp)
+    parser.add_argument('-u', '--url', dest='print_url', action='store_true',
+                        help='Print URL associated with event.', default=False)
+    vstr = ('Print time/distance deltas, and azimuth from input '
+            'parameters to event.')
+    parser.add_argument('-v', '--verbose', dest='print_verbose',
+                        action='store_true', help=vstr, default=False)
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
+    whelp = 'Change time window of %.0f seconds.' % TIME_WINDOW
+    parser.add_argument('-w', '--window', type=float,
+                        help=whelp)
     return parser
 
 
@@ -124,7 +127,7 @@ def main():
 
     # make sure either args.eventinfo or args.eventid is specified
     if args.eventinfo is None and args.eventid is None:
-        print('Please select -e or -i option. Exiting.')
+        print('Please select --eventinfo or -i option. Exiting.')
         sys.exit(1)
 
     if args.eventinfo is None:
@@ -165,16 +168,6 @@ def main():
         print('You must select -a and -o together. Exiting')
         sys.exit(1)
 
-    # if -o format is not recognized, error out
-    if args.outfile is not None:
-        fpath, fext = os.path.splitext(args.outfile)
-        supported = ['.xlsx', '.csv']
-        if fext not in supported:
-            fmt = ('File extension %s not in list of supported '
-                   'formats: %s. Exiting.')
-            print(fmt % (fext, str(supported)))
-            sys.exit(1)
-
     setup_logger(args.logfile, args.loglevel)
 
     twindow = TIME_WINDOW
@@ -199,11 +192,13 @@ def main():
         if not args.outfile:
             print(event_df)
         else:
-            fpath, fext = os.path.splitext(args.outfile)
-            if fext == '.xlsx':
+            if args.format == 'excel':
                 event_df.to_excel(args.outfile, index=False)
+            elif args.format == 'tab':
+                event_df.to_csv(args.outfile, sep='\t', index=False)
             else:
                 event_df.to_csv(args.outfile, index=False)
+
             print('Wrote %i records to %s' % (len(event_df), args.outfile))
         sys.exit(0)
 

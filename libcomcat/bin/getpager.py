@@ -101,68 +101,41 @@ def get_parser():
         description=desc, formatter_class=argparse.RawDescriptionHelpFormatter)
     # positional arguments
     parser.add_argument('filename',
-                        metavar='FILENAME', help='Output filename.')
+                        metavar='FILENAME', help='Output file name.')
     # optional arguments
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__)
+    versionhelp = 'Retrieve information from all versions of PAGER.'
+    parser.add_argument('-a', '--all', help=versionhelp,
+                        action='store_true',
+                        default=False)
     helpstr = ('Bounds to constrain event search '
-               '[lonmin lonmax latmin latmax]')
+               '[lonmin lonmax latmin latmax].')
     parser.add_argument('-b', '--bounds',
                         metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help=helpstr)
-    helpstr = 'Search radius in KM (use instead of bounding box)'
-    parser.add_argument('-r', '--radius', dest='radius',
-                        metavar=('lat', 'lon', 'rmax'),
-                        type=float, nargs=3,
-                        help=helpstr)
-    helpstr = ('Start time for search (defaults to ~30 days ago). '
-               'YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
-    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
-                        help=helpstr)
     helpstr = ('End time for search (defaults to current date/time). '
-               'YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s')
+               'YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.')
     parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
-                        help=helpstr)
-    helpstr = ('Limit to events after specified time. YYYY-mm-dd or '
-               'YYYY-mm-ddTHH:MM:SS')
-    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
-                        help=helpstr)
-    helpstr = 'Min/max (authoritative) magnitude to restrict search.'
-    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'),
-                        dest='magRange', type=float, nargs=2,
                         help=helpstr)
     parser.add_argument('-f', '--format', dest='format',
                         choices=['csv', 'tab', 'excel'], default='csv',
-                        metavar='FORMAT', help='Output format.')
-
-    losshelp = 'Retrieve fatalities and economic losses'
-    parser.add_argument('-l', '--get-losses', help=losshelp,
-                        action='store_true',
-                        default=False)
-
+                        metavar='FORMAT', help="Output format (csv, tab, or excel). Default is ‘csv’.")
     countryhelp = ('Retrieve information from all countries affected '
-                   'by earthquake')
-    parser.add_argument('-c', '--get-countries', help=countryhelp,
+                   'by the earthquake.')
+    parser.add_argument('--get-countries', help=countryhelp,
                         action='store_true',
                         default=False)
-
-    versionhelp = 'Retrieve information from all versions of PAGER'
-    parser.add_argument('-a', '--all-versions', help=versionhelp,
+    losshelp = 'Retrieve fatalities and economic losses.'
+    parser.add_argument('--get-losses', help=losshelp,
                         action='store_true',
                         default=False)
-
-    versionhelp = 'Retrieve information from a single PAGER event'
-    parser.add_argument('-i', '--eventid', help=versionhelp,
-                        metavar='EVENTID')
-
-    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
-                        help='Print progress')
     helpstr = ('Specify a different comcat *search* host than '
                'earthquake.usgs.gov.')
     parser.add_argument('--host',
                         help=helpstr)
-
+    versionhelp = 'Retrieve information from a single PAGER event, using ComCat event ID.'
+    parser.add_argument('-i', '--eventid', help=versionhelp,
+                        metavar='EVENTID')
     loghelp = '''Send debugging, informational, warning and error messages to a file.
     '''
     parser.add_argument('--logfile', default='stderr', help=loghelp)
@@ -179,7 +152,25 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
-
+    helpstr = 'Minimum and maximum (authoritative) magnitude to restrict search.'
+    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'),
+                        dest='magRange', type=float, nargs=2,
+                        help=helpstr)
+    helpstr = 'Search radius in kilometers (radius and bounding options are mutually exclusive).'
+    parser.add_argument('-r', '--radius', dest='radius',
+                        metavar=('lat', 'lon', 'rmax'),
+                        type=float, nargs=3,
+                        help=helpstr)
+    helpstr = ('Start time for search (defaults to ~30 days ago). '
+               'YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.')
+    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
+                        help=helpstr)
+    helpstr = ('Limit to events after specified time. YYYY-mm-dd or '
+               'YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
+                        help=helpstr)
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
     return parser
 
 
@@ -218,7 +209,7 @@ def main():
 
     if args.eventid:
         event = get_event_by_id(args.eventid,
-                                includesuperseded=args.all_versions)
+                                includesuperseded=args.all)
         events = [event]
     else:
         events = search(starttime=args.startTime,
@@ -248,27 +239,26 @@ def main():
                       (event.id, i, nevents))
 
         if isinstance(event, SummaryEvent):
-            detail = event.getDetailEvent(includesuperseded=args.all_versions)
+            detail = event.getDetailEvent(includesuperseded=args.all)
         else:
             detail = event
         df = get_pager_data_frame(detail, get_losses=args.get_losses,
                                   get_country_exposures=args.get_countries,
-                                  get_all_versions=args.all_versions)
+                                  get_all_versions=args.all)
         if dataframe is None:
             dataframe = df
         else:
             dataframe = pd.concat([dataframe, df])
 
-    if args.verbose:
-        sys.stderr.write('Created table...saving %i records to %s.\n' %
-                         (len(dataframe), args.filename))
     if dataframe is not None:
-        if args.format == 'csv':
-            dataframe.to_csv(args.filename, index=False, chunksize=1000)
+        logging.debug('Created table...saving %i records to %s.\n' %
+                      (len(dataframe), args.filename))
+        if args.format == 'excel':
+            dataframe.to_excel(args.filename, index=False)
         elif args.format == 'tab':
             dataframe.to_csv(args.filename, sep='\t', index=False)
         else:
-            dataframe.to_excel(args.filename, index=False)
+            dataframe.to_csv(args.filename, index=False, chunksize=1000)
 
         add_headers(args.filename, args.format)
         print('%i records saved to %s.' % (len(dataframe), args.filename))

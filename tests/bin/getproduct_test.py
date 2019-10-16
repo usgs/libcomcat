@@ -3,10 +3,10 @@
 # stdlib imports
 import glob
 import os.path
-import subprocess
 import shutil
-import tempfile
+import subprocess
 import sys
+import tempfile
 
 # third party imports
 import pytest
@@ -56,7 +56,7 @@ def test_phases():
     # Check for products
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = ('getproduct shakemap "grid.xml" -o %s -b 163.213 -178.945'
+        cmd = ('getproduct shakemap "grid.xml" -d %s -b 163.213 -178.945'
                ' -48.980 -32.324 -s 2013-02-16T04:00:00 -e '
                '2013-02-16T06:00:00' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
@@ -74,7 +74,7 @@ def test_phases():
     # Check for products
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = ('getproduct shakemap "grid.xml" -o %s -r -36.514 177.933  5 -s '
+        cmd = ('getproduct shakemap "grid.xml" -d %s -r -36.514 177.933  5 -s '
                '2013-02-16T04:00:00 -e 2013-02-16T06:00:00' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
         if not res:
@@ -94,7 +94,7 @@ def test_country():
     # Check for two
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = ('getproduct shakemap "grid.xml" -o %s -r -36.514 177.933  5 -s '
+        cmd = ('getproduct shakemap "grid.xml" -d %s -r -36.514 177.933  5 -s '
                '2013-02-16T04:00:00 -e 2013-02-16T06:00:00 --country abc' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
 
@@ -109,7 +109,7 @@ def test_country():
     # Check for bad code
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = ('getproduct shakemap "grid.xml" -o %s -s '
+        cmd = ('getproduct shakemap "grid.xml" -d %s -s '
                '2013-02-16T04:00:00 -e 2013-02-16T06:00:00 --country abc' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
 
@@ -125,7 +125,7 @@ def test_country():
     # Check for good code
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = ('getproduct shakemap -o %s -s 2016-10-21T04:07:22 -e '
+        cmd = ('getproduct shakemap -d %s -s 2016-10-21T04:07:22 -e '
                '2016-10-21T06:07:22 --country JPN' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
         files = glob.glob(os.path.join(tmpdir, '*'))
@@ -139,7 +139,7 @@ def test_country():
     # Check for good code
     tmpdir = tempfile.mkdtemp()
     try:
-        cmd = ('getproduct shakemap -o %s --country JPN' % tmpdir)
+        cmd = ('getproduct shakemap -d %s --country JPN' % tmpdir)
         res, stdout, stderr = get_command_output(cmd)
     except Exception as e:
         raise(e)

@@ -165,7 +165,7 @@ def test_getcsv():
     tmpdir = tempfile.mkdtemp()
     temp_file = os.path.join(tmpdir, 'temp.csv')
     try:
-        cmd = ('getcsv %s -v -b 163.213 -178.945 -48.980 -32.324'
+        cmd = ('getcsv %s -b 163.213 -178.945 -48.980 -32.324'
                ' -s 1900-01-01 -e 1900-01-02' %
                temp_file)
         res, stdout, stderr = get_command_output(cmd)
