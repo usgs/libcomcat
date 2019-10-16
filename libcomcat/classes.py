@@ -54,18 +54,24 @@ def _get_moment_tensor_info(tensor, get_angles=False,
     edict['%s_mrp' % msource] = float(tensor['tensor-mrp'])
     edict['%s_mtp' % msource] = float(tensor['tensor-mtp'])
     if get_angles and tensor.hasProperty('nodal-plane-1-strike'):
-        edict['%s_np1_strike' % msource] = tensor['nodal-plane-1-strike']
-        edict['%s_np1_dip' % msource] = tensor['nodal-plane-1-dip']
+        edict['%s_np1_strike' % msource] = float(
+            tensor['nodal-plane-1-strike'])
+        edict['%s_np1_dip' % msource] = float(tensor['nodal-plane-1-dip'])
         if tensor.hasProperty('nodal-plane-1-rake'):
-            edict['%s_np1_rake' % msource] = tensor['nodal-plane-1-rake']
+            edict['%s_np1_rake' % msource] = float(
+                tensor['nodal-plane-1-rake'])
         else:
-            edict['%s_np1_rake' % msource] = tensor['nodal-plane-1-slip']
-        edict['%s_np2_strike' % msource] = tensor['nodal-plane-2-strike']
-        edict['%s_np2_dip' % msource] = tensor['nodal-plane-2-dip']
+            edict['%s_np1_rake' % msource] = float(
+                tensor['nodal-plane-1-slip'])
+        edict['%s_np2_strike' % msource] = float(
+            tensor['nodal-plane-2-strike'])
+        edict['%s_np2_dip' % msource] = float(tensor['nodal-plane-2-dip'])
         if tensor.hasProperty('nodal-plane-2-rake'):
-            edict['%s_np2_rake' % msource] = tensor['nodal-plane-2-rake']
+            edict['%s_np2_rake' % msource] = float(
+                tensor['nodal-plane-2-rake'])
         else:
-            edict['%s_np2_rake' % msource] = tensor['nodal-plane-2-slip']
+            edict['%s_np2_rake' % msource] = float(
+                tensor['nodal-plane-2-slip'])
 
     if get_moment_supplement:
         if tensor.hasProperty('derived-latitude'):
@@ -92,22 +98,22 @@ def _get_focal_mechanism_info(focal):
     eventid = msource + focal['eventsourcecode']
     edict = OrderedDict()
     try:
-        edict['%s_np1_strike' % msource] = focal['nodal-plane-1-strike']
+        edict['%s_np1_strike' % msource] = float(focal['nodal-plane-1-strike'])
     except Exception:
         logging.warning(
             'No focal angles for %s in detailed geojson.\n' % eventid)
         return edict
-    edict['%s_np1_dip' % msource] = focal['nodal-plane-1-dip']
+    edict['%s_np1_dip' % msource] = float(focal['nodal-plane-1-dip'])
     if focal.hasProperty('nodal-plane-1-rake'):
-        edict['%s_np1_rake' % msource] = focal['nodal-plane-1-rake']
+        edict['%s_np1_rake' % msource] = float(focal['nodal-plane-1-rake'])
     else:
-        edict['%s_np1_rake' % msource] = focal['nodal-plane-1-slip']
-    edict['%s_np2_strike' % msource] = focal['nodal-plane-2-strike']
-    edict['%s_np2_dip' % msource] = focal['nodal-plane-2-dip']
+        edict['%s_np1_rake' % msource] = float(focal['nodal-plane-1-slip'])
+    edict['%s_np2_strike' % msource] = float(focal['nodal-plane-2-strike'])
+    edict['%s_np2_dip' % msource] = float(focal['nodal-plane-2-dip'])
     if focal.hasProperty('nodal-plane-2-rake'):
-        edict['%s_np2_rake' % msource] = focal['nodal-plane-2-rake']
+        edict['%s_np2_rake' % msource] = float(focal['nodal-plane-2-rake'])
     else:
-        edict['%s_np2_rake' % msource] = focal['nodal-plane-2-slip']
+        edict['%s_np2_rake' % msource] = float(focal['nodal-plane-2-slip'])
     return edict
 
 
