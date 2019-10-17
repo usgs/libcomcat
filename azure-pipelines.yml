@@ -132,4 +132,3 @@ jobs:
       echo "Done."
     displayName: Nightly Build Linux/Mac
     condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
-
