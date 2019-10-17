@@ -1,5 +1,5 @@
 schedules:
-- cron: "5 21 * * *"
+- cron: "0 6 * * *"
   displayName: Daily midnight build
   branches:
     include:
@@ -34,26 +34,23 @@ jobs:
 
   - script: |
       conda env create --quiet --file environment.yml
-      pip install -e .
+      pip install -e . --user
   - script: |
       call activate comcat
       py.test --ignore=tests/bin/ --cov=libcomcat
     displayName: Unit Tests Windows
   
-  - script: |
-      echo "Activating virtual environment..."
-      call activate comcat
-      echo "Done."
-      echo "Installing code locally..."
-      pip install -e .
-      echo "Done."
-      echo "Doing scheduled unit tests..."
-      py.test --ignore=tests/bin/ --cov=libcomcat
-      echo "Doing scheduled system tests..."
-      py.test --ignore=tests/libcomcat/
-      echo "Done."
-    displayName: Nightly Build Windows
-    condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
+  # - script: |
+  #     echo "Activating virtual environment..."
+  #     echo "Done."
+  #     call activate comcat
+  #     echo "Doing scheduled unit tests..."
+  #     py.test --ignore=tests/bin/ --cov=libcomcat
+  #     echo "Doing scheduled system tests..."
+  #     py.test --ignore=tests/libcomcat/
+  #     echo "Done."
+  #   displayName: Nightly Build Windows
+  #   condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
 
 - job: 'Unix'
   timeoutInMinutes: 120
