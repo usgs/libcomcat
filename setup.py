@@ -2,6 +2,7 @@ from distutils.core import setup
 import os.path
 import versioneer
 
+# simple change to test travis
 
 setup(name='libcomcat',
       description='USGS ComCat search API in Python',
