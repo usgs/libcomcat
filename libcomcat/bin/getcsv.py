@@ -110,8 +110,8 @@ def get_parser():
                         metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
                         dest='bounds', type=float, nargs=4,
                         help=helpstr)
-    buffer_str = '''Use in conjunction with --country. Specify a buffer in km
-    around country border where events will be selected.
+    buffer_str = '''Use in conjunction with --country. Specify a buffer (km)
+    around the country's border where events will be selected.
     '''
     parser.add_argument('--buffer', help=buffer_str,
                         type=int, default=BUFFER_DISTANCE_KM)
@@ -180,12 +180,12 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
-    helpstr = (
-        'Number of days after start time (numdays and end-time options are mutually exclusive).')
     helpstr = 'Minimum and maximum (authoritative) magnitude to restrict search.'
     parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'),
                         dest='magRange', type=float, nargs=2,
                         help=helpstr)
+    helpstr = (
+        'Number of days after start time (numdays and end-time options are mutually exclusive).')
     parser.add_argument('--numdays', dest='numdays', type=int,
                         help=helpstr)
     helpstr = ('Limit the search to only those events containing '
@@ -207,12 +207,12 @@ def get_parser():
                'YYYY-mm-ddTHH:MM:SS.')
     parser.add_argument('-t', '--time-after', dest='after', type=maketime,
                         help=helpstr)
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
     helpstr = 'Just return the number of events in search and maximum allowed.'
     parser.add_argument('-x', '--count', dest='getCount',
                         action='store_true',
                         help=helpstr)
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__, help='Version of libcomcat.')
     return parser
 
 

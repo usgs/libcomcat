@@ -85,7 +85,7 @@ def get_parser():
 
     For example, to retrieve all of the coulomb input files for the finite-fault product, you would construct your
     search like this:
-    %(prog)s finite-fault _coulomb.inp -d ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+    %(prog)s finite-fault .inp -d ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
 
     To retrieve the moment rate function files, do this:
     %(prog)s finite-fault .mr -d ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
@@ -95,7 +95,7 @@ def get_parser():
     # positional arguments
     parser.add_argument('product', metavar='PRODUCT',
                         help='Name of the desired product.'
-                        'See the full list here: https://usgs.github.io/pdl/userguide/products/index.html,')
+                        'See the full list here: https://usgs.github.io/pdl/userguide/products/index.html.')
     parser.add_argument('contents', metavar='CONTENTLIST', nargs='*',
                         help='The names of the product contents (grid.xml, stationlist.txt, etc.).')
 
@@ -159,42 +159,45 @@ def get_parser():
     parser.add_argument('--product-property', dest='productProperties', type=makedict,
                         help='Product property (reviewstatus:approved).')
     parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
-                        nargs=3, help='Search radius in kilometers (radius and bounding options are mutually exclusive).')
-    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
-                        help='Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
-    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
-                        help=' Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__, help='Version of libcomcat.')
+                        nargs=3, help=()'Search radius in kilometers (radius'
+                        ' and bounding options are mutually exclusive). The'
+                        ' latitude and longitude for the search should '
+                        'be specified before the radius.'))
+    parser.add_argument('-s', '--start-time', dest = 'startTime', type = maketime,
+                        help = 'Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('-t', '--time-after', dest = 'after', type = maketime,
+                        help = ' Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('--version', action = 'version',
+                        version = libcomcat.__version__, help = 'Version of libcomcat.')
     return parser
 
 
 def main():
-    parser = get_parser()
-    args = parser.parse_args()
+    parser=get_parser()
+    args=parser.parse_args()
 
     setup_logger(args.logfile, args.loglevel)
 
     if args.eventid:
-        detail = get_event_by_id(args.eventid, includesuperseded=True)
+        detail=get_event_by_id(args.eventid, includesuperseded = True)
         _get_product_from_detail(detail, args.product, args.contents,
                                  args.outputFolder, args.version,
-                                 args.source, list_only=args.list_only)
+                                 args.source, list_only = args.list_only)
         sys.exit(0)
 
-    tsum = (args.bounds is not None) + \
+    tsum=(args.bounds is not None) +
         (args.radius is not None) + (args.country is not None)
     if tsum != 1:
         print('Please specify a bounding box, radius, or country code.')
         sys.exit(1)
 
-    latitude = None
-    longitude = None
-    radiuskm = None
-    lonmin = latmin = lonmax = latmax = None
+    latitude=None
+    longitude=None
+    radiuskm=None
+    lonmin=latmin=lonmax=latmax=None
 
     if args.startTime is None:
-        starttime = datetime.utcnow() - timedelta(days=30)
+        starttime=datetime.utcnow() - timedelta(days = 30)
         print('You did not specify a search start time, defaulting to %s' %
               str(starttime))
     else:

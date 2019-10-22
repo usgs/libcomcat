@@ -122,9 +122,9 @@ def get_parser():
     parser.add_argument('-d', '--outdir', help=ohelp,
                         default=None)
     parser.add_argument('--exclude-products',
-                        help='Products to be excluded.',
+                        help='COMCAT products to be excluded from the spreadsheet.',
                         nargs='*', default=[])
-    parser.add_argument('-f', '--format', help="Output format (csv, tab, or excel). Default is ‘csv’",
+    parser.add_argument('-f', '--format', help="Output format. Options include 'csv', 'tab', and 'excel'. Default is 'csv'.",
                         choices=['excel', 'csv', 'tab'],
                         default='csv', dest='format')
     loghelp = '''Send debugging, informational, warning and error messages to a file.
@@ -153,7 +153,7 @@ def get_parser():
     inside a search radius (km). (Requires use of -w.)
     '''
     parser.add_argument('-r', '--radius', help=rhelp, type=float)
-    shelp = 'Split description of single-product queries into separate columns.'
+    shelp = 'Split descriptions of single-product queries into separate columns.'
     parser.add_argument('--split',
                         help=shelp,
                         action='store_true',
