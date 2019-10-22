@@ -10,7 +10,8 @@ setup(name='libcomcat',
       url='https://github.com/usgs/libcomcat',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
-      packages=['libcomcat'],
+      packages=['libcomcat',
+                'libcomcat.bin'],  # must be here or scripts won't install!
       package_data={
           'libcomcat':
           [os.path.join('data', 'ne_50m_admin_0_countries.prj'),
