@@ -78,15 +78,17 @@ def get_parser():
     parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'), dest='magRange', type=float, nargs=2,
                         help='Minimum and maximum (authoritative) magnitude to restrict search.')
     parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
-                        nargs=3, help='Search radius in kilometers (radius and bounding options are mutually exclusive).')
+                        nargs=3, help=('Search radius in kilometers (radius and bounding options '
+                                       'are mutually exclusive). The latitude and longitude for the search should be '
+                                       'specified before the radius (example: -r -48.980 -178.945 10).'))
     parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
                         help='Start time for search (defaults to ~30 days ago).  YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.')
     parser.add_argument('-t', '--time-after', dest='after', type=maketime,
                         help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
-    parser.add_argument('-x', '--count', dest='getCount', action='store_true',
-                        help='Just return the number of events in search and maximum allowed.')
     parser.add_argument('--version', action='version',
                         version=libcomcat.__version__, help='Version of libcomcat.')
+    parser.add_argument('-x', '--count', dest='getCount', action='store_true',
+                        help='Just return the number of events in search and maximum allowed.')
     return parser
 
 

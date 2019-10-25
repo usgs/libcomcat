@@ -230,12 +230,14 @@ def get_event_by_id(eventid, catalog=None,
     package.
 
     Usage:
-      TODO
+      This method should be used to supply detatailed events to dataframe methods.
 
 
     Args:
         eventid (str): Select a specific event by ID; event identifiers are
         data center specific.
+        catalog (str):
+            Limit to events from a specified catalog.
         includesuperseded (bool):
             Specify if superseded products should be included. This also
             includes all deleted products, and is mutually exclusive to the

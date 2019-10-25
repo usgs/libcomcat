@@ -1,19 +1,24 @@
+
 [![codecov](https://codecov.io/gh/usgs/libcomcat/branch/master/graph/badge.svg)](https://codecov.io/gh/usgs/libcomcat)
 
 
 # Introduction
 
 
-libcomcat is a project designed to provide a Python equivalent to the ANSS ComCat search 
+libcomcat is a project designed to provide a Python equivalent to the ANSS ComCat search
 <a href="https://earthquake.usgs.gov/fdsnws/event/1/">API</a>.  This includes a Python library
 that provides various classes and functions wrapping around the ComCat API, and a number of command
 line programs that use those:
 
- * `getproduct` Download ComCat product contents (shakemap grids, origin quakeml, etc.)
- * `getcsv` Generate csv or Excel files with basic earthquake information.
- * `getphases` Generate csv or Excel files with phase information.
- * `findid` Find the ID of an event closest to input time/lat/lon parameters.
+* `findid` Find the ID of an event closest to input parameters (time, latitude, longitude). Also can provide the authoritative ID if an event id is provided.
+*  `getcsv` Generate csv or Excel files with basic earthquake information.
+*  `geteventhist` Generate csv or Excel files with a history of product submission for an event.
  * `getmags` Download all available magnitudes from all sources.
+  * `getpager` Download information that represents the PAGER exposure and loss results.
+  * `getphases` Generate csv or Excel files with phase information.
+ * `getproduct` Download ComCat product contents (shakemap grids, origin quakeml, etc.)
+
+
 
 
 # Installation and Dependencies
@@ -48,98 +53,26 @@ To update:
 
 `conda update libcomcat`
 
+## Motivation
 
-####For Windows Users
+libcomcat is a python wrapper for the Comprehensive Catalog (ComCat), which has a [web page interface](https://earthquake.usgs.gov/earthquakes/map/) and [API](https://earthquake.usgs.gov/fdsnws/event/1/). ComCat contains information in **Events** which contain **Products**. Products contain **Contents** in the form of files, maps, etc.
 
-To run (for example) the command line program *getcsv*, which is
-described in the documentation, do the following:
+The ComCat interface is very user friendly, but does not support automation. The API supports automation, but limits the number of events that can be returned to 20,000. libcomcat uses the API in a way that allows for:
+- Searches returning more than 20,000 eventsource
+- Automation of product file downloads
+- Extraction of information in product content files
 
- `where getcsv`
+## Documentation
 
-This will print out the full path to the getcsv program in your root environment, something like "C:\Users\username\AppData\Anaconda3\getcsv".  Copy this path using Ctrl-C and paste it into another command:
+Documentation can be found in the docs folder:
+- [API Documentation](https://github.com/usgs/libcomcat/blob/master/docs/api.md)
+- [Command Line Interface Documentation](https://github.com/usgs/libcomcat/blob/master/docs/cli.md)
 
-`python C:\Users\username\AppData\Anaconda3\getcsv --help`
-
-to see the help for the *getcsv* command.  The author is not a Windows
-user, and recognizes that this seems like an unwieldy way to run a
-script.  Anyone who regularly does Python scripting in a Windows
-environment who has advice to make this usage more like Linux or Mac
-(i.e., `getcsv --help`), please submit an issue in this repository.
-
-# Documentation
-
-API and command line documentation can be found here:
-
-http://usgs.github.io/libcomcat/
-
-Sample API usage can be found in the notebook:
-
-https://github.com/usgs/libcomcat/blob/master/notebooks/libcomcat_examples.ipynb
-
-
-# Phase Data:
-
-If you work in Python, you can use the read_phases() function that comes with libcomcat.
-
-> from libcomcat.utils import read_phases
-
-> event,phases = read_phases('us2000b3dm_phases.csv')
-
-This function reads either CSV or Excel.
-
-If you work in Matlab, we have provided a function, at the top level
-of this repository, to read the CSV files.  To use it in your Matlab
-environment, put the read_phases.m file in your Matlab path.  Below is
-the help text for the function.
-
-> read_phases  Read event and phase data from CSV files created by libcomcat getphases program.
-> 
->   libcomcat is a set of tools available on GitHub for downloading various
->   types of data from the USGS earthquake Comprehensive Catalog, or ComCat.
->   getphases is one of those tools, and is documented here:
-> 
->   http://usgs.github.io/libcomcat/programs/getphases.html
->  
->   (at command line) getphases . -i us2000b3dm --format=csv
->   [event,phases] = read_phases('./us2000b3dm_phases.csv') returns an
->   event structure, which consists of the following fields:
->    - id: USGS authoritative ComCat ID.
->    - time: Matlab datenum representing origin time.
->    - location: String describing location of the earthquake.
->    - latitude: Origin latitude.
->    - longitude: Origin longitude.
->    - depth: Origin depth.
->    - magnitude: Event magnitude.
->    - magtype: Magnitude type.
->    - url: ComCat URL where earthquake information can be found.
->    - Any remaining fields will contain moment tensor data, if available.
->      These fields will be preceded by moment tensor source and method.
->      For example, a moment tensor created by the NEIC using the W-phase
->      algorithm will have the following fields:
->      - us_Mww_mrr: Mrr moment tensor component.
->      - us_Mww_mtt: Mtt moment tensor component.
->      - us_Mww_mpp: Mpp moment tensor component.
->      - us_Mww_mrt: Mrt moment tensor component.
->      - us_Mww_mrp: Mrp moment tensor component.
->      - us_Mww_mtp: Mtp moment tensor component.
->      - us_Mww_np1_strike: Strike of the first nodal plane.
->      - us_Mww_np1_dip: Dip of the first nodal plane.
->      - us_Mww_np1_rake: Rake of the first nodal plane.
->      - us_Mww_np2_strike: Strike of the second nodal plane.
->      - us_Mww_np2_dip: Dip of the second nodal plane.
->      - us_Mww_np2_rake: Rake of the second nodal plane.
->  
->   and a Matlab table object, where rows consist of phase data
->   and columns are the following:
->    - Channel Network.Station.Channel.Location (NSCL) style station description.
->      ( '-'  indicates missing information)
->    - Distance Distance (kilometers) from epicenter to station.
->    - Azimuth Azimuth (degrees) from epicenter to station.
->    - Phase Name of the phase (Pn,Pg, etc.)
->    - ArrivalTime Pick arrival time (UTC).
->    - Status 'manual' or 'automatic'.
->    - Residual Arrival time residual.
->    - Weight Arrival weight.
-
-
-
+Example Jupyter notebooks show how the API can be used to get and manipulate information from ComCat:
+- [Classes Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/Classes.ipynb)
+- [Dataframes Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/Dataframes.ipynb)
+- [Detailed Event Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/DetailEvent.ipynb)
+- [Event History Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/EventHistory.ipynb)
+- [Magnitude Comparison Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/ComparingMagnitudes.ipynb)
+- [Phase and Magnitude Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/PhasesAndMagnitudes.ipynb)
+- [Search Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/Search.ipynb)

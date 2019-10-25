@@ -156,7 +156,9 @@ def get_parser():
     parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'),
                         dest='magRange', type=float, nargs=2,
                         help=helpstr)
-    helpstr = 'Search radius in kilometers (radius and bounding options are mutually exclusive).'
+    helpstr = ('Search radius in kilometers (radius and bounding options are '
+               'mutually exclusive). The latitude and longitude for the '
+               'search should be specified before the radius.')
     parser.add_argument('-r', '--radius', dest='radius',
                         metavar=('lat', 'lon', 'rmax'),
                         type=float, nargs=3,

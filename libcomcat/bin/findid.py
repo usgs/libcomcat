@@ -63,18 +63,20 @@ def get_parser():
 
     # optional arguments
     parser.add_argument('-a', '--all', dest='print_all', action='store_true',
-                        help='Print all ids associated with event.',
+                        help='Print all IDs associated with event.',
                         default=False)
     ehelp = ('Specify event information (TIME LAT LON). '
-             'Time of earthquake, formatted as YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS'
-             'Latitude of earthquake'
-             'Longitude of earthquake')
+             'Specify event information (TIME LAT LON). '
+             'The time should be formatted as YYYY-mm-dd '
+             'or YYYY-mm-ddTHH:MM:SS. Latitude and longitude '
+             'should be in decimal degrees.')
     parser.add_argument('-e', '--eventinfo', nargs=3,
                         metavar=('TIME', 'LAT', 'LON'),
                         type=str, help=ehelp)
     parser.add_argument('-f', '--format', dest='format',
                         choices=['csv', 'tab', 'excel'], default='csv',
-                        metavar='FORMAT', help="Output format (csv, tab, or excel). Default is 'csv'.")
+                        metavar='FORMAT', help=("Output format. Options include "
+                                                "csv', 'tab', and 'excel'. Default is 'csv'."))
     parser.add_argument('-i', '--eventid',
                         metavar='EVENTID',
                         type=str, help='Specify an event ID')
@@ -94,22 +96,22 @@ def get_parser():
     parser.add_argument('--loglevel', default='info',
                         choices=['debug', 'info', 'warning', 'error'],
                         help=levelhelp)
-    ohelp = ('Send -a output to a file. Supported formats are Excel, CSV, '
-             ' and tab delimited. Denote the format using -f.')
+    ohelp = ("If the '-a' argument is used, send the output to a file. "
+             "Denote the format using '-f'.")
     parser.add_argument('-o', '--outfile',
                         help=ohelp)
-    rhelp = 'Change search radius from default of %.0f km.' % SEARCH_RADIUS
+    rhelp = 'Change the search radius (km) around the specified latitude and longitude. Default is %.0f km.' % SEARCH_RADIUS
     parser.add_argument('-r', '--radius', type=float,
                         help=rhelp)
     parser.add_argument('-u', '--url', dest='print_url', action='store_true',
-                        help='Print URL associated with event.', default=False)
-    vstr = ('Print time/distance deltas, and azimuth from input '
+                        help='Print the URL associated with event.', default=False)
+    vstr = ('Print time and distance deltas, and azimuth from input '
             'parameters to event.')
     parser.add_argument('-v', '--verbose', dest='print_verbose',
                         action='store_true', help=vstr, default=False)
     parser.add_argument('--version', action='version',
                         version=libcomcat.__version__, help='Version of libcomcat.')
-    whelp = 'Change time window of %.0f seconds.' % TIME_WINDOW
+    whelp = 'Change the window (sec) around the specified time. Default is %.0f seconds.' % TIME_WINDOW
     parser.add_argument('-w', '--window', type=float,
                         help=whelp)
     return parser
