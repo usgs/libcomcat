@@ -159,45 +159,45 @@ def get_parser():
     parser.add_argument('--product-property', dest='productProperties', type=makedict,
                         help='Product property (reviewstatus:approved).')
     parser.add_argument('-r', '--radius', dest='radius', metavar=('lat', 'lon', 'rmax'), type=float,
-                        nargs=3, help=()'Search radius in kilometers (radius'
+                        nargs=3, help='Search radius in kilometers (radius'
                         ' and bounding options are mutually exclusive). The'
                         ' latitude and longitude for the search should '
-                        'be specified before the radius.'))
-    parser.add_argument('-s', '--start-time', dest = 'startTime', type = maketime,
-                        help = 'Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
-    parser.add_argument('-t', '--time-after', dest = 'after', type = maketime,
-                        help = ' Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
-    parser.add_argument('--version', action = 'version',
-                        version = libcomcat.__version__, help = 'Version of libcomcat.')
+                        'be specified before the radius.')
+    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
+                        help='Start time for search (defaults to ~30 days ago). YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
+                        help=' Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
+    parser.add_argument('--version', action='version',
+                        version=libcomcat.__version__, help='Version of libcomcat.')
     return parser
 
 
 def main():
-    parser=get_parser()
-    args=parser.parse_args()
+    parser = get_parser()
+    args = parser.parse_args()
 
     setup_logger(args.logfile, args.loglevel)
 
     if args.eventid:
-        detail=get_event_by_id(args.eventid, includesuperseded = True)
+        detail = get_event_by_id(args.eventid, includesuperseded=True)
         _get_product_from_detail(detail, args.product, args.contents,
                                  args.outputFolder, args.version,
-                                 args.source, list_only = args.list_only)
+                                 args.source, list_only=args.list_only)
         sys.exit(0)
 
-    tsum=(args.bounds is not None) +
+    tsum = (args.bounds is not None) + \
         (args.radius is not None) + (args.country is not None)
     if tsum != 1:
         print('Please specify a bounding box, radius, or country code.')
         sys.exit(1)
 
-    latitude=None
-    longitude=None
-    radiuskm=None
-    lonmin=latmin=lonmax=latmax=None
+    latitude = None
+    longitude = None
+    radiuskm = None
+    lonmin = latmin = lonmax = latmax = None
 
     if args.startTime is None:
-        starttime=datetime.utcnow() - timedelta(days = 30)
+        starttime = datetime.utcnow() - timedelta(days=30)
         print('You did not specify a search start time, defaulting to %s' %
               str(starttime))
     else:
