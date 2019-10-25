@@ -1,4 +1,3 @@
-contributor
 # Command Line Interface
 ----
 
@@ -99,7 +98,7 @@ inside a 100 km, 16 second window to "2019-07-15T10:39:32 35.932 -117.715":
 
 ## getcsv
 ----
-The `getcsv` script downloads basic earthquake information a spreadsheet format
+The `getcsv` script downloads basic earthquake information into a spreadsheet format.
 
 ### Required Arguments
 
@@ -235,8 +234,8 @@ To get one summary spreadhsheet as above, *excluding* DYFI products:
 `geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel -x dyfi`
 
 To split out the "description" column into separate columns, and the products into separate spreadsheets:
-`geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel --split
-`
+`geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel --split`
+
 To retrieve summary information for only origins and shakemaps:
 `geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel -p origin shakemap`
 
@@ -280,7 +279,7 @@ A filename must be specified so that the information can be saved as a spreadshe
 
 
 ### Output
-The output file appears as with the following columns:
+The output file appears with the following columns:
 - **id**: The event id.
 - **time**: The event time.
 - **lat**: The event latitude.
@@ -389,7 +388,6 @@ A directory must be specified so that the information can be saved to a folder. 
 
 | Argument(s)     | Expected Argument(s)    | Description | Example |
 |-----------------|-------------------------|-------------|---------|
-
 | -b, \-\-bounds|LONMIN LONMAX LATMIN LATMAX|Bounds to constrain event search [lonmin lonmax latmin latmax].|-b 163.213 -178.945 -48.980 -32.324|
 | -c, \-\-catalog|CATALOG|Source catalog from which products are derived (atlas, centennial, etc.).|-c atlas|
 | \-\-contributor|CATALOG|Source contributor (who loaded product) (us, nc, etc.).| \-\-contributor ak|

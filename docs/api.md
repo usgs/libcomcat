@@ -3,7 +3,9 @@
 # Application Program Interface
 ----
 
-Libcomcat's API allows for
+The Application Program Interface (API), allows Python developers to query ComCat in ways that are not
+supported by the Command Line Interface tools, and develop custom applications that use ComCat information
+in unique ways.
 
 ## Contents
 ---
@@ -30,7 +32,7 @@ Libcomcat's API allows for
 	- [Detail Dataframe](#Detail-Dataframe)
 	- [DYFI Dataframe](#DYFI-Dataframe)
 	- [History Dataframe](#History-Dataframe)
-	- [Pager Dataframe](#Pager-Dataframe)
+	- [PAGER Dataframe](#PAGER-Dataframe)
 	- [Magnitude Dataframe](#Magnitude-Dataframe)
 	- [Phase Dataframe](#Phase-Dataframe)
 
@@ -38,21 +40,21 @@ Libcomcat's API allows for
 ---
 
 ## Searching
-Searching for events in ComCat is the bases for all methods and classes in this library. All parameters for searching are based on the [ComCat API]([https://earthquake.usgs.gov/fdsnws/event/1/](https://earthquake.usgs.gov/fdsnws/event/1/).
+Searching for events in ComCat is the basis for all methods and classes in this library. All parameters for searching are based on the [ComCat API]([https://earthquake.usgs.gov/fdsnws/event/1/](https://earthquake.usgs.gov/fdsnws/event/1/).
 
 See the [search Jupyter notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/Search.ipynb) for examples of these methods.
 
 ### Search
 `from libcomcat.search import search`
 
-The search method looks for events based upon ComCat's query parameters. The primary parameters define the time and location. The search methods returns a [SummaryEvent Object](#SummaryEvent).
+The search method looks for events based upon ComCat's query parameters. The primary parameters define the time and location. The search method returns a [SummaryEvent Object](#SummaryEvent).
 
 
 #### Time Parameters
 API time inputs are datetime objects in UTC.
 
-- End Time: Events are limited to on or before the time specified.  The default is the time of the search.
 - Start Time: Events are limited to after the specified time. The default is 30 days before the time of search.
+- End Time: Events are limited to on or before the time specified.  The default is the time of the search.
 - Update Time: Events are limited to those that are updated after the specified time.
 
 `time_events = search(starttime=datetime(1994, 1, 17, 12, 30), endtime=datetime(1994, 4, 18, 12, 35), updateafter=datetime(1994, 2, 18, 12, 35))`
@@ -72,7 +74,7 @@ Latitude and longitude values should be in decimal degrees.
 
 
 #### Preference Parameters
-Preference parameters determine contributors, catalogs, and versions of parameters. Preferred catalogs, contributors, and versions are  Preferred products are denoted by their [preferredWeight](https://earthquake.usgs.gov/data/comcat/data-productterms.php#product_preferredWeight).
+Preference parameters determine contributors, catalogs, and versions of parameters. Preferred catalogs, contributors, and versions are preferred products and are denoted by their [preferredWeight](https://earthquake.usgs.gov/data/comcat/data-productterms.php#product_preferredWeight).
 
 - Catalog: Limits the events to those from an [available catalog](https://earthquake.usgs.gov/fdsnws/event/1/catalogs). The default is the 'preferred' catalog.
 	- `us_events = search(catalog='us')`
@@ -93,11 +95,11 @@ Search results based upon descriptors for magnitude.
 
 - Magnitude: A minimum and maximum magnitude can be defined to limit events. The default minimum and maximum magnitudes are 0 and 10 respectively.
 	- `mag_events = search(minmagnitude=4, maxmagnitude=8)`
-- Alert Level: If a pager alert level (green, yellow, orange, or red), the events with that alert level will be returned. **This is not a threshold**. If no pager product is available for the event, then the event will not be returned (even if significant losses may have occurred). This is will occur for small events and events that occurred before pager was available.
+- Alert Level: If a PAGER alert level (green, yellow, orange, or red), the events with that alert level will be returned. **This is not a threshold, meaning that a search for orange events will return orange events, not orange and red**. If no PAGER product is available for the event, then the event will not be returned (even if significant losses may have occurred). This is will occur for small events and events that occurred before PAGER was available.
 	- `alert_events = search(alertlevel="orange")`
 - Maximum MMI: Thresholds events by the Maximum Modified Mercalli Intensity reported by Shakemap. This value can be 0-12. If no Shakemap product is available for the event, then it will not be returned.
-	- `alert_events = search(maxmmi=5)
-- Significance: Events can be limited by the ComCat significance. A significance value is calculated for the magnitude (SM), for PAGER (SP), and for did you feel it (SD).
+	- `alert_events = search(maxmmi=5)`
+- Significance: Events can be limited by the ComCat significance. A significance value is calculated for the magnitude (SM), for PAGER (SP), and for Did You Feel It (SD).
 
 
 <img src="https://render.githubusercontent.com/render/math?math=SM=magnitude*100*\frac{magnitude}{6.5}">
@@ -107,14 +109,14 @@ Search results based upon descriptors for magnitude.
 
 <img src="https://render.githubusercontent.com/render/math?math=SD=min(N_{responses},1000)*\frac{CDI_{max}}{10}">
 
-In the be equation CDImax is the maximum community determined intensity reported by did you feel it, and Nresponses is the number of responses. This is used to calculate the overall significance (S). If that value is greater than 600, it is considered a significant event and will appear on the [significant event list](https://earthquake.usgs.gov/earthquakes/browse/significant.php).
+In the above equation CDImax is the maximum community determined intensity reported by Did You Feel It, and Nresponses is the number of responses. This is used to calculate the overall significance (S). If that value is greater than 600, it is considered a significant event and will appear on the [significant event list](https://earthquake.usgs.gov/earthquakes/browse/significant.php).
 
 <img src="https://render.githubusercontent.com/render/math?math=S=max(SM,SP)"> + <img src="https://render.githubusercontent.com/render/math?math=SD">
 
-- CDI: The community determined/decimal intensity (CDI) that is reported by did you feel it (DYFI) ranges between 0 and 12, similar to maximum MMI.
+- CDI: The community determined/decimal intensity (CDI) that is reported by Did You Feel It (DYFI) ranges between 0 and 12, similar to maximum MMI.
 	- `cdi_events = search(mincdi=2, maxcdi=7)`
 - Minimum Felt: DYFI also reports the number of responses. The number of people that felt and reported shaking can be used as a threshold.
-	- `felt_events = searth(minfelt=500)`
+	- `felt_events = search(minfelt=500)`
 
 #### Other Parameters
 Other parameters are related to the order and output of the search method.
@@ -169,7 +171,7 @@ The summary event object contains a short summary of an event and allows access 
 
 #### Summary Properties
 The summary event's properties represent basic information about an event.
-- alert: The alert level specified by Pager. This can be orange, yellow, orange, or red.
+- alert: The alert level specified by PAGER. This can be green, yellow, orange, or red.
 - depth: The depth of the earthquake defined by the authoritative origin.
 - id: Earthquake ID from the authoritative origin.
 - latitude: Earthquake latitude from the authoritative origin.
@@ -189,7 +191,7 @@ The summary event's properties represent basic information about an event.
 - hasProduct: This tests to see whether a product exists for the event.
 	- Parameters:
 		- product: String representation of the product name.
-- hasProperty: Tests to see if a property is in the list of properties. A property may not exist for all events. For example, properties acquired from the Pager product, may not exist if there is no Pager product for the event.
+- hasProperty: Tests to see if a property is in the list of properties. A property may not exist for all events. For example, properties acquired from the PAGER product, may not exist if there is no PAGER product for the event.
 	- Parameters:
 		- key: Property to check for.
 - toDict: Returns the properties and their associated values as an ordered dictionary.
@@ -198,7 +200,7 @@ The summary event's properties represent basic information about an event.
 
 ### DetailEvent
 
-The detail event object contains a more detailed summary of an event and allows access to the product object. Detailed events can be accessed using the `get_event_by_id` method or by using the summary event method, `getDetatilEvent`.
+The detail event object contains a more detailed summary of an event and allows access to the product object. Detailed events can be accessed using the `get_event_by_id` method or by using the summary event method, `getDetailEvent`.
 
 #### Detail Properties
 The detail event's properties are the **same as those of the summary event class** with the addition of:
@@ -234,7 +236,7 @@ Products have class properties that are consistent across all product types. How
 - version: The version of the product. ComCat does not generate a version number; as a result, the timestamp is used to generate a version number.
 
 
-#### Detail Class Methods
+#### Product Class Methods
 The `hasProperty` method which is available for the summary and detail event classes is also available for the product. Additional class methods include:
 
 - getContent: Download a content file based on a file pattern.
@@ -296,8 +298,8 @@ The parameters include:
 - location: Location description.
 - magtype: The type of magnitude (e.g. mw, ml, mc).
 - url: The ComCat url.
-- alert: Pager alert level
-- ... additional columns depending on the information choices made
+- alert: PAGER alert level
+- ... additional columns depending on the chosen parameters.
 
 ### DYFI Dataframe
 `from libcomcat.dataframes import get_dyfi_data_frame`
@@ -323,7 +325,7 @@ The output is a dataframe with the following columns.
 Creates a table detailing the history of an event's product(s).
 
 The parameters include:
-- detail: A detail event object. This can be acquired using the `get_event_by_id` method. **NOTE: The detail event must have include superseded products in order to be of interest. Otherwise only one version of each product will be available.**
+- detail: A detail event object. This can be acquired using the `get_event_by_id` method. **NOTE: The detail event must have been instantiated with include_superseded=True in order to be of interest. Otherwise only one version of each product will be available.**
 - products: A list of products to examine. If no products are specified then all will be stored in the dataframe.
 
 
@@ -342,17 +344,17 @@ The output is a tuple with the dataframe with the following columns and the deta
 
 
 
-### Pager Dataframe
+### PAGER Dataframe
 
 `from libcomcat.dataframes import get_pager_data_frame`
 
-Creates a table summarizing Pager information for an event.
+Creates a table summarizing PAGER information for an event.
 
 The parameters include:
 - detail: A detail event object. This can be acquired using the `get_event_by_id` method.
 - get_losses: A boolean defining if the fatalities, dollar losses, and uncertainties predicted should be included in the dataframe. Default is False.
 - get_country_exposures: A boolean defining if the predicted exposures should be split by country. Default is False.
-- get_all_versions: Gets the Pager results for all versions of the Pager product. Default is False.
+- get_all_versions: Gets the PAGER results for all versions of the PAGER product. Default is False.
 
 The output is a dataframe with the following columns.
 - id: Authoritative ComCat event ID.
@@ -363,7 +365,7 @@ The output is a dataframe with the following columns.
  - depth: Authoritative event depth.
 - magnitude : Authoritative event magnitude.
 - country: The country corresponding to these exposures. If get_country_exposures is not set, then this will be the 'Total' exposures.
-- pager_version: Version of pager used to generate the results.
+- pager_version: Version of PAGER used to generate the results.
 - ... Exposures for each MMI intensity  (mmi1 - mmi10)
 - ... Columns for containing loss information; if it is requested.
 
@@ -371,7 +373,7 @@ The output is a dataframe with the following columns.
 
 `from libcomcat.dataframes import get_magnitude_data_frame`
 
-Creates a table summarizing magnitude information for an event. This mimics the [magnitude sheet on the event page](https://earthquake.usgs.gov/earthquakes/eventpage/ci38996632/origin/magnitude).
+Creates a table summarizing station magnitude information for an event. This mimics the [magnitude sheet on the event page](https://earthquake.usgs.gov/earthquakes/eventpage/ci38996632/origin/magnitude).
 
 The parameters include:
 - detail: A detail event object. This can be acquired using the `get_event_by_id` method.
