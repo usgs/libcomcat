@@ -32,16 +32,15 @@ either of those packages, see the instructions on the web pages for each.
 
 ### Installing
 
-libcomcat has been tested most often with Python 3.5, but *should*
-work with other Python 3.x versions. It will *not* work with Python
-2.7!  Fortunately, it is easy to install a 3.X version of Python within Anaconda:
+libcomcat *should* work with Python 3.5 and higher versions. It will *not* work with Python
+2.7.  Fortunately, it is easy to install a 3.X version of Python within Anaconda or Miniconda. 
+On a Linux or OSX system, open a Terminal window. On Windows systems, open a Powershell terminal. 
+You'll use these command line windows to type the following commands:
 
-`conda create -n comcat --channel conda-forge python=3`
-
-Then, in your Python 3.X environment do the following:
-
-- `conda config --add channels conda-forge`
-- `conda install libcomcat`
+ - `conda create -n comcat --channel conda-forge python=3`
+ - `conda activate comcat`
+ - `conda config --add channels conda-forge`
+ - `conda install libcomcat`
 
 ### Uninstalling and Updating
 
