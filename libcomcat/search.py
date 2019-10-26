@@ -472,7 +472,7 @@ def _get_time_segments(starttime, endtime, minmag):
     if endtime is None:
         endtime = HistoricTime.utcnow()
     # earthquake frequency table: minmag:earthquakes per day
-    freq_table = {0: 3000 / 7,
+    freq_table = {0: 10000 / 7,
                   1: 3500 / 14,
                   2: 3000 / 18,
                   3: 4000 / 59,
@@ -492,7 +492,9 @@ def _get_time_segments(starttime, endtime, minmag):
     startseg = starttime
     endseg = starttime
     while startseg <= endtime:
-        endseg = min(endtime, startseg + timedelta(days_per_segment))
+        endseg = startseg + timedelta(days_per_segment)
+        if endseg > endtime:
+            endseg = endtime
         segments.append((startseg, endseg))
         startseg += timedelta(days=days_per_segment, microseconds=1)
     return segments
