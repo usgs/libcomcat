@@ -19,6 +19,7 @@ HOST = 'earthquake.usgs.gov'
 CATALOG_COUNT_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/'
                           '1/count?format=geojson')
 SEARCH_TEMPLATE = 'https://[HOST]/fdsnws/event/1/query?format=geojson'
+SCENARIO_SEARCH_TEMPLATE = 'https://[HOST]/fdsnws/scenario/1/query?format=geojson'
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 WEEKSECS = 86400 * 7  # number of seconds in a week
 # number of seconds to wait after failing download before trying again
@@ -215,6 +216,7 @@ def count(starttime=None,
 def get_event_by_id(eventid, catalog=None,
                     includedeleted=False,
                     includesuperseded=False,
+                    scenario=False,
                     host=None):
     """Search the ComCat database for an event matching the input event id.
 
@@ -243,6 +245,7 @@ def get_event_by_id(eventid, catalog=None,
             includes all deleted products, and is mutually exclusive to the
             includedeleted parameter.
         includedeleted (bool): Specify if deleted products should be incuded.
+        scenario (bool): Specify if the event ID being searched is a scenario.
         host (str): Replace default ComCat host (earthquake.usgs.gov) with a
                     custom host.
     Returns: DetailEvent object.
@@ -299,6 +302,7 @@ def search(starttime=None,
            productcode=None,
            reviewstatus=None,
            host=None,
+           scenario=False,
            enable_limit=False):
     """Search the ComCat database for events matching input criteria.
 
@@ -507,11 +511,18 @@ def _search(**newargs):
         newargs['endtime'] = newargs['endtime'].strftime(TIMEFMT)
     if 'updatedafter' in newargs:
         newargs['updatedafter'] = newargs['updatedafter'].strftime(TIMEFMT)
-    if 'host' in newargs and newargs['host'] is not None:
-        template = SEARCH_TEMPLATE.replace('[HOST]', newargs['host'])
-        del newargs['host']
+    if 'scenario' in newargs and newargs['scenario'] == 'true':
+        template = SCENARIO_SEARCH_TEMPLATE
+        template = template.replace('[HOST]', HOST)
+        del newargs['scenario']
     else:
-        template = SEARCH_TEMPLATE.replace('[HOST]', HOST)
+        if 'scenario' in newargs:
+            del newargs['scenario']
+        if 'host' in newargs and newargs['host'] is not None:
+            template = SEARCH_TEMPLATE.replace('[HOST]', newargs['host'])
+            del newargs['host']
+        else:
+            template = SEARCH_TEMPLATE.replace('[HOST]', HOST)
 
     paramstr = urlencode(newargs)
     url = template + '&' + paramstr

@@ -147,5 +147,27 @@ def test_country():
         shutil.rmtree(tmpdir)
 
 
+def test_scenario():
+    tmpdir = tempfile.mkdtemp()
+    try:
+        fmt = ('getproduct shakemap-scenario cont_mi.json -i '
+               'nclegacybartlettspringsm7p3_se -d %s --scenario')
+        cmd = (fmt % tmpdir)
+        res, stdout, stderr = get_command_output(cmd)
+        if not res:
+            raise AssertionError(
+                'getproduct command %s failed with errors "%s"' % (cmd, stderr))
+        outfile = stderr.split()[-1]
+        if not os.path.isfile(outfile):
+            fmt = ('getproduct command %s failed to create '
+                   'output file - error stream "%s"')
+            raise AssertionError(fmt % (cmd, stderr))
+    except Exception as e:
+        raise(e)
+    finally:
+        shutil.rmtree(tmpdir)
+
+
 if __name__ == '__main__':
+    test_scenario()
     test_phases()

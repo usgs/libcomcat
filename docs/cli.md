@@ -455,6 +455,7 @@ The product and content file(s) requested must be specified. The shortest conten
 | \-\-event-type |TYPE|Event type. | \-\-event-type  earthquake |
 | \-\-get-source |SOURCE|Get contents for the "preferred" source, "all" sources, or a specific source. | \-\-get-source us |
 | \-\-get-version |VERSION|Get contents for first, last, preferred or all versions of product. Default is preferred.| \-\-get-version all |
+| \-\-scenario||Retrieve data from ComCat Scenario Server.| \-\-scenario |
 | \-\-host|HOST|Specify a different ComCat *search* host than earthquake.usgs.gov.| \-\-host |
 |   -i, \-\-eventid       |      EVENTID  | Specify an event ID      |    -i  ci38572791    |
 |   -l, \-\-list-url       |        |Only list urls for contents in events that match criteria.     |    -l |
@@ -479,3 +480,24 @@ To retrieve all of the coulomb input files for the finite-fault product, you wou
 
 To retrieve the moment rate function files, do this:
 `getproduct finite-fault .mr -d ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9`
+
+    ################################################################################################################################
+    Scenarios: The USGS National Earthquake Information Center generates
+    scenario (that is, not real) earthquakes for use in planning
+    emergency response, training, investigations of possible
+    vulnerabilities in structures, etc. 
+
+    These scenarios can be found on the web here:
+
+    https://earthquake.usgs.gov/scenarios/
+
+    Note that these are not earthquakes that *have* happened, nor are
+    they earthquakes that *will* happen. In many cases, the parameters
+    for these scenarios are chosen to generate a worst case but possible
+    earthquake, and not necessarily a *likely* earthquake.
+
+    To retrieve SCENARIO shakemap intensity.jpg files in Northern California
+    (note that scenario origin times are pretty meaningless):
+
+    %(prog)s shakemap-scenario intensity.jpg -b -123 -119 35 40 -s 2013-10-01 -e 2013-10-30 -m 0.0 9.9 --scenario -d ~/tmp/scenario
+    ################################################################################################################################

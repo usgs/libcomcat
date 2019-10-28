@@ -82,6 +82,7 @@ Preference parameters determine contributors, catalogs, and versions of paramete
 	- `ak_events = search(contributor='ak')`
 - Host: By default the ComCat host is **earthquake.usgs.gov**, but this can be overriden using the host option.
 	- `host_events = search(host='other_host')`
+- Scenario: By default, libcomcat searches for real events. Use the --scenario option to search for scenario events.
 - Products: If events with specific product(s) are desired, either the `producttype` or  `productcode` options can be used. The product type refers to the [product name](https://usgs.github.io/pdl/userguide/products/index.html). The product code is specific to the event and the product.
 	- `product_type = search(producttype='shakemap')`
 	- `product_code = search(productcode='nn00458749')`
@@ -160,6 +161,8 @@ The get_event_by_id method assumes that the ComCat ID is already known. This met
 	- ci3144585 = search(eventid='ci3144585', includedeleted=True)`
 - Host: By default the ComCat host is **earthquake.usgs.gov**, but this can be overriden using the host option.
 	- `host_events = search(host='other_host')`
+- Scenario: By default, libcomcat searches for real events. Use the --scenario option to search for scenario events.
+
 
 ## Classes
 The three classes outlined in this section were designed to allow access to event information, products, and product contents.

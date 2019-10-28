@@ -30,6 +30,9 @@ URL_TEMPLATE = ('https://earthquake.usgs.gov/earthquakes/feed'
 SEARCH_DETAIL_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/1/query'
                           '?format=geojson&eventid=%s&'
                           'includesuperseded=%s&includedeleted=%s')
+SCENARIO_SEARCH_DETAIL_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/scenario/1/query'
+                                   '?format=geojson&eventid=%s&'
+                                   'includesuperseded=%s&includedeleted=%s')
 WAITSECS = 3
 
 
@@ -284,7 +287,8 @@ class SummaryEvent(object):
         durl = self._jdict['properties']['detail']
         return durl
 
-    def getDetailEvent(self, includedeleted=False, includesuperseded=False):
+    def getDetailEvent(self, includedeleted=False, includesuperseded=False,
+                       scenario=False):
         """Instantiate a DetailEvent object from the URL found in the summary.
 
         Args:
@@ -296,6 +300,7 @@ class SummaryEvent(object):
                 Boolean indicating wheather to return versions of products
                 that have been replaced by newer versions.
                 Cannot be used with includedeleted.
+            scenario (bool): Indicates that the event ID in question is a scenario.
         Returns:
             DetailEvent: Detailed version of SummaryEvent.
         """
@@ -310,7 +315,11 @@ class SummaryEvent(object):
             true_false = {True: 'true', False: 'false'}
             deleted = true_false[includedeleted]
             superseded = true_false[includesuperseded]
-            url = SEARCH_DETAIL_TEMPLATE % (self.id, superseded, deleted)
+            if scenario:
+                url = SCENARIO_SEARCH_DETAIL_TEMPLATE % (
+                    self.id, superseded, deleted)
+            else:
+                url = SEARCH_DETAIL_TEMPLATE % (self.id, superseded, deleted)
             return DetailEvent(url)
 
     def toDict(self):
