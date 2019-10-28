@@ -89,6 +89,28 @@ def get_parser():
 
     To retrieve the moment rate function files, do this:
     %(prog)s finite-fault .mr -d ~/tmp/chile -b -76.509 -49.804  -67.72 -17.427 -s 2007-01-01 -e 2016-05-01 -m 6.5 9.9
+
+
+    #####################################################################
+    Scenarios: The USGS National Earthquake Information Center generates
+    scenario (that is, not real) earthquakes for use in planning
+    emergency response, training, investigations of possible
+    vulnerabilities in structures, etc. 
+
+    These scenarios can be found on the web here:
+
+    https://earthquake.usgs.gov/scenarios/
+
+    Note that these are not earthquakes that *have* happened, nor are
+    they earthquakes that *will* happen. In many cases, the parameters
+    for these scenarios are chosen to generate a worst case but possible
+    earthquake, and not necessarily a *likely* earthquake.
+
+    To retrieve SCENARIO shakemap intensity.jpg files in Northern California
+    (note that scenario origin times are pretty meaningless):
+
+    %(prog)s shakemap-scenario intensity.jpg -b -123 -119 35 40 -s 2013-10-01 -e 2013-10-30 -m 0.0 9.9 --scenario -d ~/tmp/scenario
+    ############################################################################################################
     '''
     parser = argparse.ArgumentParser(
         description=desc, formatter_class=MyFormatter)
@@ -134,6 +156,8 @@ def get_parser():
                         default='preferred')
     parser.add_argument('--host',
                         help='Specify a different comcat *search* host than earthquake.usgs.gov.')
+    parser.add_argument('--scenario', action="store_true", default=False,
+                        help='Retrieve data from ComCat Scenario Server.')
     parser.add_argument('-i', '--event-id', dest='eventid',
                         help='Retrieve information from a single PAGER event, using ComCat event ID.')
     parser.add_argument('-l', '--list-url', dest='list_only', action='store_true',
@@ -176,10 +200,16 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    # --host and --scenario are mutually exclusive
+    if args.host is not None and args.scenario:
+        print('--host and --scenario options are mutually exclusive. Please choose one.')
+        sys.exit(1)
+
     setup_logger(args.logfile, args.loglevel)
 
     if args.eventid:
-        detail = get_event_by_id(args.eventid, includesuperseded=True)
+        detail = get_event_by_id(args.eventid, includesuperseded=True,
+                                 scenario=args.scenario)
         _get_product_from_detail(detail, args.product, args.contents,
                                  args.outputFolder, args.version,
                                  args.source, list_only=args.list_only)
@@ -258,6 +288,7 @@ def main():
                         eventtype=args.eventType,
                         maxmagnitude=maxmag,
                         minmagnitude=minmag,
+                        scenario=args.scenario,
                         host=args.host)
     else:
         events = []
@@ -279,6 +310,7 @@ def main():
                              eventtype=args.eventType,
                              maxmagnitude=maxmag,
                              minmagnitude=minmag,
+                             scenario=args.scenario,
                              host=args.host)
             events += tevents
 
@@ -298,12 +330,9 @@ def main():
         logging.debug('Retrieving products for event %s...' % event.id)
         if not event.hasProduct(args.product):
             continue
-        if args.country:
-            elon = event.longitude
-            elat = event.latitude
-            point = Point(elon, elat)
         try:
-            detail = event.getDetailEvent(includesuperseded=True)
+            detail = event.getDetailEvent(includesuperseded=True,
+                                          scenario=args.scenario)
         except Exception as e:
             print(
                 'Failed to retrieve detail event for event %s... continuing.' % event.id)

@@ -76,7 +76,23 @@ def test_url_error():
         assert passed == False
 
 
+def test_scenario():
+    datadir = get_datadir()
+    tape_file = os.path.join(datadir, 'search_scenario.yaml')
+    with vcr.use_cassette(tape_file):
+        try:
+            eventlist = search(starttime=datetime(2013, 10, 10, 12, 0),
+                               endtime=datetime(2013, 10, 10, 12, 30, 0),
+                               minmagnitude=0, maxmagnitude=9.9,
+                               scenario=True)
+            assert eventlist[0].id == 'ak013d08buqb'
+        except Exception as e:
+            raise AssertionError(
+                'Scenario search failed with "%s".' % (str(e)))
+
+
 if __name__ == '__main__':
+    test_scenario()
     test_get_event()
     test_count()
     test_search()

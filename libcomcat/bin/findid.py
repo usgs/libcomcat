@@ -4,7 +4,6 @@
 import argparse
 import sys
 import logging
-import os.path
 from datetime import datetime
 
 # third party
@@ -12,7 +11,6 @@ import pandas as pd
 
 # local imports
 import libcomcat
-from libcomcat.utils import maketime
 from libcomcat.dataframes import find_nearby_events
 from libcomcat.search import get_event_by_id
 from libcomcat.logging import setup_logger
