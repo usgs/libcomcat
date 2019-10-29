@@ -184,6 +184,12 @@ def get_parser():
     parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'),
                         dest='magRange', type=float, nargs=2,
                         help=helpstr)
+    sighelpstr = ('Minimum/maximum significance ranges to restrict search.'
+                  'ANSS significant events have a significance value of '
+                  '600 or greater.')
+    parser.add_argument('--sig-range', metavar=('minsig', 'maxsig'),
+                        dest='sigRange', type=int, nargs=2,
+                        help=sighelpstr)
     helpstr = (
         'Number of days after start time (numdays and end-time options are mutually exclusive).')
     parser.add_argument('--numdays', dest='numdays', type=int,
@@ -275,6 +281,12 @@ def main():
         minmag = args.magRange[0]
         maxmag = args.magRange[1]
 
+    minsig = 0
+    maxsig = 5000
+    if args.sigRange:
+        minsig = args.sigRange[0]
+        maxsig = args.sigRange[1]
+
     if args.getCount:
         if isinstance(bounds, tuple) or bounds is None:
             nevents = count(starttime=args.startTime,
@@ -291,6 +303,8 @@ def main():
                             contributor=args.contributor,
                             maxmagnitude=maxmag,
                             minmagnitude=minmag,
+                            minsig=minsig,
+                            maxsig=maxsig,
                             producttype=args.limitByProductType)
         else:
             for lonmin, lonmax, latmin, latmax in bounds:
@@ -307,6 +321,8 @@ def main():
                                  maxradiuskm=radiuskm,
                                  catalog=args.catalog,
                                  contributor=args.contributor,
+                                 minsig=minsig,
+                                 maxsig=maxsig,
                                  maxmagnitude=maxmag,
                                  minmagnitude=minmag,
                                  producttype=args.limitByProductType)
@@ -327,6 +343,8 @@ def main():
                         contributor=args.contributor,
                         maxmagnitude=maxmag,
                         minmagnitude=minmag,
+                        minsig=minsig,
+                        maxsig=maxsig,
                         producttype=args.limitByProductType,
                         host=args.host,
                         alertlevel=args.alert_level)
@@ -351,6 +369,8 @@ def main():
                              contributor=args.contributor,
                              maxmagnitude=maxmag,
                              minmagnitude=minmag,
+                             minsig=minsig,
+                             maxsig=maxsig,
                              producttype=args.limitByProductType,
                              host=args.host,
                              alertlevel=args.alert_level)

@@ -387,6 +387,7 @@ def get_summary_data_frame(events):
            - longitude (float) Authoritative event longitude.
            - depth (float) Authoritative event depth.
            - magnitude (float) Authoritative event magnitude.
+           - significance (float) Event significance (600+ is ANSS significant)
     """
     elist = []
     for event in events:

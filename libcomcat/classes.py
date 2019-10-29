@@ -344,6 +344,7 @@ class SummaryEvent(object):
         edict['magnitude'] = self.magnitude
         edict['alert'] = self.alert
         edict['url'] = self.url
+        edict['significance'] = self['sig']
         return edict
 
 

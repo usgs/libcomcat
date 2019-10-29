@@ -261,6 +261,27 @@ def test_getcsv():
     target = b'records saved to %b' % temp_file.encode('utf-8')
     assert target in stderr
 
+    # test that significance works as expected
+    tmpdir = tempfile.mkdtemp()
+    temp_file = os.path.join(tmpdir, 'temp.xlsx')
+    try:
+        cmd = ('getcsv %s -b -180 180 -90 90'
+               ' -s 2019-10-20 -e 2019-10-29 -f excel '
+               '--sig-range 600 10000' %
+               temp_file)
+        res, stdout, stderr = get_command_output(cmd)
+        if not res:
+            raise AssertionError(
+                'getcsv command %s failed with errors "%s"' % (cmd, stderr))
+        df = pd.read_excel(temp_file)
+        assert len(df) >= 2
+    except Exception as e:
+        raise(e)
+    finally:
+        shutil.rmtree(tmpdir)
+    target = b'records saved to %b' % temp_file.encode('utf-8')
+    assert target in stderr
+
 
 if __name__ == '__main__':
     test_getcsv()
