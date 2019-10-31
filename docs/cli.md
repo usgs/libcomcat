@@ -128,6 +128,7 @@ A filename must be specified so that the information can be saved as a spreadshe
 |   \-\-logfile  |       |Send debugging, informational, warning and error messages to a file.|    \-\-logfile   |
 |   \-\-loglevel  |  LEVEL     |Set the minimum logging level. Options include 'debug', 'info', 'warning', and 'error'.*|    \-\-loglevel debug|
 |  -m,  \-\-mag-range  |  MINMAG MAXMAG     |Minimum and maximum (authoritative) magnitude to restrict search.| -m 4 7|
+|  \-\-sig-range  |  MINSIG MAXSIG     |Minimum and maximum significance values to restrict search.| \-\- sig-range 600 2000|
 | \-\-numdays |  DAYS    |Number of days after start time (numdays and end-time options are mutually exclusive).| \-\-numdays 5|
 | -p, \-\-product-type |  PRODUCT    |Limit the search to only those events containing products of type PRODUCT. See the full list here: https://usgs.github.io/pdl/userguide/products/index.html | -p shakemap|
 | -r, \-\-radius |  RADIUS    |Search radius in kilometers (radius and bounding options are exclusive).| -r 5|
