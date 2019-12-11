@@ -115,7 +115,7 @@ A filename must be specified so that the information can be saved as a spreadshe
 |  \-\-alert-level | LEVEL |Limit to events with a specific PAGER alert level.*| \-\-alert-level yellow|
 | -b, \-\-bounds|LONMIN LONMAX LATMIN LATMAX|Bounds to constrain event search [lonmin lonmax latmin latmax].|-b 163.213 -178.945 -48.980 -32.324|
 | \-\-buffer|BUFFER|Use in conjunction with \-\-country. Specify a buffer (km) around the country's border where events will be selected.|\-\-buffer 5|
-| -c, \-\-catalog|CATALOG|Source catalog from which products are derived (atlas, centennial, etc.).|-c atlas|
+| -c, \-\-catalog|CATALOG|Source catalog from which products are derived (atlas, us, etc.).|-c atlas|
 | \-\-contributor|CATALOG|Source contributor (who loaded product) (us, nc, etc.).| \-\-contributor ak|
 | \-\-country|COUNTRY|Specify three character country code and earthquakes from inside country polygon (50m resolution) will be returned. Earthquakes in the ocean likely will NOT be returned. See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes.| \-\-country ASM |
 | -e, \-\-endtime|ENDTIME|End time for search (defaults to current date/time). YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.| -e  2014-01-01 |
@@ -162,25 +162,25 @@ The output file appears as with the following columns:
 `getcsv nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv`
 
 2. To expand the results to include preferred moment tensors:
-`getcsv nz.xlsx -o preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
+`getcsv nz.xlsx --get-moment-components preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
 
 3. To expand the results to include ALL moment tensors:
-`getcsv nz.xlsx -o all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
+`getcsv nz.xlsx --get-moment-components all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
 
 4. To expand the results to include preferred focal mechanisms:
-`getcsv nz.xlsx -a preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
+`getcsv nz.xlsx --get-focal-angles preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
 
 5. To expand the results to include ALL focal mechanisms:
-`getcsv nz.xlsx -a all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
+`getcsv nz.xlsx --get-focal-angles all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel`
 
 6. To include all magnitudes (including source and type) for that same search, add the -g flag:
-`getcsv nz.csv -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -g -f csv`
+`getcsv nz.csv --get-moment-components -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 --get-all-magnitudes -f csv`
 
-7. To print the number of events that would be returned from the above query, and the maximum number of events supported by ONE ComCat query*:
-`getcsv tmp.csv -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01`
+7. To print (to the screen) the number of events that would be returned from the above query, and the maximum number of events supported by ONE ComCat query*:
+`getcsv tmp.csv -x --get-moment-components -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01`
 
 8. To download events with fractional days, use the ISO 8601 combined date time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s):
-`getcsv -s 2015-01-01T00:00:00 -e 2015-01-01T01:15:00`
+`getcsv tmp.csv -s 2015-01-01T00:00:00 -e 2015-01-01T01:15:00 -b -180 180 -90 90`
 
 
 ## geteventhist
@@ -199,8 +199,8 @@ An event id must be specified.
 
 | Argument(s)     | Expected Argument(s)    | Description | Example |
 |-----------------|-------------------------|-------------|---------|
-|  -d, \-\-outdir | DIRECTORY |Directory where files are stored.| -dd .|
-|  \-\-excluded-products | EXCLUDED |ComCat products to be excluded from the spreadsheet.| \-\-outdir dyfi|
+|  -d, \-\-outdir | DIRECTORY |Directory where files are stored.| -d .|
+|  \-\-exclude-products | EXCLUDE |ComCat products to be excluded from the spreadsheet.| \-\-exclude-products dyfi|
 |   -f, \-\-format   |      FORMAT  | Output format. Options include 'csv', 'tab', and 'excel'. Default is 'csv'.|    -f csv    |
 |   \-\-logfile  |       |Send debugging, informational, warning and error messages to a file.|    \-\-logfile   |
 |   \-\-loglevel  |  LEVEL     |Set the minimum logging level. Options include 'debug', 'info', 'warning', and 'error'.*|    \-\-loglevel debug|
@@ -232,7 +232,7 @@ To get one summary spreadsheet in Excel format listing all products for the M7.1
 `geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel`
 
 To get one summary spreadhsheet as above, *excluding* DYFI products:
-`geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel -x dyfi`
+`geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel --exclude-products dyfi`
 
 To split out the "description" column into separate columns, and the products into separate spreadsheets:
 `geteventhist ci38457511 -d ~/tmp/ridgecrest -f excel --split`
@@ -299,7 +299,7 @@ Download epicenter and all contributed magnitudes in line format (csv, tab, etc.
 `getmags nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv`
 
 To download events with fractional days, use the ISO 8601 combined date time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s):
-`getmags 2015-01-01T00:00:00 -e 2015-01-01T01:15:00`
+`getmags recent.csv 2015-01-01T00:00:00 -e 2015-01-01T01:15:00`
 
 ## getpager
 ---
@@ -367,7 +367,7 @@ Get total exposures:
 `getpager nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv`
 
 Separate country exposures:
-`getpager nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv --get-countries`
+`getpager nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2018-01-02 -e 2019-10-30 -f csv --get-countries`
 
 Get fatalities and monetary losses:
 `getpager nz.csv -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f csv --get-losses`
@@ -390,8 +390,8 @@ A directory must be specified so that the information can be saved to a folder. 
 | Argument(s)     | Expected Argument(s)    | Description | Example |
 |-----------------|-------------------------|-------------|---------|
 | -b, \-\-bounds|LONMIN LONMAX LATMIN LATMAX|Bounds to constrain event search [lonmin lonmax latmin latmax].|-b 163.213 -178.945 -48.980 -32.324|
-| -c, \-\-catalog|CATALOG|Source catalog from which products are derived (atlas, centennial, etc.).|-c atlas|
-| \-\-contributor|CATALOG|Source contributor (who loaded product) (us, nc, etc.).| \-\-contributor ak|
+| -c, \-\-catalog|CATALOG|Source catalog from which products are derived (atlas, us, etc.).|-c atlas|
+| \-\-contributor|CONTRIBUTOR|Source contributor (who loaded product) (us, nc, etc.).| \-\-contributor ak|
 | -e, \-\-endtime|ENDTIME|End time for search (defaults to current date/time). YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.| -e  2014-01-01 |
 | -f, \-\-format|FORMAT|Output format (csv, tab, or excel). Default is 'csv'.| -f  excel |
 |   -i, \-\-eventid       |      EVENTID  | Specify an event ID      |    -i  ci38572791    |
@@ -447,10 +447,10 @@ The product and content file(s) requested must be specified. The shortest conten
 |-----------------|-------------------------|-------------|---------|
 | -b, \-\-bounds|LONMIN LONMAX LATMIN LATMAX|Bounds to constrain event search [lonmin lonmax latmin latmax].|-b 163.213 -178.945 -48.980 -32.324|
 | \-\-buffer|BUFFER|Use in conjunction with \-\-country. Specify a buffer (km) around the country's border where events will be selected.|\-\-buffer 5|
-| -c, \-\-catalog|CATALOG|Source catalog from which products are derived (atlas, centennial, etc.).|-c atlas|
-| \-\-contributor|CATALOG|Source contributor (who loaded product) (us, nc, etc.).| \-\-contributor ak|
+| -c, \-\-catalog|CATALOG|Source catalog from which products are derived (atlas, us, etc.).|-c atlas|
+| \-\-contributor|CONTRIBUTOR|Source contributor (who loaded product) (us, nc, etc.).| \-\-contributor ak|
 | \-\-country|COUNTRY|Specify three character country code and earthquakes from inside country polygon (50m resolution) will be returned. Earthquakes in the ocean likely will NOT be returned. See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes. **Note:** This only works for Linux and Unix OS.| \-\-country ASM |
-|  -d, \-\-outdir | DIRECTORY |Directory where files are stored.| -dd .|
+|  -d, \-\-outdir | DIRECTORY |Directory where files are stored.| -d .|
 | -e, \-\-endtime|ENDTIME|End time for search (defaults to current date/time). YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.| -e  2014-01-01 |
 | \-\-event-property |PROPERTY|Event property. | \-\-event-property  status:REVIEWED |
 | \-\-event-type |TYPE|Event type. | \-\-event-type  earthquake |
@@ -486,7 +486,9 @@ To retrieve the moment rate function files, do this:
     Scenarios: The USGS National Earthquake Information Center generates
     scenario (that is, not real) earthquakes for use in planning
     emergency response, training, investigations of possible
-    vulnerabilities in structures, etc. 
+    vulnerabilities in structures, etc. These scenarios contain
+    ShakeMap products (maps, data file) which can be downloaded from the
+    Scenario server.
 
     These scenarios can be found on the web here:
 

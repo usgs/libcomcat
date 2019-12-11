@@ -76,9 +76,9 @@ Latitude and longitude values should be in decimal degrees.
 #### Preference Parameters
 Preference parameters determine contributors, catalogs, and versions of parameters. Preferred catalogs, contributors, and versions are preferred products and are denoted by their [preferredWeight](https://earthquake.usgs.gov/data/comcat/data-productterms.php#product_preferredWeight).
 
-- Catalog: Limits the events to those from an [available catalog](https://earthquake.usgs.gov/fdsnws/event/1/catalogs). The default is the 'preferred' catalog.
+- Catalog: Limits the events to those from an [available catalog](https://earthquake.usgs.gov/fdsnws/event/1/catalogs). (Link shows an XML document where the available catalogs are enclosed by <Catalog> tags.) The default is the 'preferred' catalog.
 	- `us_events = search(catalog='us')`
-- Contributor: Limits events by [available contributor](https://earthquake.usgs.gov/fdsnws/event/1/contributors).  The default is the 'preferred' contributor.
+- Contributor: Limits events by [available contributor](https://earthquake.usgs.gov/fdsnws/event/1/contributors).  (Link shows an XML document where the available catalogs are enclosed by <Contributor> tags.) The default is the 'preferred' contributor.
 	- `ak_events = search(contributor='ak')`
 - Host: By default the ComCat host is **earthquake.usgs.gov**, but this can be overriden using the host option.
 	- `host_events = search(host='other_host')`
@@ -139,7 +139,7 @@ Other parameters are related to the order and output of the search method.
 
 The count method returns the number of events that match a defined criteria. This is defined by the ComCat web API's count functionality. The input parameters for count are the same as those for the search method.
 
-**NOTE:** The count method has not been shown to be any faster than the search method. If the any data is needed, it would make more sense to search and then count the number of returned events rather than using `count` and `search` separately.
+**NOTE:** The count method has not been shown to be any faster than the search method. If any data is needed, it would make more sense to search and then count the number of returned events rather than using `count` and `search` separately.
 
 
 ### Search by ID
@@ -317,7 +317,7 @@ The parameters include:
 The output is a dataframe with the following columns.
 - station: The station defined by the DYFI grid.
 - lat: The latitude that defines the center of the station grid.
-- lon The latitude that defines the center of the station grid.
+- lon The longitude that defines the center of the station grid.
 - distance: The distance from the earthquake.
 - intensity: The intensity derived from DYFI.
 - nresp: The number of responses in the station grid.
