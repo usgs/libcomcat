@@ -55,7 +55,7 @@ def test_mag():
         shutil.rmtree(tmpdir)
     # The largest recorded earthquake is a relatively stable check
     target_columns = ['id', 'time', 'lat', 'lon', 'depth', 'location',
-                      'url', 'hypo_src', 'official-mw', 'us-mw']
+                      'url', 'hypo_src', 'official-mw', 'us-NA']
     np.testing.assert_array_equal(df.columns, target_columns)
     target_id = 'official19600522191120_30'
     target_location = '1960 Great Chilean Earthquake (Valdivia Earthquake)'
@@ -78,7 +78,7 @@ def test_mag():
         shutil.rmtree(tmpdir)
     # The largest recorded earthquake is a relatively stable check
     target_columns = ['id', 'time', 'lat', 'lon', 'depth', 'location',
-                      'url', 'hypo_src', 'official-mw', 'us-mw']
+                      'url', 'hypo_src', 'official-mw', 'us-NA']
     np.testing.assert_array_equal(df.columns, target_columns)
     target_id = 'official19600522191120_30'
     target_location = '1960 Great Chilean Earthquake (Valdivia Earthquake)'
