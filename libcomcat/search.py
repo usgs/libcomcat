@@ -610,8 +610,12 @@ def get_authoritative_info(eventid):
         origins = detail.getProducts('origin', source='all')
         for origin in origins:
             source = origin.source
-            magtype = origin['magnitude-type']
-            magval = float(origin['magnitude'])
+            if origin['magnitude-source'].lower() != source.lower():
+                magval = np.nan
+                magtype = 'NA'
+            else:
+                magval = float(origin['magnitude'])
+                magtype = origin['magnitude-type']
             colname = '%s-%s' % (source, magtype)
             mag_row[colname] = magval
             latname = '%s-%s' % (origin.source, 'latitude')

@@ -648,12 +648,11 @@ class DetailEvent(object):
             phase_url = phase_data.getContentURL('quakeml.xml')
             catalog = read_events(phase_url)
             event = catalog.events[0]
-            imag = 1
-            for magnitude in event.magnitudes:
+            for imag, magnitude in enumerate(event.magnitudes):
                 edict['magnitude%i' % imag] = magnitude.mag
                 edict['magtype%i' %
                       imag] = magnitude.magnitude_type
-                imag += 1
+                edict['magsource%i' % imag] = magnitude.creation_info.agency_id
 
         return edict
 
