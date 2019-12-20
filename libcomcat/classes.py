@@ -652,7 +652,11 @@ class DetailEvent(object):
                 edict['magnitude%i' % imag] = magnitude.mag
                 edict['magtype%i' %
                       imag] = magnitude.magnitude_type
-                edict['magsource%i' % imag] = magnitude.creation_info.agency_id
+                cname = 'magsource%i' % imag
+                if magnitude.creation_info is not None:
+                    edict[cname] = magnitude.creation_info.agency_id
+                else:
+                    edict[cname] = ''
 
         return edict
 
