@@ -644,19 +644,33 @@ class DetailEvent(object):
                 edict.update(_get_focal_mechanism_info(focal))
 
         if get_all_magnitudes:
-            phase_data = self.getProducts('phase-data')[0]
-            phase_url = phase_data.getContentURL('quakeml.xml')
-            catalog = read_events(phase_url)
-            event = catalog.events[0]
-            for imag, magnitude in enumerate(event.magnitudes):
-                edict['magnitude%i' % imag] = magnitude.mag
-                edict['magtype%i' %
-                      imag] = magnitude.magnitude_type
-                cname = 'magsource%i' % imag
-                if magnitude.creation_info is not None:
-                    edict[cname] = magnitude.creation_info.agency_id
-                else:
-                    edict[cname] = ''
+            if self.hasProduct('phase-data'):
+                product = 'phase-data'
+            else:
+                product = 'origin'
+            phases = self.getProducts(product, source='all')
+            imag = 0
+            for phase_data in phases:
+                # we don't want duplicates of phase data information
+                # from us origin product
+                if product == 'origin' and phase_data.source == 'us':
+                    continue
+                phase_url = phase_data.getContentURL('quakeml.xml')
+                catalog = read_events(phase_url)
+                event = catalog.events[0]
+                for magnitude in event.magnitudes:
+                    edict['magnitude%i' % imag] = magnitude.mag
+                    edict['magtype%i' %
+                          imag] = magnitude.magnitude_type
+                    cname = 'magsource%i' % imag
+                    if magnitude.creation_info is not None:
+                        edict[cname] = magnitude.creation_info.agency_id
+                    else:
+                        if event.creation_info is not None:
+                            edict[cname] = event.creation_info.agency_id
+                        else:
+                            edict[cname] = ''
+                    imag += 1
 
         return edict
 
