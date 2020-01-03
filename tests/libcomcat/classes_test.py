@@ -200,7 +200,13 @@ def test_detail():
         assert atdict['depth'] == 9.0
 
         ncdict_allmags = event.toDict(get_all_magnitudes=True)
-        assert ncdict_allmags['magtype1'] == 'Md'
+        allmags = []
+        for key, value in ncdict_allmags.items():
+            if key.startswith('magtype'):
+                allmags.append(value)
+        cmpmags = ['Md', 'Ml', 'Ms_20', 'Mw',
+                   'Mwb', 'Mwc', 'Mwr', 'Mww', 'mb', 'mw']
+        assert sorted(allmags) == sorted(cmpmags)
 
         ncdict_alltensors = event.toDict(get_tensors='all')
         assert ncdict_alltensors['us_Mwb_mrr'] == 7.63e+16
