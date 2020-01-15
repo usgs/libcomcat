@@ -25,28 +25,28 @@ def get_parser():
 
     To expand the results to include preferred moment tensors:
 
-    %(prog)s nz.xlsx -o preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+    %(prog)s nz.xlsx --get-moment-components preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
 
     To expand the results to include ALL moment tensors:
 
-    %(prog)s nz.xlsx -o all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+    %(prog)s nz.xlsx --get-moment-components all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
 
     To expand the results to include preferred focal mechanisms:
 
-    %(prog)s nz.xlsx -a preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+    %(prog)s nz.xlsx --get-focal-angles preferred -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
 
     To expand the results to include ALL focal mechanisms:
 
-    %(prog)s nz.xlsx -a all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
+    %(prog)s nz.xlsx --get-focal-angles all -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -f excel
 
     To include all magnitudes (including source and type) for that same search, add the -g flag:
 
-    %(prog)s nz.csv -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -g -f csv
+    %(prog)s nz.csv --get-moment-components -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01 -g -f csv
 
-    To print the number of events that would be returned from the above query,
+    To print to the screen the number of events that would be returned from the above query,
     and the maximum number of events supported by ONE ComCat query*:
 
-    %(prog)s tmp.csv -x -o -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
+    %(prog)s tmp.csv -x --get-moment-components -b 163.213 -178.945 -48.980 -32.324 -s 2013-01-01 -e 2014-01-01
 
     To download events with fractional days, use the ISO 8601 combined date
     time format (YYYY-mm-ddTHH:MM:SS, YYYY-mm-ddTHH:MM:SS.s): %(prog)s -s

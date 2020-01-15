@@ -5,7 +5,7 @@ build
 .ipynb_checkpoints/
 .cache
 .coverage
-.coverage.xml
+coverage.xml
 htmlcov
 .pytest_cache/
 libcomcat.egg-info/

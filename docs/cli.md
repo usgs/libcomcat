@@ -303,7 +303,9 @@ To download events with fractional days, use the ISO 8601 combined date time for
 
 ## getpager
 ---
-The `getpager` script summarizes estimated exposures and losses for events.
+The `getpager` script summarizes estimated exposures and losses for events. Note: By default, losses and exposures are summed
+over all affected countries - use the --get-countries option to see those exposures and losses broken out for each affected 
+country.
 
 ### Required Arguments
 
