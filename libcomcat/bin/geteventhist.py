@@ -120,7 +120,7 @@ def get_parser():
     # optional arguments
     ohelp = '''Directory where files are stored.'''
     parser.add_argument('-d', '--outdir', help=ohelp,
-                        default=None)
+                        default=os.path.expanduser('~'))
     parser.add_argument('--exclude-products',
                         help='COMCAT products to be excluded from the spreadsheet.',
                         nargs='*', default=[])
@@ -341,13 +341,16 @@ def main():
 
     # web output and directory output are mutually exclusive
     if args.outdir and args.web:
-        msg = '''The -d and --web options are mutually exclusive, meaning
-        that you cannot choose to write files to a directory and print
-        HTML output to the screen simultaneously. Please choose one of
-        those two options and try again.
-        '''
-        print(msg)
-        sys.exit(1)
+        if args.outdir != os.path.expanduser('~'):
+            msg = '''The -d and --web options are mutually exclusive, meaning
+            that you cannot choose to write files to a directory and print
+            HTML output to the screen simultaneously. Please choose one of
+            those two options and try again.
+            '''
+            print(msg)
+            sys.exit(1)
+        else:
+            args.outdir = None
     if args.radius and not args.window:
         msg = '''To define a time and distance range, the radius and window
          options must both be set.

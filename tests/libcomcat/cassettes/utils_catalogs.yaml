@@ -2,35 +2,70 @@ interactions:
 - request:
     body: null
     headers:
-      Connection: [close]
-      Host: [earthquake.usgs.gov]
-      User-Agent: [Python-urllib/3.5]
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.22.0
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/catalogs
   response:
-    body: {string: '<?xml version="1.0"?>
-
-        <Catalogs><Catalog>=c</Catalog><Catalog>ak</Catalog><Catalog>at</Catalog><Catalog>atlas</Catalog><Catalog>av</Catalog><Catalog>cgs</Catalog><Catalog>choy</Catalog><Catalog>ci</Catalog><Catalog>dr</Catalog><Catalog>duputel</Catalog><Catalog>ew_dm</Catalog><Catalog>gcmt</Catalog><Catalog>hv</Catalog><Catalog>is</Catalog><Catalog>iscgem</Catalog><Catalog>iscgemsup</Catalog><Catalog>ismpkansas</Catalog><Catalog>ld</Catalog><Catalog>mb</Catalog><Catalog>nc</Catalog><Catalog>ne</Catalog><Catalog>nm</Catalog><Catalog>nn</Catalog><Catalog>official</Catalog><Catalog>official19631013051759_30</Catalog><Catalog>pr</Catalog><Catalog>pt</Catalog><Catalog>sc</Catalog><Catalog>se</Catalog><Catalog>unknown</Catalog><Catalog>us</Catalog><Catalog>uu</Catalog><Catalog>uw</Catalog></Catalogs>'}
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA23STU7DMBCG4T2nQD0AxAqhVErTBQepjO06VuIfOnHT3p4FCmLx7qxnrHhmvvSn
+        e5yfb+4qIafjTr00u9Pw1H/qRc/Zy7Cdhvbjrdt3SvWvm/yVjgZQT4QL4qyF/AZobPTEnr5gxvwg
+        DojW0YP2SlhLXdwMFfc9kq5nG8G9ibQRL7TRkdoLlpCWEcR4R038FqQWrMUy6SQY0Exvxy/ARPMk
+        R0gdpgSYL5dggqYQtpI6vLeqUW3TqX13OLcN3aX/tFDohaLCpIQmq2lKeaVJKi23yogx1kq4/sPt
+        JMMPXrn6yt0DAAA=
     headers:
-      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
-      Access-Control-Allow-Methods: ['*']
-      Access-Control-Allow-Origin: ['*']
-      Cache-Control: ['public, max-age=900']
-      Connection: [close]
-      Content-Length: ['805']
-      Content-Type: [application/xml]
-      Date: ['Fri, 09 Nov 2018 19:30:11 GMT']
-      Expires: ['Fri, 09 Nov 2018 19:45:11 GMT']
-      Last-Modified: ['Fri, 09 Nov 2018 19:30:11 GMT']
-      Server: [nginx]
-      Strict-Transport-Security: [max-age=31536000]
-      Vary: [Accept-Encoding]
-      Via: [1.1 2a7e9ec6f25ccbf79b1adfa129de8f9c.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [nzsgLabmMs2acf6M7PX6RXD08CKg-_EbJ-V2b2OxiFi4snngG5Boig==]
-      X-Cache: [Miss from cloudfront]
-      X-Cache-Status: [EXPIRED]
-      X-Content-Type-Options: [nosniff]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1; mode=block]
-    status: {code: 200, message: OK}
+      Access-Control-Allow-Headers:
+      - accept,origin,authorization,content-type
+      Access-Control-Allow-Methods:
+      - '*'
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - public, max-age=60
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '239'
+      Content-Type:
+      - application/xml
+      Date:
+      - Thu, 23 Jan 2020 15:16:23 GMT
+      Expires:
+      - Thu, 23 Jan 2020 15:17:23 GMT
+      Last-Modified:
+      - Thu, 23 Jan 2020 15:16:23 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 d940bff13dd62d2038cf6e1ee136b418.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - bCH7brHc-JhaYOEeqBfiK4izXql46KuTQB4y2Gb46ej9gSEskimqYA==
+      X-Amz-Cf-Pop:
+      - JAX1-C1
+      X-Cache:
+      - Miss from cloudfront
+      X-Cache-Status:
+      - EXPIRED
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
 version: 1
