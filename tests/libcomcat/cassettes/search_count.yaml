@@ -2,33 +2,66 @@ interactions:
 - request:
     body: null
     headers:
-      Connection: [close]
-      Host: [earthquake.usgs.gov]
-      User-Agent: [Python-urllib/3.5]
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - libcomcat v0+untagged.456.g69f295e.dirty
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&updatedafter=2010-01-01T00%3A00%3A00&mindepth=-100&offset=1&limit=20000&endtime=1994-01-18T12%3A35%3A00&maxdepth=1000&starttime=1994-01-17T12%3A30%3A00&minmagnitude=6.6&maxmagnitude=10.0&orderby=time-asc&eventtype=earthquake
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&updatedafter=2010-01-01T00%3A00%3A00&limit=20000&maxdepth=1000&maxmagnitude=10.0&mindepth=-100&minmagnitude=6.6&offset=1&orderby=time-asc&eventtype=earthquake
   response:
-    body: {string: '{"count":1,"maxAllowed":20000}'}
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWSs4vzStRsjLUUcpNrHDMyckvT01RsjIyAIJaACfDZlEeAAAA
     headers:
-      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
-      Access-Control-Allow-Methods: ['*']
-      Access-Control-Allow-Origin: ['*']
-      Cache-Control: ['public, max-age=900']
-      Connection: [close]
-      Content-Length: ['30']
-      Content-Type: [application/json]
-      Date: ['Fri, 09 Nov 2018 20:28:13 GMT']
-      Expires: ['Fri, 09 Nov 2018 20:43:13 GMT']
-      Last-Modified: ['Fri, 09 Nov 2018 20:28:13 GMT']
-      Server: [nginx]
-      Strict-Transport-Security: [max-age=31536000]
-      Vary: [Accept-Encoding]
-      Via: [1.1 980d2a1c9c4f90ad69118c6357f92882.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [cHouni47xKjvepdEtBvVC3Qasg70s5rWThTlohgsbdR6MZRq7X1plw==]
-      X-Cache: [Miss from cloudfront]
-      X-Cache-Status: [MISS]
-      X-Content-Type-Options: [nosniff]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1; mode=block]
-    status: {code: 200, message: OK}
+      Access-Control-Allow-Headers:
+      - accept,origin,authorization,content-type
+      Access-Control-Allow-Methods:
+      - '*'
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - public, max-age=60
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '48'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 23 Jan 2020 15:16:12 GMT
+      Expires:
+      - Thu, 23 Jan 2020 15:17:12 GMT
+      Last-Modified:
+      - Thu, 23 Jan 2020 15:16:12 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 87a01244684ed0c627925ef48431f67f.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 6ZtoJO0Jr--cmgAlwsquv50S8W0BkGrAPveCuFLUUc3wX0MTcmqnVA==
+      X-Amz-Cf-Pop:
+      - JAX1-C1
+      X-Cache:
+      - Miss from cloudfront
+      X-Cache-Status:
+      - MISS
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
 version: 1

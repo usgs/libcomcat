@@ -367,7 +367,7 @@ class DetailEvent(object):
             response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
             self._jdict = response.json()
             self._actual_url = url
-        except HTTPError:
+        except requests.exceptions.ReadTimeout as rt:
             try:
                 response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
                 self._jdict = response.json()
@@ -909,6 +909,8 @@ class Product(object):
         content_name = 'a' * 1000
         found = False
         content_url = ''
+        if 'contents' not in self._product:
+            return None
         if not len(self._product['contents']):
             return None
         for contentkey, content in self._product['contents'].items():

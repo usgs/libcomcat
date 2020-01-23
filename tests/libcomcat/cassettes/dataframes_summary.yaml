@@ -2,39 +2,81 @@ interactions:
 - request:
     body: null
     headers:
-      Connection: [close]
-      Host: [earthquake.usgs.gov]
-      User-Agent: [Python-urllib/3.5]
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - libcomcat v0+untagged.456.g69f295e.dirty
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&maxmagnitude=9.0&minmagnitude=8.0&endtime=1994-10-06T00%3A00%3A00&limit=20000&orderby=time-asc&starttime=1994-06-01T00%3A00%3A00&mindepth=-100&offset=1&maxdepth=1000
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1994-06-01T00%3A00%3A00&endtime=1994-10-06T00%3A00%3A00&limit=20000&maxdepth=1000&maxmagnitude=9.0&mindepth=-100&minmagnitude=8.0&offset=1&orderby=time-asc&eventtype=earthquake
   response:
-    body: {string: '{"type":"FeatureCollection","metadata":{"generated":1541791811000,"url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&maxmagnitude=9.0&minmagnitude=8.0&endtime=1994-10-06T00%3A00%3A00&limit=20000&orderby=time-asc&starttime=1994-06-01T00%3A00%3A00&mindepth=-100&offset=1&maxdepth=1000","title":"USGS
-        Earthquakes","status":200,"api":"1.5.8","limit":20000,"offset":1,"count":2},"features":[{"type":"Feature","properties":{"mag":8.2,"place":"La
-        Paz, Bolivia","time":771121996230,"updated":1492121206435,"tz":null,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/usp0006dzc","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=usp0006dzc&format=geojson","felt":null,"cdi":null,"mmi":4.4,"alert":null,"status":"reviewed","tsunami":0,"sig":1034,"net":"us","code":"p0006dzc","ids":",choy19940609003316,gcmtm060994a,usp0006dzc,gcmt19940609003316,duputel060994a,iscgem168418,atlas19940609003317,","sources":",choy,gcmt,us,gcmt,duputel,iscgem,atlas,","types":",focal-mechanism,impact-text,moment-tensor,origin,phase-data,shakemap,trump-shakemap,","nst":null,"dmin":null,"rms":1.1,"gap":null,"magType":"mw","type":"earthquake","title":"M
-        8.2 - La Paz, Bolivia"},"geometry":{"type":"Point","coordinates":[-67.553,-13.841,631.3]},"id":"usp0006dzc"},
-
-        {"type":"Feature","properties":{"mag":8.3,"place":"Kuril Islands","time":781276975840,"updated":1539796060022,"tz":null,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/usp0006kdp","detail":"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=usp0006kdp&format=geojson","felt":null,"cdi":null,"mmi":9,"alert":null,"status":"reviewed","tsunami":0,"sig":1060,"net":"us","code":"p0006kdp","ids":",usp0006kdp,choy19941004132255,gcmtm100494b,gcmt19941004132258,duputel100494b,atlas19941004132257,iscgem145456,","sources":",us,choy,gcmt,gcmt,duputel,atlas,iscgem,","types":",finite-fault,focal-mechanism,impact-text,moment-tensor,origin,phase-data,shakemap,trump-shakemap,","nst":null,"dmin":null,"rms":0.9,"gap":null,"magType":"mw","type":"earthquake","title":"M
-        8.3 - Kuril Islands"},"geometry":{"type":"Point","coordinates":[147.321,43.773,14]},"id":"usp0006kdp"}],"bbox":[-67.553,-13.841,14,147.321,43.773,631.3]}'}
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA8WVS4/bNhDH7/0UBoH4RMmknpYBoWiLtijaAAGSnIo9cEVaZiOKikjtrnfh756h
+        npbRAEkaoD7YpOZBzvznJ78ge24EOqDfBLNdK37RVSUKK3WNMFLCMs4sQ4cXVIpatMwKjg40TrM0
+        C6IgJoRg1LUVxJ+sbcxhtxOstaePHfsg/M6Uxi/1w+7ITf1oduJB1HZHdx870Z5/POpWMZuXQv9j
+        dL01FgKtVCKnWRZ5JPEIfUfIq/Cn8Wsrar7YKQGXtb2SSto8gDuRrWJPXDT2lNNxp1hZS9txkWc+
+        PJD1YIY8/W4x78Gsj0cjbE63uuWivT/n7lyPmWLbl+A6li91QqOstJVr4vu3v7/d/DpbDJigLtsZ
+        dAhcq1gjwYv6e5+Cqb9wb3G24VDoLkaF7mpnuGB0HGSBBH+/3EgFGZpWN6K10tlfEBSBDpA6W31C
+        cKtY4QL/Yps37BlvftaVfJCsv7gCQ5pSGkBYEoROz4aPOkdZAM8DkkRhDL7P6FB3VfUlii/PRtkb
+        VopdZxooNeHPBRzNYbjkN01Ov5M8X9Jt18OEXN8qO1234HJaKgXLyI/I6hOBMhX0cfKaNEOteJDi
+        EXoB1ZuuZi4aOmQkNJqSEOJqJxnqnNKF5q7JVyVK7pLg4qTPbmhJQjJCwpAmuCyUVW6fRQwvdfTP
+        b1x513RWVJOzNEUpFE32Ed1jZitmVv4pdjOnu7YQ89l9Vjhl+B3zjYmGFC7IDVcfctQFqzwlihOr
+        pVFYqoYV1rPiyWKlFfQe1rXRLdatLGWNmxMzwnMvCmxOIJ9iDbZtpxpv3kL+2sz95UDctG4VHEp9
+        ulYEIChZM6vGynfD6KvH8aaw/lcCX2/2frDxNrejDijBcMALrT07VMYUb7QE0Jx0QLqsYewdaF6S
+        +nEcXDGUYo+G/j4i12DhJKT+tVcW312c6P1AzGNwwT98KbnhugnpQu6fXSurzR+mYjU3C7d7GqRJ
+        lsZws2tu4xDezwnMBAmC78jtB958T24h3ddxm30bpgn5LKZDRSOmy7VmYmEqIxoGQRwPxLp9Ft3P
+        mM72/YTV5DGTObukE7pRHMXJDaYA50LqCtOBzxHWFaYS/rGEd2RdZf8PZomfrceVBP8F2hCgXU/5
+        1yBLo9QPA4qj0E/Ta4xCTKNbKp3qlzuM7u/104x7OCJOIQCv0/Wgh3eXTyynqkMsCQAA
     headers:
-      Access-Control-Allow-Headers: ['accept,origin,authorization,content-type']
-      Access-Control-Allow-Methods: ['*']
-      Access-Control-Allow-Origin: ['*']
-      Cache-Control: ['public, max-age=900']
-      Connection: [close]
-      Content-Length: ['2223']
-      Content-Type: [application/json; charset=utf-8]
-      Date: ['Fri, 09 Nov 2018 19:30:11 GMT']
-      Expires: ['Fri, 09 Nov 2018 19:45:11 GMT']
-      Last-Modified: ['Fri, 09 Nov 2018 19:30:11 GMT']
-      Server: [nginx]
-      Strict-Transport-Security: [max-age=31536000]
-      Vary: ['Accept-Encoding,Accept-Encoding']
-      Via: [1.1 19f9923c4e449b92312c8813bf9135f5.cloudfront.net (CloudFront)]
-      X-Amz-Cf-Id: [b4xrRwCyviKqimqEcEqhaK6gcgT03ejHtW0W2-w4jCH3FdEUCJVMvQ==]
-      X-Cache: [Miss from cloudfront]
-      X-Cache-Status: [MISS]
-      X-Content-Type-Options: [nosniff]
-      X-Frame-Options: [SAMEORIGIN]
-      X-XSS-Protection: [1; mode=block]
-    status: {code: 200, message: OK}
+      Access-Control-Allow-Headers:
+      - accept,origin,authorization,content-type
+      Access-Control-Allow-Methods:
+      - '*'
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - public, max-age=60
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '906'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Thu, 23 Jan 2020 15:13:45 GMT
+      Expires:
+      - Thu, 23 Jan 2020 15:14:45 GMT
+      Last-Modified:
+      - Thu, 23 Jan 2020 15:13:45 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 03c6bb07a0ba5f6bce71fe21ae4e3d78.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - DGlKZwVG-cc-P7wWyGxHXiZHPHIsPSX1fL0VDy6lyiuqD1OtoZdgYA==
+      X-Amz-Cf-Pop:
+      - IAD89-C2
+      X-Cache:
+      - Miss from cloudfront
+      X-Cache-Status:
+      - MISS
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
 version: 1
