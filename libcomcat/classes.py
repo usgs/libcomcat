@@ -344,6 +344,7 @@ class SummaryEvent(object):
         edict['magnitude'] = self.magnitude
         edict['alert'] = self.alert
         edict['url'] = self.url
+        edict['eventtype'] = self._jdict['properties']['type']
         edict['significance'] = self['sig']
         return edict
 
@@ -578,7 +579,9 @@ class DetailEvent(object):
             edict['magnitude'] = self.magnitude
             edict['magtype'] = self._jdict['properties']['magType']
             edict['url'] = self.url
+            edict['eventtype'] = self._jdict['properties']['type']
             edict['alert'] = self.alert
+            edict['significance'] = self['sig']
         else:
             try:
                 phase_sources = []
