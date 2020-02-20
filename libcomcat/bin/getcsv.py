@@ -14,6 +14,8 @@ from libcomcat.dataframes import (get_detail_data_frame,
                                   get_summary_data_frame)
 from libcomcat.logging import setup_logger
 
+EVTYPES = ['earthquake', 'explosion', 'landslide', 'volcanic eruption']
+
 
 def get_parser():
     desc = '''Download basic earthquake information in line format (csv, tab, etc.).
@@ -219,6 +221,11 @@ def get_parser():
     parser.add_argument('-x', '--count', dest='getCount',
                         action='store_true',
                         help=helpstr)
+    typehelp = '''Select event type other than "earthquake".'''
+
+    parser.add_argument('--event-type', default='earthquake',
+                        choices=EVTYPES,
+                        help=typehelp)
     return parser
 
 
@@ -347,6 +354,7 @@ def main():
                         maxsig=maxsig,
                         producttype=args.limitByProductType,
                         host=args.host,
+                        eventtype=args.event_type,
                         alertlevel=args.alert_level)
     else:
         events = []
@@ -373,6 +381,7 @@ def main():
                              maxsig=maxsig,
                              producttype=args.limitByProductType,
                              host=args.host,
+                             eventtype=args.event_type,
                              alertlevel=args.alert_level)
             events += tevents
 
@@ -401,7 +410,10 @@ def main():
     first_columns = list(events[0].toDict().keys())
     col_list = list(df.columns)
     for column in first_columns:
-        col_list.remove(column)
+        try:
+            col_list.remove(column)
+        except Exception as e:
+            x = 1
     df = df[first_columns + col_list]
 
     if args.country:
