@@ -119,16 +119,16 @@ def test_dyfi():
     with vcr.use_cassette(tape_file):
         df1km = get_dyfi_data_frame(detail, dyfi_file='utm_1km')
         np.testing.assert_almost_equal(
-            df1km['intensity'].sum(), 14909.6)
+            df1km['intensity'].sum(), 14913.4)
         df10km = get_dyfi_data_frame(detail, dyfi_file='utm_10km')
         np.testing.assert_almost_equal(
-            df10km['intensity'].sum(), 3474.3)
+            df10km['intensity'].sum(), 3474.3999999999996)
         dfutm = get_dyfi_data_frame(detail, dyfi_file='utm_var')
         np.testing.assert_almost_equal(
-            dfutm['intensity'].sum(), 3474.3)
+            dfutm['intensity'].sum(), 3474.3999999999996)
         dfzip = get_dyfi_data_frame(detail, dyfi_file='zip')
         np.testing.assert_almost_equal(
-            dfzip['intensity'].sum(), 2345.4)
+            dfzip['intensity'].sum(), 2345.5)
 
 
 def test_nan_mags():
