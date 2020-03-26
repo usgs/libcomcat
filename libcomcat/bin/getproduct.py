@@ -14,11 +14,11 @@ from libcomcat.utils import (maketime, makedict, check_ccode,
                              get_country_bounds, filter_by_country,
                              BUFFER_DISTANCE_KM)
 from libcomcat.logging import setup_logger
+from libcomcat.exceptions import ProductNotFoundError
 
 # third party imports
 import numpy as np
 import pandas as pd
-from shapely.geometry import Point
 
 
 class MyFormatter(argparse.RawTextHelpFormatter,
@@ -31,8 +31,13 @@ def _get_product_from_detail(detail, product, contents, folder,
     if not detail.hasProduct(product):
         return False
 
-    products = detail.getProducts(
-        product, source=source, version=version)
+    try:
+        products = detail.getProducts(
+            product, source=source, version=version)
+    except ProductNotFoundError:
+        print('No %s product found for event %s and source %s. Skipping.' %
+              (product, detail.id, source))
+        return False
 
     ic = len(products)
     eventfolder = os.path.join(folder, detail.id)
