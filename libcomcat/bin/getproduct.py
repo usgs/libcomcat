@@ -26,17 +26,17 @@ class MyFormatter(argparse.RawTextHelpFormatter,
     pass
 
 
-def _get_product_from_detail(detail, product, contents, folder,
+def _get_product_from_detail(detail, tproduct, contents, folder,
                              version, source, list_only=False):
-    if not detail.hasProduct(product):
+    if not detail.hasProduct(tproduct):
         return False
 
     try:
         products = detail.getProducts(
-            product, source=source, version=version)
+            tproduct, source=source, version=version)
     except ProductNotFoundError:
         print('No %s product found for event %s and source %s. Skipping.' %
-              (product, detail.id, source))
+              (tproduct, detail.id, source))
         return False
 
     ic = len(products)
@@ -59,9 +59,10 @@ def _get_product_from_detail(detail, product, contents, folder,
                 filename = os.path.join(eventfolder, fname)
                 try:
                     product.getContent(content_name, filename=filename)
-                except Exception as e:
-                    print('Could not download %s from event %s.  Continuing...' % (
-                        content_name, detail.id))
+                except Exception:
+                    fmt = 'Could not download %s from event %s.  Continuing...'
+                    tpl = (content_name, detail.id)
+                    print(fmt % tpl)
                     continue
                 logging.info('Downloaded %s %s to %s\n' %
                              (eventid, content, filename))
@@ -212,8 +213,13 @@ def main():
 
     setup_logger(args.logfile, args.loglevel)
 
+    get_superseded = False
+    if args.version in ['all', 'first']:
+        get_superseded = True
+
     if args.eventid:
-        detail = get_event_by_id(args.eventid, includesuperseded=True,
+        detail = get_event_by_id(args.eventid,
+                                 includesuperseded=get_superseded,
                                  scenario=args.scenario)
         _get_product_from_detail(detail, args.product, args.contents,
                                  args.outputFolder, args.version,
@@ -336,9 +342,9 @@ def main():
         if not event.hasProduct(args.product):
             continue
         try:
-            detail = event.getDetailEvent(includesuperseded=True,
+            detail = event.getDetailEvent(includesuperseded=get_superseded,
                                           scenario=args.scenario)
-        except Exception as e:
+        except Exception:
             print(
                 'Failed to retrieve detail event for event %s... continuing.' % event.id)
             continue
