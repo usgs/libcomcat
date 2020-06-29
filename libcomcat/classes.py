@@ -659,7 +659,14 @@ class DetailEvent(object):
                 if product == 'origin' and phase_data.source == 'us':
                     continue
                 phase_url = phase_data.getContentURL('quakeml.xml')
-                catalog = read_events(phase_url)
+                try:
+                    catalog = read_events(phase_url)
+                except Exception as e:
+                    fmt = ('Could not parse quakeml file from %s. '
+                           'Error: %s')
+                    tpl = (phase_url, str(e))
+                    logging.warning(fmt % tpl)
+                    continue
                 event = catalog.events[0]
                 for magnitude in event.magnitudes:
                     edict['magnitude%i' % imag] = magnitude.mag
