@@ -223,6 +223,46 @@ def get_arrival(event, pickid):
         return None
 
 
+def get_pick(event, waveid):
+    """Find the pick object in a Catalog Event corresponding to input waveform id.
+
+    Args:
+        event (Event): Obspy Catalog Event object.
+        ampid (str): Amplitude ID string.
+
+    Returns:
+      Amplitude: Obspy Catalog amplitude object.
+    """
+    if waveid is None:
+        return None
+    idlist = [pick.waveform_id for pick in event.picks]
+    if waveid not in idlist:
+        return None
+    idx = idlist.index(waveid)
+    pick = event.picks[idx]
+    return pick
+
+
+def get_amplitude(catevent, ampid):
+    """Find the amplitude object in a Catalog Event corresponding to input amplitude id.
+
+    Args:
+        event (Event): Obspy Catalog Event object.
+        ampid (str): Amplitude ID string.
+
+    Returns:
+      Amplitude: Obspy Catalog amplitude object.
+    """
+    if ampid is None:
+        return None
+    idlist = [amp.resource_id for amp in catevent.amplitudes]
+    if ampid not in idlist:
+        return None
+    idx = idlist.index(ampid)
+    amplitude = catevent.amplitudes[idx]
+    return amplitude
+
+
 def get_magnitude_data_frame(detail, catalog, magtype):
     """Return a Pandas DataFrame consisting of magnitude data.
 
@@ -241,13 +281,15 @@ def get_magnitude_data_frame(detail, catalog, magtype):
             - Status: "manual" or "automatic".
             - Magnitude: Locally determined magnitude.
             - Weight: Magnitude weight.
+            - Distance: Distance from epicenter to station.
+            - Azimuth (degrees) from epicenter to station.
     Raises:
         AttributeError if input DetailEvent does not have a phase-data product
             for the input catalog.
     """
     columns = columns = ['Channel', 'Type', 'Amplitude',
                          'Period', 'Status', 'Magnitude',
-                         'Weight']
+                         'Weight', 'Distance', 'Azimuth']
     df = pd.DataFrame(columns=columns)
     phasedata = detail.getProducts('phase-data', source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
@@ -298,6 +340,18 @@ def get_magnitude_data_frame(detail, catalog, magtype):
 
                 row['Channel'] = fmt % tpl
                 row['Type'] = smag.station_magnitude_type
+
+                distance = np.nan
+                azimuth = np.nan
+                amplitude = get_amplitude(catevent, smag.amplitude_id)
+                if amplitude is not None:
+                    waveform_id = amplitude.waveform_id
+                    pick = get_pick(catevent, waveform_id)
+                    if pick is not None:
+                        arrival = get_arrival(catevent, pick.resource_id)
+                        if arrival is not None:
+                            distance = arrival.distance
+                            azimuth = arrival.azimuth
                 if amp is not None:
                     row['Amplitude'] = amp.generic_amplitude
                     row['Period'] = amp.period
@@ -308,6 +362,8 @@ def get_magnitude_data_frame(detail, catalog, magtype):
                     row['Status'] = 'automatic'
                 row['Magnitude'] = smag.mag
                 row['Weight'] = contribution.weight
+                row['Distance'] = distance
+                row['Azimuth'] = azimuth
                 df = df.append(row, ignore_index=True)
     df = df[columns]
     return df
