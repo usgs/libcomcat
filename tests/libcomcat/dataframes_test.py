@@ -26,9 +26,9 @@ def get_datadir():
     return cassettes, datadir
 
 
-def test_phase_dataframe():
+def test_magnitude_dataframe():
     cassettes, datadir = get_datadir()
-    tape_file = os.path.join(cassettes, 'dataframes_phase.yaml')
+    tape_file = os.path.join(cassettes, 'dataframes_magnitude.yaml')
     with vcr.use_cassette(tape_file):
         detail = get_event_by_id('us1000778i')  # 2016 NZ event
         df = get_magnitude_data_frame(detail, 'us', 'mb')
@@ -36,9 +36,9 @@ def test_phase_dataframe():
             df['Magnitude'].sum(), 756.8100000000001)
 
 
-def test_magnitude_dataframe():
+def test_phase_dataframe():
     cassettes, datadir = get_datadir()
-    tape_file = os.path.join(cassettes, 'dataframes_magnitude.yaml')
+    tape_file = os.path.join(cassettes, 'dataframes_phase.yaml')
     with vcr.use_cassette(tape_file):
         detail = get_event_by_id('us1000778i')  # 2016 NZ event
         df = get_phase_dataframe(detail, catalog='us')
