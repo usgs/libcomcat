@@ -281,6 +281,8 @@ def get_magnitude_data_frame(detail, catalog, magtype):
             - Status: "manual" or "automatic".
             - Magnitude: Locally determined magnitude.
             - Weight: Magnitude weight.
+            - Distance: Distance from epicenter to station.
+            - Azimuth (degrees) from epicenter to station.
     Raises:
         AttributeError if input DetailEvent does not have a phase-data product
             for the input catalog.

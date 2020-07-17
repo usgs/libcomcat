@@ -391,6 +391,8 @@ The output is a dataframe with the following columns.
 - Status: Whether it is manual or automatic.
 - Magnitude: The magnitude derived locally for the station.
 - Weight: The weight of the magnitude.
+- Distance: The distance from the earthquake.
+- Azimuth: Azimuth (degrees) from epicenter to station.
 
 
 ### Phase Dataframe
