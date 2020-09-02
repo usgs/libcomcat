@@ -289,7 +289,8 @@ def get_magnitude_data_frame(detail, catalog, magtype):
     """
     columns = columns = ['Channel', 'Type', 'Amplitude',
                          'Period', 'Status', 'Magnitude',
-                         'Weight', 'Distance', 'Azimuth']
+                         'Weight', 'Distance', 'Azimuth',
+                         'MeasurementTime']
     df = pd.DataFrame(columns=columns)
     phasedata = detail.getProducts('phase-data', source=catalog)[0]
     quakeurl = phasedata.getContentURL('quakeml.xml')
@@ -356,14 +357,17 @@ def get_magnitude_data_frame(detail, catalog, magtype):
                     row['Amplitude'] = amp.generic_amplitude
                     row['Period'] = amp.period
                     row['Status'] = amp.evaluation_mode
+                    row['MeasurementTime'] = amp.scaling_time.datetime
                 else:
                     row['Amplitude'] = np.nan
                     row['Period'] = np.nan
                     row['Status'] = 'automatic'
+                    row['MeasurementTime'] = np.nan
                 row['Magnitude'] = smag.mag
                 row['Weight'] = contribution.weight
                 row['Distance'] = distance
                 row['Azimuth'] = azimuth
+
                 df = df.append(row, ignore_index=True)
     df = df[columns]
     return df
