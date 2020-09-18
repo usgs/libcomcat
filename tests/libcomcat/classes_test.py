@@ -40,7 +40,7 @@ def test_summary():
         assert event.depth == 18.202
         assert event.magnitude == 6.7
         assert 'cdi' in event.properties
-        assert event['cdi'] == 8.6
+        assert event['cdi'] >= 8.6
         assert event.hasProduct('shakemap')
         assert not event.hasProduct('foo')
         try:

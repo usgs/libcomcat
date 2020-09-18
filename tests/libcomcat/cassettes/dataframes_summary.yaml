@@ -9,28 +9,28 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v0+untagged.456.g69f295e.dirty
+      - libcomcat v2.0.6+2.gb70137d.dirty
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1994-06-01T00%3A00%3A00&endtime=1994-10-06T00%3A00%3A00&limit=20000&maxdepth=1000&maxmagnitude=9.0&mindepth=-100&minmagnitude=8.0&offset=1&orderby=time-asc&eventtype=earthquake
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1994-06-01T00%3A00%3A00&endtime=1994-10-06T00%3A00%3A00&limit=20000&maxmagnitude=9.0&minmagnitude=8.0&offset=1&orderby=time-asc&eventtype=earthquake
   response:
     body:
       string: !!binary |
-        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
+        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
+        nX78AKIkxzchJmj/Am3fzXipCAAA
     headers:
       Access-Control-Allow-Headers:
       - accept,origin,authorization,content-type
@@ -45,15 +45,15 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Length:
-      - '906'
+      - '876'
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Thu, 23 Jan 2020 15:13:45 GMT
+      - Thu, 17 Sep 2020 17:19:10 GMT
       Expires:
-      - Thu, 23 Jan 2020 15:14:45 GMT
+      - Thu, 17 Sep 2020 17:20:10 GMT
       Last-Modified:
-      - Thu, 23 Jan 2020 15:13:45 GMT
+      - Thu, 17 Sep 2020 17:19:10 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -61,11 +61,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 03c6bb07a0ba5f6bce71fe21ae4e3d78.cloudfront.net (CloudFront)
+      - 1.1 3ce1b04fdf4b78c695ea1764363d1f38.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - DGlKZwVG-cc-P7wWyGxHXiZHPHIsPSX1fL0VDy6lyiuqD1OtoZdgYA==
+      - fWe3dfz6r02EHaexYN50P0HFNQWV2AwtcbvoC2cYjBmCqPznGZp_AQ==
       X-Amz-Cf-Pop:
-      - IAD89-C2
+      - IAD79-C3
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:

@@ -179,7 +179,10 @@ class SummaryEvent(object):
         Returns:
             float: Authoritative origin depth.
         """
-        return self._jdict['geometry']['coordinates'][2]
+        depth = self._jdict['geometry']['coordinates'][2]
+        if depth is None:
+            depth = np.nan
+        return depth
 
     @property
     def id(self):
@@ -432,7 +435,11 @@ class DetailEvent(object):
     def depth(self):
         """Authoritative origin depth.
         """
-        return self._jdict['geometry']['coordinates'][2]
+        depth = self._jdict['geometry']['coordinates'][2]
+        if depth is None:
+            depth = np.nan
+
+        return depth
 
     @property
     def id(self):
