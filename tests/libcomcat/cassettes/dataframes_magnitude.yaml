@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventid=us1000778i&includedeleted=false&includesuperseded=false
   response:
@@ -254,11 +254,11 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 22 Sep 2020 12:23:13 GMT
+      - Tue, 22 Sep 2020 17:34:40 GMT
       Expires:
-      - Tue, 22 Sep 2020 12:24:12 GMT
+      - Tue, 22 Sep 2020 17:35:33 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 12:23:12 GMT
+      - Tue, 22 Sep 2020 17:34:33 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -266,11 +266,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 fcd6daef12b042e210e70e7c2a7eccdf.cloudfront.net (CloudFront)
+      - 1.1 4c3936cc7f5f36d3966cb34ebcbf91a7.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - udQbmNl3iH2seP8W-l9fVkFi9Su-H_YhfgYaTx1ShwZgwwb3qHjNVQ==
+      - RvMmtiFK4e1KOZ2gY9aWTmfg91jjOB0PnP_B7EwbfZuVQAAuq_9Utw==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:
@@ -294,7 +294,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/phase-data/us1000778i/us/1486609341040/quakeml.xml
   response:
@@ -1167,6 +1167,8 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
+      Age:
+      - '18686'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -1192,13 +1194,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 4a56dd7b0f0d744a74d9f17893f002c5.cloudfront.net (CloudFront)
+      - 1.1 f8d44a9ae8d015e27eeaa90810b99a87.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - HGS57WgkWqX-AkwrEk5CVN6_F_x4hGlWKi_pcfwaIewLLtlgkjpUbg==
+      - fFMmQHkn-jXqL-KXXv65tkeP0iFRTTCvr9m6h-ZHfC3e5rgcpE-l4g==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
-      - Miss from cloudfront
+      - Hit from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:

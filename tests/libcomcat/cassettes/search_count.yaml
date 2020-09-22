@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&updatedafter=2010-01-01T00%3A00%3A00&limit=20000&maxmagnitude=10.0&minmagnitude=6.6&offset=1&orderby=time-asc&eventtype=earthquake
   response:
@@ -34,11 +34,11 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 22 Sep 2020 12:47:06 GMT
+      - Tue, 22 Sep 2020 17:36:59 GMT
       Expires:
-      - Tue, 22 Sep 2020 12:48:06 GMT
+      - Tue, 22 Sep 2020 17:37:59 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 12:47:06 GMT
+      - Tue, 22 Sep 2020 17:36:59 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -46,11 +46,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 f3ee8ae60de459e8972313e578c7addd.cloudfront.net (CloudFront)
+      - 1.1 a805f3562e8099c23b78cf69c21f7835.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - P7dA4H2aAn3trEsU5nx1FxOjw18A_Uyh051iiihDwH-I3s9Zfurf5Q==
+      - 2fxKSJ60dMLbeuXX9YVeSi8lAaQlVZsQTH7ygwNSJDbSJyvRag2RRA==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:

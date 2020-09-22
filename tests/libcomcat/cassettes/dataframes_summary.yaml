@@ -9,28 +9,28 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1994-06-01T00%3A00%3A00&endtime=1994-10-06T00%3A00%3A00&limit=20000&maxmagnitude=9.0&minmagnitude=8.0&offset=1&orderby=time-asc&eventtype=earthquake
   response:
     body:
       string: !!binary |
         H4sIAAAAAAAAA72VXY/jNBSG7/kVlSV65aR2vlOpQoAAIUBaaZcrtBee2E3NxnbWdmamM5r/znGa
-        D1oWaXdZcTNj+9jHx+97nvQZ+XMv0B79KJgfrPjedJ1ovDQaYaSEZ5x5hvbPqBVaWOYFR3taEFKW
-        VZHVhBCMBtvB+ZP3vdvvdoJZf3o/sHciHlzr4tbc747c6Qe3E/dC+x3dvR+EPX9zNFYxf2iF+dMZ
-        vXUeDnqpxIHWdRaRIiL0DSFfp99Of7ZC8zVOCWy5jndSSX9IoCayVexRsVZLP3BxqGNYkHpdqGDB
-        HI9O+APdGsuFvTsfQu6IuWY7lhlUOaxvATG89F0Q6vfXP73e/LBEHISgdj84tE+CHKyXsIvGlMQp
-        xMaqxlAIXm4FCTFqzKBD4AWj40V7yPDH840fkKG3phfWyxB/RvAKtK/iBNY71oSdv7LNK/aEN9+Z
-        Tt5LNpaqIFCWlCYgVpGkwaWer+5RcC5NsqqEvU9or4eu+xgf17XJzJ61Yje4Ht5W8KcGrubQMvKz
-        +mGcSX5Y022vWwQFoTo/l9twOQ+VgmEaF2UK8neg1RyYjUFW3EvxAM+HB7tBs3AARHESxKQkzTDS
-        wRY0BDsbw4Ouf3uV5CEJbk7mHLqPFCQImNICt43yKszrjOG19HH9Zisf+sGLbt4sXdMKRYsqoxVm
-        vmPuaj9YA/WZwTZiuXvMCrdc/k/5pkSXFOFQaKDxyNE0rIuUaE5MS6dwa6HleHQEg6CzsFQ9a3zk
-        xaPHyihQH8baGYuNla3UuD8xJ6LwAcDuBAYq1mNvB9VHyxSu026RmwNl89gqqAEowKhl/WIUa99c
-        2ls9TJXC+IOY/baBJt9Em9vuBlygH+DLZM8BhynFKyMBpmAd4Cw1dHqAKSrKOM9THNE0BplxkdI4
-        ffsS/By9Xhx+wV99LHjpCt4vg5Xd5mfXMc3dil1Fk7Koy7zKrrDL64xCh1YVhYq+HHbveP8lsYN0
-        n4ZdGSd59XnYFeRfsbu8asJuLW0hkBKS0TRJ8vxCYJjX2d2C3RKvZkzmHQtpy5ZyRjHLs7y4wQ5g
-        W8m7wu7C2wTfFXYSfmYEYDZ0/h8M/g/Qkbj+L9ClAN11Z38KcjQr4zShOEvjEj7HNLvFLTj78haj
-        uzvz+AFEaYZvUkzQ/gWG5U8+qQgAAA==
+        D1oWaXdZcTNj+9jHx+97nvQZ+XMv0B79KJgfrPjedJ1ovDQaYaSEZ5x5hvbPqBVaWOYFR3taEFLW
+        BalKQghGg+3g/Mn73u13O8GsP70f2DsRD651cWvud0fu9IPbiXuh/Y7u3g/Cnr85GquYP7TC/OmM
+        3joPB71U4kDrOotIERH6hpCv02+nP1uh+RqnBLZcxzuppD8kUBPZKvaoWKulH7g41DEsSL0uVLBg
+        jkcn/IFujeXC3p0PIXfEXLMdywyqHNa3gBhe+i4I9fvrn15vflgiDkJQux8c2idBDtZL2EVjSuIU
+        YmNVYygEL7eChBg1ZtAh8ILR8aI9ZPjj+cYPyNBb0wvrZYg/I3gF2ldxAusda8LOX9nmFXvCm+9M
+        J+8lG0tVEChLShMQq0jS4FLPV/doTUiaZFUJe5/QXg9d9zE+rmuTmT1rxW5wPbyt4E8NXM2hZeRn
+        9cM4k/ywpttetwgKQnV+Lrfhch4qBcM0LsoU5O9AqzkwG4OsuJfiAZ4PD3aDZuEAiOIkiElJmmGk
+        gy1oCHY2hgdd//YqyUMS3JzMOXQfKUgQMKUFbhvlVZjXGcNr6eP6zVY+9IMX3bxZuqYVihZVRivM
+        fMfc1X6wBuozg23EcveYFW65/J/yTYkuKcKh0EDjkaNpWBcp0ZyYlk7h1kLL8egIBkFnYal61vjI
+        i0ePlVGgPoy1MxYbK1upcX9iTkThA4DdCQxUrMfeDqqPlilcp90iNwfK5rFVUANQgFHL+sUo1r65
+        tLd6mCqF8Qcx+20DTb6JNrfdDbhAP8CXyZ4DDlOKV0YCTME6wFlq6PQAU1SUcZ6nOKJpDDLjIqVx
+        +vYl+Dl6vTj8gr/6WPDSFbxfBiu7zc+uY5q7FbuKJmVRl3mVXWGX1xmFDq0qChV9Oeze8f5LYgfp
+        Pg27Mk7y6vOwK8i/Ynd51YTdWtpCICUko2mS5PmFwDCvs7sFuyVezZjMOxbSli3ljGKWZ3lxgx3A
+        tpJ3hd2Ftwm+K+wk/MwIwGzo/D8Y/B+gI3H9X6BLAbrrzv4U5GhWxmlCcZbGJXyOaXaLW3D25S1G
+        d3fm8QOI0gzfpJig/QsJMdDnqQgAAA==
     headers:
       Access-Control-Allow-Headers:
       - accept,origin,authorization,content-type
@@ -49,11 +49,11 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 22 Sep 2020 12:44:09 GMT
+      - Tue, 22 Sep 2020 17:34:47 GMT
       Expires:
-      - Tue, 22 Sep 2020 12:45:09 GMT
+      - Tue, 22 Sep 2020 17:35:47 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 12:44:09 GMT
+      - Tue, 22 Sep 2020 17:34:47 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -61,11 +61,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 795fca0399f361701665c0d9fab45325.cloudfront.net (CloudFront)
+      - 1.1 eb9474b59027c3531e9fe4ca132f8d87.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - hUju-tAV_SjGRItc_EzA3b71IhLoWUH5pi7qFzZBxSinuMyEMFU4Uw==
+      - KIzhIHKaBzC22BjBKuoANQzfzURcWN87JPkjkDaxwisIYQ1SkD_kxA==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:

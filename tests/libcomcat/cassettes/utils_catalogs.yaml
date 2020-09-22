@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.23.0
+      - python-requests/2.24.0
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/catalogs
   response:
@@ -38,11 +38,11 @@ interactions:
       Content-Type:
       - application/xml
       Date:
-      - Tue, 22 Sep 2020 12:47:12 GMT
+      - Tue, 22 Sep 2020 17:37:05 GMT
       Expires:
-      - Tue, 22 Sep 2020 12:48:12 GMT
+      - Tue, 22 Sep 2020 17:38:05 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 12:47:12 GMT
+      - Tue, 22 Sep 2020 17:37:05 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -50,11 +50,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 c640b1afa51b342db4c4d96d404a1eda.cloudfront.net (CloudFront)
+      - 1.1 f8558580f66929e19ed69bba2e85da75.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - Q--FJgZ_Re7ODTy4KmgICfnskWelVrR9a_PIEzfX523mUsP43cDa-Q==
+      - 7i60xQbhHIXXXrJXSs_g6X3myvL7ZrHHmkV1R7-sQrb4bZhL9UpDEg==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:

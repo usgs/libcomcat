@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/dyfi_geo_1km.geojson
   response:
@@ -5065,6 +5065,8 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
+      Age:
+      - '17426'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -5090,13 +5092,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 5e3f4627de97deab81963915d14a9755.cloudfront.net (CloudFront)
+      - 1.1 6c1f5fbbdcc06a5ed4d317a0e3609f72.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - rw6Pi-Zp75IKES-ZkGbr294IVtkNYFhajNMBQuNetdCeOtJ3clXjkQ==
+      - MER86MXQXY3Nt3WkgA5MbJhknVCaTtM2yD5hrT0gqwbGlMJs4ot8hg==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
-      - Miss from cloudfront
+      - Hit from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:
@@ -5118,7 +5120,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/dyfi_geo_10km.geojson
   response:
@@ -6288,6 +6290,8 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
+      Age:
+      - '17424'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -6313,13 +6317,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 cd3b189d4dff15bd0a2ccf14f97ffda2.cloudfront.net (CloudFront)
+      - 1.1 de6760156d781e28f72545a2e9243b26.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - kOdF3JWYW_b1n3VrImJskTNTeqJiNafXojVfUG7TAZEk6xE2Ff_gNQ==
+      - HcWghQVdIX9AgP1LzzKo9ubrSkdVDLMnUC9UnqkOWM5qRI3AC1slNw==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
-      - Miss from cloudfront
+      - Hit from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:
@@ -6341,7 +6345,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/cdi_geo.txt
   response:
@@ -6847,6 +6851,8 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
+      Age:
+      - '17424'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -6872,13 +6878,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 9c0e66e370dcc4d0da95664b1fa850a9.cloudfront.net (CloudFront)
+      - 1.1 03a399d73bdcccc9e7ad44d059b07ef4.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - ohq1tGWyoaChBCKDhNGudz4aGyx_s5HSXLccN949OEMzlDLPZv_4sA==
+      - gc9DGkMooFJju4n4t23jXedcWTXDzqijLbmn6HCgetHN7Vm8WE7G3A==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
-      - Miss from cloudfront
+      - Hit from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:
@@ -6900,7 +6906,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/cdi_zip.txt
   response:
@@ -7264,6 +7270,8 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
+      Age:
+      - '17423'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -7289,13 +7297,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 1019c7748e9bd9371b8cbc3777f0a40e.cloudfront.net (CloudFront)
+      - 1.1 f92491812e422470607f365e923929b5.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - lZymSAwqbebqACtJoFHVl8MkSesLQF8JRfw41VTgUJbnA_8y3jTWEw==
+      - cy1PJg26LhXUc_mUhEuVOieH6J1VPiDs7zRbpMcLWYpu178xfdLS6g==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
-      - Miss from cloudfront
+      - Hit from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:

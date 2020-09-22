@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+3.gfa398b4.dirty
+      - libcomcat v2.0.6+5.g98b3b5f.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventid=us2000ar20&includedeleted=false&includesuperseded=false
   response:
@@ -219,11 +219,11 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 22 Sep 2020 12:22:56 GMT
+      - Tue, 22 Sep 2020 17:34:09 GMT
       Expires:
-      - Tue, 22 Sep 2020 12:23:56 GMT
+      - Tue, 22 Sep 2020 17:35:09 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 12:22:56 GMT
+      - Tue, 22 Sep 2020 17:34:09 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -231,15 +231,15 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 336e3c5e609a1115b5bba6aaccd0ce62.cloudfront.net (CloudFront)
+      - 1.1 19ae496eb414e9373ed8ce49d0fdbba3.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - uaYl2sLlGb70jypxGXyaheTxenkUnKyuG1t0v-xQnFBFNlXqF6FQOQ==
+      - JSryojnaMI4DktXodp-QEknkhIUrw4JKRH5fNbKY6ppY0UUpsPWU1g==
       X-Amz-Cf-Pop:
-      - IAD79-C2
+      - IAD79-C1
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:
-      - MISS
+      - EXPIRED
       X-Content-Type-Options:
       - nosniff
       X-Frame-Options:
