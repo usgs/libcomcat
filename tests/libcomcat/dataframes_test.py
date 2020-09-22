@@ -3,6 +3,7 @@
 import os.path
 from datetime import datetime
 import pathlib
+from unittest import mock
 
 import numpy as np
 import pandas as pd
@@ -18,7 +19,8 @@ from libcomcat.dataframes import (get_summary_data_frame,
                                   get_history_data_frame,
                                   associate,
                                   )
-from libcomcat.search import search, get_event_by_id
+from libcomcat import search
+from libcomcat.search import get_event_by_id
 from libcomcat.exceptions import ParsingError
 
 DMINUTE = 60  # number of seconds in a minute
@@ -57,9 +59,9 @@ def test_get_summary_data_frame():
     cassettes, datadir = get_datadir()
     tape_file = os.path.join(cassettes, 'dataframes_summary.yaml')
     with vcr.use_cassette(tape_file):
-        events = search(starttime=datetime(1994, 6, 1),
-                        endtime=datetime(1994, 10, 6),
-                        minmagnitude=8.0, maxmagnitude=9.0)
+        events = search.search(starttime=datetime(1994, 6, 1),
+                               endtime=datetime(1994, 10, 6),
+                               minmagnitude=8.0, maxmagnitude=9.0)
 
         df = get_summary_data_frame(events)
         assert len(df) == 2
@@ -70,9 +72,9 @@ def test_get_detail_data_frame():
     cassettes, datadir = get_datadir()
     tape_file = os.path.join(cassettes, 'dataframes_detailed.yaml')
     with vcr.use_cassette(tape_file):
-        events = search(starttime=datetime(1994, 6, 1),
-                        endtime=datetime(1994, 10, 6),
-                        minmagnitude=8.0, maxmagnitude=9.0)
+        events = search.search(starttime=datetime(1994, 6, 1),
+                               endtime=datetime(1994, 10, 6),
+                               minmagnitude=8.0, maxmagnitude=9.0)
         all_mags = get_detail_data_frame(
             events, get_all_magnitudes=True)
         assert all_mags.iloc[0]['magnitude'] == 8.2
@@ -175,6 +177,17 @@ def test_history_data_frame():
                                                                'ground-failure',
                                                                'moment-tensor',
                                                                'phase-data'])
+
+
+# class MockEvent(object):
+#     def toDict(self):
+#         return {'id': self.id,
+#                 'time': self.time,
+#                 'latitude': self.latitude,
+#                 'longitude': self.longitude,
+#                 'magnitude': self.magnitude,
+#                 'depth': self.depth
+#                 }
 
 
 def test_associate():
@@ -299,6 +312,52 @@ def test_associate():
                                      'magnitude': [np.nan]})
         associated, alternates = associate(missing_both)
         assert associated['comcat_id'].iloc[0] == 'iscgem16957848'
+
+        # # test weighting
+        # # now widen the tolerance to include four total events
+        # etimes = [datetime(2020, 1, 1, 0, 0, 12),
+        #           datetime(2020, 1, 1, 0, 0, 10),
+        #           datetime(2020, 1, 1, 0, 0, 15),
+        #           ]
+        # emags = [5.0,
+        #          4.8,
+        #          5.4
+        #          ]
+        # elats = [0.8,
+        #          0.8,
+        #          0.1
+        #          ]
+        # elons = [0.3,
+        #          0.9,
+        #          0.6
+        #          ]
+        # ids = ['1', '2', '3']
+        # events = []
+        # for eid, etime, emag, elat, elon in zip(ids, etimes, emags, elats, elons):
+        #     event = MockEvent()
+        #     event.id = eid
+        #     event.time = etime
+        #     event.latitude = elat
+        #     event.longitude = elon
+        #     event.depth = 0.0
+        #     event.magnitude = emag
+        #     events.append(event)
+
+        # origin = pd.DataFrame({'time': [datetime(2020, 1, 1, 0, 0, 0)],
+        #                        'latitude': [0.3],
+        #                        'longitude': [0.6],
+        #                        'magnitude': [5.0]})
+        # with mock.patch('libcomcat.search.search', return_value=events):
+        #     associated, alternates = associate(origin,
+        #                                        time_tol_secs=130,
+        #                                        time_weight=1)
+        # assert associated.iloc[0]['comcat_id'] == '2'
+
+        # with mock.patch('libcomcat.search.search', return_value=events):
+        #     associated, alternates = associate(origin,
+        #                                        time_tol_secs=130,
+        #                                        dist_weight=100)
+        # assert associated.iloc[0]['comcat_id'] == '3'
 
 
 if __name__ == '__main__':

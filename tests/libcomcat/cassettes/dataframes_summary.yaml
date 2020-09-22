@@ -9,28 +9,28 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+2.gb70137d.dirty
+      - libcomcat v2.0.6+3.gfa398b4.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1994-06-01T00%3A00%3A00&endtime=1994-10-06T00%3A00%3A00&limit=20000&maxmagnitude=9.0&minmagnitude=8.0&offset=1&orderby=time-asc&eventtype=earthquake
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA72VS4/bNhDH7/0UBoH6RMmi3jJgFG3RFkVbIEDSU5EDV6RlNiKp8LG73sV+9w5l
-        PWo3BZI0qA82yRkOh/OfH/2M3HngaI9+5NR5w7/Xfc9bJ7RCGEnuKKOOov0z6rjihjrO0J6USZKV
-        GSkS+GDkTQ/7T84Ndr/bcWrc6b2n73jsbWfjTt/vjsyqB7vj91y5Hdm999ycvzlqI6k7dFz/abXa
-        WgcbnZD8QJomj5IySsibJPk6+3b62nLFVjtJwOXa3gsp3CENSW0lfZS0U8J5xg9NDAtCrQs1LOjj
-        0XJ3IFttGDd350OIHVHbbsc0Q1UO612gGE64PhTq99c/vd78sFgsmCB35y3ap6EcdBDgRWKSxBnY
-        xqxGUzBeToUSYtRqr4LhBaPjpfYQ4Y/nGz0gwmD0wI0Twf6M4BZoX8cprPe0DZ6/0s0r+oQ33+le
-        3As6pirBUFWEpFCsMs2CSgNb1SMNKJjmdQW+T2ivfN9/jI7r2iTmQDu+83aAu5XsqYWjGbSM+Kx+
-        GGeCHdZw2+sWQaFQvZvTbZmYh1LCMIvLKoPy91Cr2TALgwy/F/wBrg8Xtl7RsAGKYgUUkyRZjpEK
-        siAf5Gw1C3X9260EC0Fwe9Ln0H1JmYQCZqTEXSudDPMmp3hNfVy/cWV+8I73s7OwbcclKeuc1Ji6
-        ntorf5AG8tPetHw5e4wKp1x+p3hToEuIsCk00LjlqFvaR5K3J6qElbgz0HIsOoJA0FlYyIG2LnL8
-        0WGpJVQfxspqg7URnVB4OFHLo/AAYHsCASUdsDNeDtEyheOUXcrNgLJ5bCTkABRg1NFhEYp2by7t
-        LR+mTGH8Qcx+20CTb6LNbXcDLtAP8DKZc8BhCvFKC4ApSAc4CwWdHmCKyiouigxHJIuhzBjerDh7
-        +xL0HLVeFH7BX30seNkK3i/eiH7zs+2pYnbFriZpVTZVUedX2BVNTqBD65pARl8Ou3ds+JLYQbhP
-        w66K06L+POzK5F+xu9xqwm5NbSGQJElOsjQtiguBYd7kdwt2i72eMZk9FtIWl2pGMS/yorzBDmBb
-        ybvC7sLbBN8VdgL+Zjhg5nv3Dwb/B+iSuPkv0GUA3XVnfwpyJK/iLCU4z+IKnmOS3+IWlH15i9Hd
-        nX78AKIkxzchJmj/Am3fzXipCAAA
+        H4sIAAAAAAAAA72VXY/jNBSG7/kVlSV65aR2vlOpQoAAIUBaaZcrtBee2E3NxnbWdmamM5r/znGa
+        D1oWaXdZcTNj+9jHx+97nvQZ+XMv0B79KJgfrPjedJ1ovDQaYaSEZ5x5hvbPqBVaWOYFR3taEFKW
+        VZHVhBCMBtvB+ZP3vdvvdoJZf3o/sHciHlzr4tbc747c6Qe3E/dC+x3dvR+EPX9zNFYxf2iF+dMZ
+        vXUeDnqpxIHWdRaRIiL0DSFfp99Of7ZC8zVOCWy5jndSSX9IoCayVexRsVZLP3BxqGNYkHpdqGDB
+        HI9O+APdGsuFvTsfQu6IuWY7lhlUOaxvATG89F0Q6vfXP73e/LBEHISgdj84tE+CHKyXsIvGlMQp
+        xMaqxlAIXm4FCTFqzKBD4AWj40V7yPDH840fkKG3phfWyxB/RvAKtK/iBNY71oSdv7LNK/aEN9+Z
+        Tt5LNpaqIFCWlCYgVpGkwaWer+5RcC5NsqqEvU9or4eu+xgf17XJzJ61Yje4Ht5W8KcGrubQMvKz
+        +mGcSX5Y022vWwQFoTo/l9twOQ+VgmEaF2UK8neg1RyYjUFW3EvxAM+HB7tBs3AARHESxKQkzTDS
+        wRY0BDsbw4Ouf3uV5CEJbk7mHLqPFCQImNICt43yKszrjOG19HH9Zisf+sGLbt4sXdMKRYsqoxVm
+        vmPuaj9YA/WZwTZiuXvMCrdc/k/5pkSXFOFQaKDxyNE0rIuUaE5MS6dwa6HleHQEg6CzsFQ9a3zk
+        xaPHyihQH8baGYuNla3UuD8xJ6LwAcDuBAYq1mNvB9VHyxSu026RmwNl89gqqAEowKhl/WIUa99c
+        2ls9TJXC+IOY/baBJt9Em9vuBlygH+DLZM8BhynFKyMBpmAd4Cw1dHqAKSrKOM9THNE0BplxkdI4
+        ffsS/By9Xhx+wV99LHjpCt4vg5Xd5mfXMc3dil1Fk7Koy7zKrrDL64xCh1YVhYq+HHbveP8lsYN0
+        n4ZdGSd59XnYFeRfsbu8asJuLW0hkBKS0TRJ8vxCYJjX2d2C3RKvZkzmHQtpy5ZyRjHLs7y4wQ5g
+        W8m7wu7C2wTfFXYSfmYEYDZ0/h8M/g/Qkbj+L9ClAN11Z38KcjQr4zShOEvjEj7HNLvFLTj78haj
+        uzvz+AFEaYZvUkzQ/gWG5U8+qQgAAA==
     headers:
       Access-Control-Allow-Headers:
       - accept,origin,authorization,content-type
@@ -45,15 +45,15 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Length:
-      - '876'
+      - '877'
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Thu, 17 Sep 2020 17:19:10 GMT
+      - Tue, 22 Sep 2020 12:44:09 GMT
       Expires:
-      - Thu, 17 Sep 2020 17:20:10 GMT
+      - Tue, 22 Sep 2020 12:45:09 GMT
       Last-Modified:
-      - Thu, 17 Sep 2020 17:19:10 GMT
+      - Tue, 22 Sep 2020 12:44:09 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -61,11 +61,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 3ce1b04fdf4b78c695ea1764363d1f38.cloudfront.net (CloudFront)
+      - 1.1 795fca0399f361701665c0d9fab45325.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - fWe3dfz6r02EHaexYN50P0HFNQWV2AwtcbvoC2cYjBmCqPznGZp_AQ==
+      - hUju-tAV_SjGRItc_EzA3b71IhLoWUH5pi7qFzZBxSinuMyEMFU4Uw==
       X-Amz-Cf-Pop:
-      - IAD79-C3
+      - IAD79-C2
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:

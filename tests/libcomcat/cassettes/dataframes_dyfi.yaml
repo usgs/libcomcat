@@ -9,13 +9,13 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v0+untagged.460.g0c5e7c5.dirty
+      - libcomcat v2.0.6+3.gfa398b4.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/dyfi_geo_1km.geojson
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA7y9y64syXGu+SqFPdIBqhfyEpmRWWj0sGcCGi1pJGjAPqxzQODwArK6AUHQu/f3
+        H4sIAAAAAAAEA7y9y64syXGu+SqFPdIBqhfyEpmRWWj0sGcCGi1pJGjAPqxzQODwArK6AUHQu/f3
         m7mZe6zw2MvF3J6asGQeSZb/y9zul//49j9+/d1v/+9ff/3bt1/+9T++/c9f//zHX3/7679/++U/
         vv33P//5r7//w59+95ud/eu//m/P58d6uV5+vl4+lvPj3352yvlyWwvpdK/E+2LEy3rKL/ntI4iX
         f/u3f/v522///pdfv/3y7f/68//69//55z99+8+k/J/+L/Xt529/+euf//LrX3/7g/4l/uPb3377
@@ -5065,8 +5065,6 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
-      Age:
-      - '251484'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -5076,11 +5074,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 23 Mar 2020 22:24:09 GMT
+      - Tue, 22 Sep 2020 12:45:28 GMT
       ETag:
       - W/"19e915-5a15ba6f938c0"
       Expires:
-      - Thu, 21 Mar 2030 22:24:09 GMT
+      - Fri, 20 Sep 2030 12:45:28 GMT
       Last-Modified:
       - Sat, 21 Mar 2020 11:24:59 GMT
       Server:
@@ -5092,13 +5090,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 b66e95045cc13b8f57a957271cfb33f6.cloudfront.net (CloudFront)
+      - 1.1 5e3f4627de97deab81963915d14a9755.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - P85Z3ADs4LTD29BLyxSnc5brhB5PWkbCEN6lTbAURtRWkgAeIDdWfQ==
+      - rw6Pi-Zp75IKES-ZkGbr294IVtkNYFhajNMBQuNetdCeOtJ3clXjkQ==
       X-Amz-Cf-Pop:
-      - PHX50-C1
+      - IAD79-C2
       X-Cache:
-      - Hit from cloudfront
+      - Miss from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:
@@ -5120,13 +5118,13 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v0+untagged.460.g0c5e7c5.dirty
+      - libcomcat v2.0.6+3.gfa398b4.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/dyfi_geo_10km.geojson
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA7y9b49cR3Lm+1UaerULzG1UnX9VNbi4gESNpLXJGUGUrReGX5TIkthXzS6i2ZTM
+        H4sIAAAAAAAEA7y9b49cR3Lm+1UaerULzG1UnX9VNbi4gESNpLXJGUGUrReGX5TIkthXzS6i2ZTM
         Nfzd9/dknsyTeU52n/Cmqm0slpPVNa4nMjMy/jwR8Z9f/HI6Pny6P3384q//9p9f/Ho6vz893H/+
         4q//+cWb8/n+7c3d8cF99m//9v8cDte7rj0Mf2mb67bvdu2//8UtDu1u2PvFvt3GxX3baLHr+r4Z
         F3ddt/Nr3aH793//97988fD5w+mLv37x/fn286/nuy/+K65843/WF3/54sP9+cPp/uFGP+M/v/j4
@@ -6290,8 +6288,6 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
-      Age:
-      - '66'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -6301,11 +6297,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 26 Mar 2020 20:14:27 GMT
+      - Tue, 22 Sep 2020 12:45:30 GMT
       ETag:
       - W/"57e9f-5a15ba6f938c0"
       Expires:
-      - Sun, 24 Mar 2030 20:14:27 GMT
+      - Fri, 20 Sep 2030 12:45:30 GMT
       Last-Modified:
       - Sat, 21 Mar 2020 11:24:59 GMT
       Server:
@@ -6317,13 +6313,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 bd9fc11a240ad52ff34b1a4300146b9a.cloudfront.net (CloudFront)
+      - 1.1 cd3b189d4dff15bd0a2ccf14f97ffda2.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 75jKxYnf4YwdCOBvqyCBaMVR56kIWOywvUSxDvliTQNWaEFpYzBi9A==
+      - kOdF3JWYW_b1n3VrImJskTNTeqJiNafXojVfUG7TAZEk6xE2Ff_gNQ==
       X-Amz-Cf-Pop:
-      - PHX50-C1
+      - IAD79-C2
       X-Cache:
-      - Hit from cloudfront
+      - Miss from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:
@@ -6345,7 +6341,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v0+untagged.460.g0c5e7c5.dirty
+      - libcomcat v2.0.6+3.gfa398b4.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/cdi_geo.txt
   response:
@@ -6851,8 +6847,6 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
-      Age:
-      - '36'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -6864,11 +6858,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 26 Mar 2020 20:14:57 GMT
+      - Tue, 22 Sep 2020 12:45:31 GMT
       ETag:
       - '"1acc0-5a15ba6f938c0"'
       Expires:
-      - Sun, 24 Mar 2030 20:14:57 GMT
+      - Fri, 20 Sep 2030 12:45:31 GMT
       Last-Modified:
       - Sat, 21 Mar 2020 11:24:59 GMT
       Server:
@@ -6878,13 +6872,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 5c45cccf7332e713185947ec3f895f62.cloudfront.net (CloudFront)
+      - 1.1 9c0e66e370dcc4d0da95664b1fa850a9.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - d-RMwN16ivZojHbpdD0_F39-foED_goz4XZ2ZFg5mn0HRiFHQredOQ==
+      - ohq1tGWyoaChBCKDhNGudz4aGyx_s5HSXLccN949OEMzlDLPZv_4sA==
       X-Amz-Cf-Pop:
-      - PHX50-C1
+      - IAD79-C2
       X-Cache:
-      - Hit from cloudfront
+      - Miss from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:
@@ -6906,7 +6900,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v0+untagged.460.g0c5e7c5.dirty
+      - libcomcat v2.0.6+3.gfa398b4.dirty
     method: GET
     uri: https://earthquake.usgs.gov/archive/product/dyfi/se60247871/us/1584789899986/cdi_zip.txt
   response:
@@ -7270,8 +7264,6 @@ interactions:
       - '*'
       Access-Control-Allow-Origin:
       - '*'
-      Age:
-      - '18'
       Cache-Control:
       - max-age=315360000
       Connection:
@@ -7283,11 +7275,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 26 Mar 2020 20:15:16 GMT
+      - Tue, 22 Sep 2020 12:45:31 GMT
       ETag:
       - '"e321-5a15ba6f938c0"'
       Expires:
-      - Sun, 24 Mar 2030 20:15:16 GMT
+      - Fri, 20 Sep 2030 12:45:31 GMT
       Last-Modified:
       - Sat, 21 Mar 2020 11:24:59 GMT
       Server:
@@ -7297,13 +7289,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 6ac65de939573cb26099f6407fa8e169.cloudfront.net (CloudFront)
+      - 1.1 1019c7748e9bd9371b8cbc3777f0a40e.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 26L3cb5xkbLRpsARJwlBaqPkNETodZGTmCAt29zlrTsXGLpW2WpHrQ==
+      - lZymSAwqbebqACtJoFHVl8MkSesLQF8JRfw41VTgUJbnA_8y3jTWEw==
       X-Amz-Cf-Pop:
-      - PHX50-C1
+      - IAD79-C2
       X-Cache:
-      - Hit from cloudfront
+      - Miss from cloudfront
       X-Cache-Status:
       - MISS
       X-Content-Type-Options:

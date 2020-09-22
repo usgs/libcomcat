@@ -9,23 +9,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+2.gb70137d.dirty
+      - libcomcat v2.0.6+3.gfa398b4.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/scenario/1/query?format=geojson&starttime=2013-10-10T12%3A00%3A00&endtime=2013-10-10T12%3A30%3A00&limit=20000&maxmagnitude=9.9&minmagnitude=0&offset=1&orderby=time-asc&eventtype=earthquake
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA51TTY+bMBD9K5GlciJgAwkBCVWrqu2pUqXdnqo9OHjCugGb2CbbNMp/75h8r/ZQ
-        1QI0+I2Hmfcee+J2PZCSfAHuBgOfdNtC7aRWJCQdOC6446TckwYUGO5AkJLNKc3ShM1mlNKQDKbF
-        8y/O9baMY+DGvWwGvoZosI2NGr2NV8KqVxvbGhQ3Uscs3gxgdh9X2nTcVQ3oX1arwDo862QHVUJZ
-        OmUUryeWfEgfKB0fASjxLp6e8FZ20iGKK+j47443SrpBQFVERdBJdd2ggV6tLLiKBdoIMMtd5StP
-        ua0D2IJynpbqOgyy4aRrPVM/Hr8+Th5Ps1gEsG83WFImng3eS8xh0SJiCI0NjYjHjp9EAkNS60H5
-        6BCS1ZF5LPBz/0YNrNAb3YNx0uN7ggOQMo1yercSTGt57Q8qjR2DUZOHlts1H9vuEGDpgmU0T+dp
-        WsxRs16ctJzN8rzAOxv33R9SqqFt/0XVs5w2HgnreQMxX6Mygi6Ww2aJ3xZoIPm/7hirSlHd1gzu
-        LUM8e60791wLeQ677hLyFvk7v5y1Iga2El6RAhzaDor7fJTISiQ4YaiQ8koRviZeLOG5vRtNCl8l
-        vG0u9F7Qg6nhBPkNL+j4qo1spPJbyl7aEWjKc2w6zKNRlhT3KyQN7y9z8ebpaJGuPVXH+F2ffpug
-        US5GnXy+5Eymk7c2QRsipfi/m5232ansdy3RpH5+/EekQsd4k05ZlkWzeZ7etDgvIjbLk6sl05Dh
-        1p1L2fPB0zaSekPl4fnwF9/8JjqFBAAA
+        H4sIAAAAAAAAA51TTY+bMBD9K8hSORGwIQkJEqpWVdtTpUq7PVV7cPCEdQM2sU22aZT/3jEJ+Vjt
+        oaoFaPAbDzPvPQ7E7TsgBfkC3PUGPummgcpJrUhEWnBccMdJcSA1KDDcgSAFm1Oa54tFxiilEelN
+        g+dfnOtskSTAjXvZ9nwDcW9rG9d6l6yFVa82sRUobqROWLLtwew/rrVpuStr0L+sVqF1eNbJFsqU
+        smzCKF5PLP2QPVA6PEJQ4l08O+ONbKVDFFfY8t8tr5V0vYByGS/DVqrrBg31em3BlSzURoBZ7Utf
+        ecJtFcIOlPO0lNdhkA0nXeOZ+vH49TF4PM9iEcC+XW9JkXo2eCcxh8WLmCE0NDQgHjt9EgmMSKV7
+        5aNjRNYn5rHAz8MbNbBCZ3QHxkmPHwgOQIoszundSjGt4ZU/qDR2DEYFDw23Gz603SLAsgWb0jyb
+        Z9lyjpp14qzlbJbnS7ynw777QwrVN82/qDrKaZOBsI7XkPANKiPoYtVvV/htgQaS/+uOoaoU5W3N
+        8N4yxLPXuLHnSsgxbNtLyBvkb3wZtSIGdhJekQIc2vaK+3yUyEokOGWokPJKEb4hXizhub0bTQpf
+        JbptLvJe0L2p4Az5DS/o8KqNrKXyW8pe2hFoyjE2LebReJou71dEat5d5uL108kibXOujvG7Pv0W
+        oFEuRg0+X3KCSfDWJmhDpBT/d7P3NjuX/a4lmtTPj/+IVOgYb9IJm07j2TzPblqcL2M2y9OrJbOI
+        4dadS9nz0dM2kHpD5fH5+Be5oiebhQQAAA==
     headers:
       Access-Control-Allow-Headers:
       - accept,origin,authorization,content-type
@@ -40,15 +40,15 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Length:
-      - '594'
+      - '595'
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Fri, 18 Sep 2020 12:29:15 GMT
+      - Tue, 22 Sep 2020 12:47:11 GMT
       Expires:
-      - Fri, 18 Sep 2020 12:30:15 GMT
+      - Tue, 22 Sep 2020 12:48:10 GMT
       Last-Modified:
-      - Fri, 18 Sep 2020 12:29:15 GMT
+      - Tue, 22 Sep 2020 12:47:10 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -56,11 +56,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 72b77c557ac4c265c32d99bdef4e9d6a.cloudfront.net (CloudFront)
+      - 1.1 2e8c2e7cad8a51072f754f4edb4b5715.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - HRaakwz6EQsEA0o57jOanckNnny--F7440zPw_7N6yB8qytQmtwl7w==
+      - cxyl2un2-xHB6dmjAzdBpzk9krnmj-15Jhh1A5Oyq56ur5Wp27BUJQ==
       X-Amz-Cf-Pop:
-      - IAD79-C3
+      - IAD79-C2
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:

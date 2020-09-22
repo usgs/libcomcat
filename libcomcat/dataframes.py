@@ -17,7 +17,8 @@ from obspy.geodetics.base import gps2dist_azimuth
 from impactutils.mapping.compass import get_compass_dir_azimuth
 
 # local imports
-from libcomcat.search import get_event_by_id, search
+from libcomcat.search import get_event_by_id
+from libcomcat import search
 from libcomcat.exceptions import (ConnectionError, ParsingError,
                                   ProductNotFoundError,
                                   ProductNotSpecifiedError)
@@ -1692,11 +1693,11 @@ def find_nearby_events(time, lat, lon, twindow, radius):
     """
     start_time = time - timedelta(seconds=twindow)
     end_time = time + timedelta(seconds=twindow)
-    events = search(starttime=start_time,
-                    endtime=end_time,
-                    latitude=lat,
-                    longitude=lon,
-                    maxradiuskm=radius)
+    events = search.search(starttime=start_time,
+                           endtime=end_time,
+                           latitude=lat,
+                           longitude=lon,
+                           maxradiuskm=radius)
 
     if not len(events):
         return None
@@ -1780,16 +1781,17 @@ def associate(dataframe,
               mag_column='magnitude',
               time_tol_secs=16,
               dist_tol_km=100,
-              mag_tol=0.5):
+              mag_tol=0.5,
+              ):
     """Associate events from an input catalogue with ComCat events.
 
     This function works by treating the time difference, magnitude difference, and
     geographic distance between the two catalogue solutions as the axes of a 1, 2
     or 3 dimensional vector. Recognizing that these values do not represent
-    the same quantity, much less are not in the same units, we normalize all of the 
-    difference quantities by dividing all (say) distance values by the greatest 
+    the same quantity, much less are not in the same units, we normalize all of the
+    difference quantities by dividing all (say) distance values by the greatest
     distance between the input event and the candidate ComCat events. The event
-    chosen is the one with the smallest vector magnitude of all of these 
+    chosen is the one with the smallest vector magnitude of all of these
     differences.
 
     Example:
@@ -1801,13 +1803,13 @@ def associate(dataframe,
     2019-07-06 03:33:15    35.624   -117.486        4.1
 
     Candidate ComCat events (selected by using tolerance values):
-                   time  latitude  longitude  magnitude  
+                   time  latitude  longitude  magnitude
     2019-07-06 09:30:15    35.911   -117.732        4.5 <-
     2019-07-06 09:28:28    35.898   -117.727        4.9
     2019-07-06 03:33:15    35.624   -117.486        4.1 <-
     2019-07-06 03:33:39    35.893   -117.723        3.8
 
-    Internally, the function calculates between each input event 
+    Internally, the function calculates between each input event
     and the candidate events:
 
      - the absolute time difference in seconds (dt)
@@ -1829,13 +1831,13 @@ def associate(dataframe,
         lat_column (str): Column in input dataframe containing latitude data.
         lon_column (str): Column in input dataframe containing longitude data.
         mag_column (str): Column in input dataframe containing magnitude data.
-        time_tol_secs (float): Number of seconds before/after input time to 
+        time_tol_secs (float): Number of seconds before/after input time to
                                check.
         dist_tol_km (float): Number of kilometers around input point to check
         mag_tol (float): Magnitude difference around input magnitude to check.
 
     Returns:
-        tuple: 
+        tuple:
            - DataFrame of associated events - input row plus fields:
              - comcat_id Authoritative event ID from ComCat.
              - comcat_time Datetime of authoritative origin solution.
@@ -1843,11 +1845,11 @@ def associate(dataframe,
              - comcat_longitude Latitude of authoritative origin solution.
              - comcat_depth Depth of authoritative origin solution.
              - comcat_magnitude Magnitude of authoritative origin solution.
-             - comcat_score Similarity score between input/ComCat events 
+             - comcat_score Similarity score between input/ComCat events
                (smaller is better.)
-          - DataFrame of alternate solutions (this can be empty). This 
-            DataFrame contains events from ComCat that were within the 
-            time/distance/magnitude tolerance values, but that scored 
+          - DataFrame of alternate solutions (this can be empty). This
+            DataFrame contains events from ComCat that were within the
+            time/distance/magnitude tolerance values, but that scored
             higher than the preferred event.
             - id Authoritative ComCat event ID.
             - time Authoritative ComCat event time.
@@ -1859,7 +1861,7 @@ def associate(dataframe,
             - alert ComCat event PAGER alert level (green, yellow, orange, red).
             - url ComCat event page URL.
             - eventtype Event type (earthquake, explosion, etc.)
-            - significance Event significance. 
+            - significance Event significance.
               (https://earthquake.usgs.gov/data/comcat/data-eventterms.php#sig)
             - ntime Normalized time difference between input/ComCat events.
             - nmag Normalized magnitude difference between input/ComCat events.
@@ -1879,21 +1881,21 @@ def associate(dataframe,
     if maxmag > 9.9 or np.isnan(maxmag):
         maxmag = 9.9
     try:
-        events = search(starttime=stime,
-                        endtime=etime,
-                        minmagnitude=minmag,
-                        maxmagnitude=maxmag
-                        )
+        events = search.search(starttime=stime,
+                               endtime=etime,
+                               minmagnitude=minmag,
+                               maxmagnitude=maxmag
+                               )
     except Exception:
         try:
-            events = search(starttime=stime,
-                            endtime=etime,
-                            minmagnitude=minmag,
-                            maxmagnitude=maxmag
-                            )
+            events = search.search(starttime=stime,
+                                   endtime=etime,
+                                   minmagnitude=minmag,
+                                   maxmagnitude=maxmag
+                                   )
         except Exception:
             print('Tried twice to download... continuing.')
-            return pd.DataFrame([])
+            return (pd.DataFrame([]), pd.DataFrame([]))
     ef = get_summary_data_frame(events)
     if ef.empty:
         return pd.DataFrame([]), pd.DataFrame([])
@@ -1913,8 +1915,12 @@ def associate(dataframe,
 
         ef['ddist'] = np.nan
         if not nanloc:
-            ef['ddist'] = _geodetic_distance(row[lon_column], row[lat_column],
-                                             ef['longitude'], ef['latitude'])
+            input_lon = row[lon_column]
+            input_lat = row[lat_column]
+            comcat_lon = ef['longitude']
+            comcat_lat = ef['latitude']
+            ef['ddist'] = _geodetic_distance(input_lon, input_lat,
+                                             comcat_lon, comcat_lat)
         ef2 = ef[ef['dtime'] < time_tol_secs].copy()
         if not len(ef2):
             continue

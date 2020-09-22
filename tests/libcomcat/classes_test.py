@@ -281,18 +281,20 @@ def test_product():
         assert product.update_time >= datetime(2017, 4, 12, 6, 25, 42, 120000)
         pnames = product.getContentsMatching('grid.xml')
         url = product.getContentURL('grid.xml')
-        assert url == ('https://earthquake.usgs.gov/archive/product/shakemap/'
-                       'atlas19940117123055/atlas/1491978342120/download/'
+        assert url == ('https://earthquake.usgs.gov/archive/product/'
+                       'shakemap/ci3144585/atlas/1594159786829/download/'
                        'grid.xml')
         assert len(product.getContentsMatching('foo')) == 0
-        assert len(pnames) > 1
+        assert len(pnames) == 1
+        cmpstr = ('Product shakemap from atlas updated '
+                  '2020-07-07 22:09:46.829000 containing '
+                  '58 content files.')
         assert str(
-            product) == ('Product shakemap from atlas updated 2017-04-12 '
-                         '06:25:42.120000 containing 63 content files.')
+            product) == cmpstr
         assert product.hasProperty('maxmmi')
         assert 'maxmmi' in product.properties
-        assert product['maxmmi'] == '8.6'
-        assert 'download/cont_mi.kmz' in product.contents
+        assert product['maxmmi'] >= '8.6'
+        assert 'download/cont_mi.json' in product.contents
         assert product.getContentName('grid.xml') == 'grid.xml'
         assert product.getContentName('foo') is None
         assert product.getContentURL('foo') is None
@@ -316,7 +318,7 @@ def test_product():
             f = open(tfilename, 'rt')
             jdict = json.load(f)
             f.close()
-            assert jdict['input']['event_information']['depth'] == 19
+            assert float(jdict['input']['event_information']['depth']) > 18.0
         except Exception:
             raise Exception('Failure to download Product content file')
         finally:
@@ -327,7 +329,7 @@ def test_product():
         infostring = infobytes.decode('utf-8')
         jdict = json.loads(infostring)
         eid = jdict['input']['event_information']['event_id']
-        assert eid == '19940117123055'
+        assert eid == 'ci3144585'
 
 
 if __name__ == '__main__':
