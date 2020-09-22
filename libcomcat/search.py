@@ -1,5 +1,5 @@
 # stdlib imports
-from datetime import timedelta
+from datetime import timedelta, datetime
 from urllib.parse import urlencode
 import time
 import logging
@@ -42,9 +42,9 @@ def count(starttime=None,
           catalog=None,
           contributor=None,
           limit=20000,
-          maxdepth=1000,
+          maxdepth=None,
           maxmagnitude=10.0,
-          mindepth=-100,
+          mindepth=None,
           minmagnitude=0,
           offset=1,
           orderby='time-asc',
@@ -282,9 +282,9 @@ def search(starttime=None,
            catalog=None,
            contributor=None,
            limit=20000,
-           maxdepth=1000,
+           maxdepth=None,
            maxmagnitude=10.0,
-           mindepth=-100,
+           mindepth=None,
            minmagnitude=0,
            offset=1,
            orderby='time-asc',
@@ -475,6 +475,12 @@ def _get_time_segments(starttime, endtime, minmag):
         starttime = HistoricTime.utcnow() - timedelta(days=30)
     if endtime is None:
         endtime = HistoricTime.utcnow()
+
+    # carve out an exception here for historic events (pre-1900),
+    # as there are only a few hundred of these in the database.
+    if endtime < datetime(1951, 1, 1):
+        return [(starttime, endtime)]
+
     # earthquake frequency table: minmag:earthquakes per day
     freq_table = {0: 10000 / 7,
                   1: 3500 / 14,

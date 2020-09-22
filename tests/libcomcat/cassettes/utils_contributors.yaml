@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.22.0
+      - python-requests/2.24.0
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/contributors
   response:
@@ -36,11 +36,11 @@ interactions:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 23 Jan 2020 15:16:24 GMT
+      - Tue, 22 Sep 2020 17:37:06 GMT
       Expires:
-      - Thu, 23 Jan 2020 15:17:24 GMT
+      - Tue, 22 Sep 2020 17:37:48 GMT
       Last-Modified:
-      - Thu, 23 Jan 2020 15:16:24 GMT
+      - Tue, 22 Sep 2020 17:36:48 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -48,15 +48,15 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 63d8f811b90373c2badc721e2bcc189f.cloudfront.net (CloudFront)
+      - 1.1 19ae496eb414e9373ed8ce49d0fdbba3.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - Bfle8sMYFcm-qLZM1tXo3-goebfkuJ1OK3Aw0qBhgkB0sDRM_GinoA==
+      - VjJD3P8PlEw7zbN9hoDXbuiiKXOC-XXz48YWr0r5emaVcc0dG-vRVQ==
       X-Amz-Cf-Pop:
-      - JAX1-C1
+      - IAD79-C1
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:
-      - EXPIRED
+      - HIT
       X-Content-Type-Options:
       - nosniff
       X-Frame-Options:

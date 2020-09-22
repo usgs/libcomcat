@@ -9,17 +9,17 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.22.0
+      - python-requests/2.24.0
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/catalogs
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA23STU7DMBCG4T2nQD0AxAqhVErTBQepjO06VuIfOnHT3p4FCmLx7qxnrHhmvvSn
-        e5yfb+4qIafjTr00u9Pw1H/qRc/Zy7Cdhvbjrdt3SvWvm/yVjgZQT4QL4qyF/AZobPTEnr5gxvwg
-        DojW0YP2SlhLXdwMFfc9kq5nG8G9ibQRL7TRkdoLlpCWEcR4R038FqQWrMUy6SQY0Exvxy/ARPMk
-        R0gdpgSYL5dggqYQtpI6vLeqUW3TqX13OLcN3aX/tFDohaLCpIQmq2lKeaVJKi23yogx1kq4/sPt
-        JMMPXrn6yt0DAAA=
+        H4sIAAAAAAAAA22STU7DMBCF95wC9QAQK4RSKU0XHKQytutY8R+duIXbs0BBLL7d6HuWZ+a9GU9f
+        KT7e3FVCycedeup2p+lhfNerjsXLtFVT//Yy7AelxueN/ElHA1AvBFeEUQvxG0Bjkyfs6Qczl2/C
+        AaF11NBeCbbaVhdBcZ8z0TvCs03AvUlkkxeyeaaZgyVIDgUx3tEQv4K0ilqqi86CqUXqnT4AZton
+        O4I0Yc4Ay+USTNCUzCapw2uvOtV3g9oPh3Pf0Vs63kqXUCkqTEpos5aXXO60SSNzm8wYY2sE/x/d
+        Vsn0A+o0N+DyAwAA
     headers:
       Access-Control-Allow-Headers:
       - accept,origin,authorization,content-type
@@ -34,15 +34,15 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Length:
-      - '239'
+      - '240'
       Content-Type:
       - application/xml
       Date:
-      - Thu, 23 Jan 2020 15:16:23 GMT
+      - Tue, 22 Sep 2020 17:37:05 GMT
       Expires:
-      - Thu, 23 Jan 2020 15:17:23 GMT
+      - Tue, 22 Sep 2020 17:38:05 GMT
       Last-Modified:
-      - Thu, 23 Jan 2020 15:16:23 GMT
+      - Tue, 22 Sep 2020 17:37:05 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -50,11 +50,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 d940bff13dd62d2038cf6e1ee136b418.cloudfront.net (CloudFront)
+      - 1.1 f8558580f66929e19ed69bba2e85da75.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - bCH7brHc-JhaYOEeqBfiK4izXql46KuTQB4y2Gb46ej9gSEskimqYA==
+      - 7i60xQbhHIXXXrJXSs_g6X3myvL7ZrHHmkV1R7-sQrb4bZhL9UpDEg==
       X-Amz-Cf-Pop:
-      - JAX1-C1
+      - IAD79-C1
       X-Cache:
       - Miss from cloudfront
       X-Cache-Status:

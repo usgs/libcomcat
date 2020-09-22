@@ -17,7 +17,8 @@ from obspy.geodetics.base import gps2dist_azimuth
 from impactutils.mapping.compass import get_compass_dir_azimuth
 
 # local imports
-from libcomcat.search import get_event_by_id, search
+from libcomcat.search import get_event_by_id
+from libcomcat import search
 from libcomcat.exceptions import (ConnectionError, ParsingError,
                                   ProductNotFoundError,
                                   ProductNotSpecifiedError)
@@ -72,6 +73,8 @@ PRODUCTS = ['dyfi', 'finite-fault',
             'losspager', 'moment-tensor',
             'oaf', 'origin', 'phase-data',
             'shakemap']
+
+EARTH_RADIUS = 6371.0
 
 
 def get_phase_dataframe(detail, catalog='preferred'):
@@ -1690,11 +1693,11 @@ def find_nearby_events(time, lat, lon, twindow, radius):
     """
     start_time = time - timedelta(seconds=twindow)
     end_time = time + timedelta(seconds=twindow)
-    events = search(starttime=start_time,
-                    endtime=end_time,
-                    latitude=lat,
-                    longitude=lon,
-                    maxradiuskm=radius)
+    events = search.search(starttime=start_time,
+                           endtime=end_time,
+                           latitude=lat,
+                           longitude=lon,
+                           maxradiuskm=radius)
 
     if not len(events):
         return None
@@ -1731,3 +1734,240 @@ def find_nearby_events(time, lat, lon, twindow, radius):
     df = df[cols]
     df = df.sort_values('normalized_time_dist_vector', axis='index')
     return df
+
+
+def _prepare_coords(lons1, lats1, lons2, lats2):
+    """
+    Convert two pairs of spherical coordinates in decimal degrees
+    to numpy arrays of radians. Makes sure that respective coordinates
+    in pairs have the same shape.
+    """
+    lons1 = np.array(np.radians(lons1))
+    lats1 = np.array(np.radians(lats1))
+    assert lons1.shape == lats1.shape
+    lons2 = np.array(np.radians(lons2))
+    lats2 = np.array(np.radians(lats2))
+    assert lons2.shape == lats2.shape
+    return lons1, lats1, lons2, lats2
+
+
+def _geodetic_distance(lons1, lats1, lons2, lats2):
+    """
+    Calculate the geodetic distance between two points or two collections
+    of points.
+
+    Parameters are coordinates in decimal degrees. They could be scalar
+    float numbers or numpy arrays, in which case they should "broadcast
+    together".
+
+    Implements http://williams.best.vwh.net/avform.htm#Dist
+
+    :returns:
+        Distance in km, floating point scalar or numpy array of such.
+    """
+    lons1, lats1, lons2, lats2 = _prepare_coords(lons1, lats1, lons2, lats2)
+    distance = np.arcsin(np.sqrt(
+        np.sin((lats1 - lats2) / 2.0) ** 2.0
+        + np.cos(lats1) * np.cos(lats2)
+        * np.sin((lons1 - lons2) / 2.0) ** 2.0
+    ).clip(-1., 1.))
+    return (2.0 * EARTH_RADIUS) * distance
+
+
+def associate(dataframe,
+              time_column='time',
+              lat_column='latitude',
+              lon_column='longitude',
+              mag_column='magnitude',
+              time_tol_secs=16,
+              dist_tol_km=100,
+              mag_tol=0.5,
+              ):
+    """Associate events from an input catalogue with ComCat events.
+
+    This function works by treating the time difference, magnitude difference, and
+    geographic distance between the two catalogue solutions as the axes of a 1, 2
+    or 3 dimensional vector. Recognizing that these values do not represent
+    the same quantity, much less are not in the same units, we normalize all of the
+    difference quantities by dividing all (say) distance values by the greatest
+    distance between the input event and the candidate ComCat events. The event
+    chosen is the one with the smallest vector magnitude of all of these
+    differences.
+
+    Example:
+
+    Input events:
+
+                   time  latitude  longitude  magnitude
+    2019-07-06 09:30:15    35.911   -117.732        4.5
+    2019-07-06 03:33:15    35.624   -117.486        4.1
+
+    Candidate ComCat events (selected by using tolerance values):
+                   time  latitude  longitude  magnitude
+    2019-07-06 09:30:15    35.911   -117.732        4.5 <-
+    2019-07-06 09:28:28    35.898   -117.727        4.9
+    2019-07-06 03:33:15    35.624   -117.486        4.1 <-
+    2019-07-06 03:33:39    35.893   -117.723        3.8
+
+    Internally, the function calculates between each input event
+    and the candidate events:
+
+     - the absolute time difference in seconds (dt)
+     - the geodetic distance in km (dd)
+     - the magnitude difference (dm)
+
+    Each of these arrays is then normalized by dividing by
+    the maximum value of each array. We then calculate the magnitude
+    of the resulting vector using the pythagorean theorem:
+
+    score = sqrt(dt^2 + dd^2 + dm^2)
+
+    The ComCat event with the lowest score is presumed to be a match.
+
+    Args:
+        dataframe (pandas DataFrame): DataFrame with at least time, lat/lon,
+                                      and magnitude columns.
+        time_column (str): Column in input dataframe containing date/time data.
+        lat_column (str): Column in input dataframe containing latitude data.
+        lon_column (str): Column in input dataframe containing longitude data.
+        mag_column (str): Column in input dataframe containing magnitude data.
+        time_tol_secs (float): Number of seconds before/after input time to
+                               check.
+        dist_tol_km (float): Number of kilometers around input point to check
+        mag_tol (float): Magnitude difference around input magnitude to check.
+
+    Returns:
+        tuple:
+           - DataFrame of associated events - input row plus fields:
+             - comcat_id Authoritative event ID from ComCat.
+             - comcat_time Datetime of authoritative origin solution.
+             - comcat_latitude Latitude of authoritative origin solution.
+             - comcat_longitude Latitude of authoritative origin solution.
+             - comcat_depth Depth of authoritative origin solution.
+             - comcat_magnitude Magnitude of authoritative origin solution.
+             - comcat_score Similarity score between input/ComCat events
+               (smaller is better.)
+          - DataFrame of alternate solutions (this can be empty). This
+            DataFrame contains events from ComCat that were within the
+            time/distance/magnitude tolerance values, but that scored
+            higher than the preferred event.
+            - id Authoritative ComCat event ID.
+            - time Authoritative ComCat event time.
+            - location Authoritative ComCat event location string.
+            - latitude Authoritative ComCat event latitude.
+            - longitude Authoritative ComCat event longitude.
+            - depth Authoritative ComCat event depth.
+            - magnitude Authoritative ComCat event magnitude.
+            - alert ComCat event PAGER alert level (green, yellow, orange, red).
+            - url ComCat event page URL.
+            - eventtype Event type (earthquake, explosion, etc.)
+            - significance Event significance.
+              (https://earthquake.usgs.gov/data/comcat/data-eventterms.php#sig)
+            - ntime Normalized time difference between input/ComCat events.
+            - nmag Normalized magnitude difference between input/ComCat events.
+            - ndist Normalized distance (km) between input/ComCat events.
+            - score 1, 2, or 3 dimensional Pythagorean distance score.
+            - chosen_id ComCat Event ID that was associated with event.
+    """
+    found_events = []
+    # get all the events in the time range from ComCat
+    dt = timedelta(seconds=time_tol_secs)
+    stime = dataframe[time_column].min().to_pydatetime() - dt
+    etime = dataframe[time_column].max().to_pydatetime() + dt
+    minmag = dataframe[mag_column].min() - mag_tol
+    maxmag = dataframe[mag_column].max() + mag_tol
+    if minmag < 0 or np.isnan(minmag):
+        minmag = 0
+    if maxmag > 9.9 or np.isnan(maxmag):
+        maxmag = 9.9
+    try:
+        events = search.search(starttime=stime,
+                               endtime=etime,
+                               minmagnitude=minmag,
+                               maxmagnitude=maxmag
+                               )
+    except Exception:
+        try:
+            events = search.search(starttime=stime,
+                                   endtime=etime,
+                                   minmagnitude=minmag,
+                                   maxmagnitude=maxmag
+                                   )
+        except Exception:
+            print('Tried twice to download... continuing.')
+            return (pd.DataFrame([]), pd.DataFrame([]))
+    ef = get_summary_data_frame(events)
+    if ef.empty:
+        return pd.DataFrame([]), pd.DataFrame([])
+    alternates = pd.DataFrame([])
+    for idx, _ in dataframe.iterrows():
+        # doing this because the row I get with iterrows()
+        # has NaT for all NaN fields when location/mag values are
+        # NaN. Bug in pandas?
+        row = dataframe.loc[idx].copy()
+        nanmag = np.isnan(row[mag_column])
+        nanloc = np.isnan(row[lat_column]) or np.isnan(row[lon_column])
+        ef['dtime'] = np.abs(
+            (row[time_column] - ef['time']).dt.total_seconds().values)
+        ef['dmag'] = np.nan
+        if not nanmag:
+            ef['dmag'] = np.abs(row[mag_column] - ef['magnitude'])
+
+        ef['ddist'] = np.nan
+        if not nanloc:
+            input_lon = row[lon_column]
+            input_lat = row[lat_column]
+            comcat_lon = ef['longitude']
+            comcat_lat = ef['latitude']
+            ef['ddist'] = _geodetic_distance(input_lon, input_lat,
+                                             comcat_lon, comcat_lat)
+        ef2 = ef[ef['dtime'] < time_tol_secs].copy()
+        if not len(ef2):
+            continue
+
+        if not nanloc:
+            ef2 = ef2[ef2['ddist'] < dist_tol_km]
+        if not len(ef2):
+            continue
+
+        if not nanmag:
+            ef2 = ef2[ef2['dmag'] < mag_tol]
+        if len(ef2) == 0:
+            continue
+        if len(ef2) == 1:
+            ef_row = ef2.iloc[0]
+            row['comcat_id'] = ef_row['id']
+            row['comcat_time'] = ef_row['time']
+            row['comcat_latitude'] = ef_row['latitude']
+            row['comcat_longitude'] = ef_row['longitude']
+            row['comcat_depth'] = ef_row['depth']
+            row['comcat_magnitude'] = ef_row['magnitude']
+            row['comcat_score'] = 0.0
+        else:
+            ef2['ntime'] = ef2['dtime'] / ef2['dtime'].max()
+            ef2['nmag'] = ef2['dmag'] / ef2['dmag'].max()
+            ef2['ndist'] = ef2['ddist'] / ef2['ddist'].max()
+
+            ef2['asq'] = np.power(ef2['ntime'], 2)
+            ef2['bsq'] = np.power(ef2['nmag'], 2)
+            ef2['csq'] = np.power(ef2['ndist'], 2)
+
+            ef2['psum'] = ef2[['asq', 'bsq', 'csq']].sum(axis=1)
+            ef2['score'] = np.sqrt(ef2['psum'])
+            ef_row = ef2[ef2['score'] == ef2['score'].min()].iloc[0]
+            row['comcat_id'] = ef_row['id']
+            row['comcat_time'] = ef_row['time']
+            row['comcat_latitude'] = ef_row['latitude']
+            row['comcat_longitude'] = ef_row['longitude']
+            row['comcat_depth'] = ef_row['depth']
+            row['comcat_magnitude'] = ef_row['magnitude']
+            row['comcat_score'] = ef_row['score']
+            talternates = ef2[ef2['id'] != row['comcat_id']].copy()
+            dlabels = ['dtime', 'ddist', 'dmag', 'asq', 'bsq', 'csq', 'psum']
+            talternates.drop(labels=dlabels, axis='columns', inplace=True)
+            talternates['chosen_id'] = ef_row['id']
+            alternates = alternates.append(talternates)
+
+        found_events.append(row)
+    associated = pd.DataFrame(found_events)
+    return associated, alternates
