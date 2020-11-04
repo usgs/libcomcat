@@ -663,8 +663,12 @@ class DetailEvent(object):
             for phase_data in phases:
                 # we don't want duplicates of phase data information
                 # from us origin product
-                if product == 'origin' and phase_data.source == 'us':
-                    continue
+                # this prevents us from getting non-authoritative mags
+                # from preferred source. Commenting out.
+                # ######################################
+                # if product == 'origin' and phase_data.source == 'us':
+                #     continue
+                # ######################################
                 phase_url = phase_data.getContentURL('quakeml.xml')
                 try:
                     catalog = read_events(phase_url)
