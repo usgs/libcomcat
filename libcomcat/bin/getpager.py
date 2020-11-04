@@ -41,7 +41,7 @@ def add_headers(filename, file_format):
         with open(filename, 'wt') as f:
             f.write(data)
     else:
-        font = Font(color=colors.RED, bold=True)
+        font = Font(color="FF0000", bold=True)
         wb = openpyxl.load_workbook(filename)
         ws = wb.active
         ws.insert_rows(1, amount=len(headers))
