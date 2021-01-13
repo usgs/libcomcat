@@ -38,7 +38,6 @@ def _get_product_from_detail(detail, tproduct, contents, folder,
         print('No %s product found for event %s and source %s. Skipping.' %
               (tproduct, detail.id, source))
         return False
-
     ic = len(products)
     eventfolder = os.path.join(folder, detail.id)
     if not os.path.isdir(eventfolder):
@@ -60,9 +59,9 @@ def _get_product_from_detail(detail, tproduct, contents, folder,
                 try:
                     product.getContent(content_name, filename=filename)
                 except Exception:
-                    fmt = 'Could not download %s from event %s.  Continuing...'
+                    efmt = 'Could not download %s from event %s.  Continuing...'
                     tpl = (content_name, detail.id)
-                    print(fmt % tpl)
+                    print(efmt % tpl)
                     continue
                 logging.info('Downloaded %s %s to %s\n' %
                              (eventid, content, filename))

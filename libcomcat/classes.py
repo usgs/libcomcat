@@ -899,6 +899,9 @@ class Product(object):
         """
         content_name = 'a' * 1000
         found = False
+        contents = self._product['contents']
+        if not len(contents):
+            return None
         for contentkey, content in self._product['contents'].items():
             if re.search(regexp + '$', contentkey) is None:
                 continue
