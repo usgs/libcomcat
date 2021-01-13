@@ -38,7 +38,7 @@ libcomcat *should* work with Python 3.5 and higher versions. It will *not* work 
 On a Linux or OSX system, open a Terminal window. On Windows systems, open a Powershell terminal. 
 You'll use these command line windows to type the following commands:
 
- - `conda create -n comcat --channel conda-forge python=3`
+ - `conda create -n comcat --channel conda-forge python=3.7` # or 3.8 or 3.9
  - `conda activate comcat`
  - `conda config --add channels conda-forge`
  - `conda install libcomcat`
