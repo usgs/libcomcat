@@ -269,7 +269,7 @@ def main():
             lonmin -= 360
     else:
         lonmin, lonmax, latmin, latmax = None, None, None, None
-        bounds = (lonmin, lonmax, latmin, latmax)
+    bounds = (lonmin, lonmax, latmin, latmax)
 
     if args.country:
         ccode = args.country

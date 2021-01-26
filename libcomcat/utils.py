@@ -31,7 +31,6 @@ HEADERS = {'User-Agent': 'libcomcat v%s' % libversion}
 CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
 CONTRIBUTORS_SEARCH_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/'
                                 '1/contributors')
-TIMEOUT = 60
 TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
 TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
 DATEFMT = '%Y-%m-%d'
