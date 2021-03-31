@@ -1156,15 +1156,18 @@ def _get_shakemap_info(product):
         # get from stations
         # - number instrumented stations
         # - number dyfi
-        stationbytes = product.getContentBytes('stationlist.json')[0]
-        stationdict = json.loads(stationbytes.decode('utf-8'))
         ninstrument = 0
         ndyfi = 0
-        for feature in stationdict['features']:
-            if feature['properties']['source'] == 'DYFI':
-                ndyfi += 1
-            else:
-                ninstrument += 1
+        if len(product.getContentsMatching('stationlist')):
+            stationbytes = product.getContentBytes('stationlist.json')[0]
+            stationdict = json.loads(stationbytes.decode('utf-8'))
+            ninstrument = 0
+            ndyfi = 0
+            for feature in stationdict['features']:
+                if feature['properties']['source'] == 'DYFI':
+                    ndyfi += 1
+                else:
+                    ninstrument += 1
     elif len(product.getContentsMatching('info.xml')):
         infobytes = product.getContentBytes('info.xml')[0]
         root = minidom.parseString(infobytes.decode('utf-8'))
