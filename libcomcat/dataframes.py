@@ -1003,6 +1003,8 @@ def _get_product_rows(event, product_name):
             prow = _describe_origin(event, product)
         else:
             continue
+        if prow is None:
+            continue
         prows = prows.append(prow, ignore_index=True)
 
     return prows
@@ -1551,11 +1553,17 @@ def _describe_moment_tensor(event, product):
             if np.isnan(double_couple):
                 double_couple = mt.double_couple
 
+    hasnan = (np.isnan(derived_mag) + np.isnan(derived_depth) +
+              np.isnan(double_couple) + np.isnan(strike) +
+              np.isnan(dip) + np.isnan(rake))
+    if hasnan:
+        return None
     desc_fmt = ('Method# %s|Moment Magnitude# %.1f|Depth# %.1d|'
                 'Double Couple# %.2f|NP1 Strike# %.0f|NP1 Dip# %.0f|'
                 'NP1 Rake# %.0f')
     desc_tpl = (method, derived_mag, derived_depth,
                 double_couple, strike, dip, rake)
+
     desc = desc_fmt % desc_tpl
     pversion = product.version
     url = product.getContentURL('quakeml.xml')
