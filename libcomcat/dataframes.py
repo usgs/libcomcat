@@ -1293,15 +1293,18 @@ def _describe_origin(event, product):
     # get the origin weight - this should help us determine which
     # origin is authoritative
     weight = product.preferred_weight
+    review_status = 'unknown'
+    if product.hasProperty('review-status'):
+        review_status = product['review-status']
 
     fmt = ('Magnitude# %.1f|Time# %s |Time Offset (sec)# %.1f|'
            'Location# (%.3f,%.3f)|Distance from Auth. Origin (km)# %.1f|'
            'Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s|'
-           'Preferred Weight#%i')
+           'Preferred Weight#%i|Review Status# %s')
     desc = fmt % (omag, otime, tdiff,
                   olat, olon, dist, azstr,
                   odepth, magtype, loc_method,
-                  weight)
+                  weight, review_status)
 
     pversion = product.version
     row = {'Product': product.name,
