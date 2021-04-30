@@ -82,7 +82,7 @@ conda remove -y -n $VENV --all
 package_list=(
       "python>=3.6"
       "impactutils"
-      "'fiona==1.8.4'"
+      "fiona"
       "ipython"
       "jupyter"
       "numpy"
