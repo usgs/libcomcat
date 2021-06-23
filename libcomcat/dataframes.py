@@ -1110,7 +1110,11 @@ def _describe_shakemap(event, product):
     depth_used = np.nan
     pversion = 0
     if product.hasProperty('maxmmi'):
-        maxmmi = float(product['maxmmi'])
+        try:
+            # maxmmi may not be set in oceanic maps
+            maxmmi = float(product['maxmmi'])
+        except:
+            pass
         pversion = int(product['version'])
 
         (ninstrument, ndyfi, mag_used,
