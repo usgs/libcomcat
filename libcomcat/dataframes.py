@@ -1115,7 +1115,8 @@ def _describe_shakemap(event, product):
             maxmmi = float(product['maxmmi'])
         except:
             pass
-        pversion = int(product['version'])
+        pversion = int(float(product['version']))
+        
 
         (ninstrument, ndyfi, mag_used,
          depth_used, fault_file, gmpe) = _get_shakemap_info(product)
