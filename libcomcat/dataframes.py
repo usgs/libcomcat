@@ -835,9 +835,15 @@ def get_dyfi_data_frame(detail, dyfi_file=None,
                 data, _ = dyfi.getContentBytes(file)
                 if file.endswith('geojson'):
                     dataframe = _parse_geojson(data)
+                    if dataframe is None or not len(dataframe):
+                        continue
                 else:
                     dataframe = _parse_text(data)
+                    if dataframe is None or not len(dataframe):
+                        continue
                 break
+    if not len(dataframe):
+        return dataframe
     columns = ['station', 'lat', 'lon', 'distance', 'intensity', 'nresp']
     dataframe = dataframe[columns]
     return dataframe
