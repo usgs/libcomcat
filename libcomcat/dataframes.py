@@ -46,17 +46,12 @@ DYFI_COLUMNS_REPLACE = {
     'Latitude': 'lat',
     'Longitude': 'lon',
     'No. of responses': 'nresp',
-    'Hypocentral distance': 'distance'
+    'Hypocentral distance': 'distance',
+    'Epicentral distance': 'distance',
+    'ZIP/Location': 'station',
+
 }
 
-OLD_DYFI_COLUMNS_REPLACE = {
-    'ZIP/Location': 'station',
-    'CDI': 'intensity',
-    'Latitude': 'lat',
-    'Longitude': 'lon',
-    'No. of responses': 'nresp',
-    'Hypocentral distance': 'distance'
-}
 
 PRODUCT_COLUMNS = ['Update Time', 'Product', 'Authoritative Event ID', 'Code',
                    'Associated',
@@ -840,9 +835,15 @@ def get_dyfi_data_frame(detail, dyfi_file=None,
                 data, _ = dyfi.getContentBytes(file)
                 if file.endswith('geojson'):
                     dataframe = _parse_geojson(data)
+                    if dataframe is None or not len(dataframe):
+                        continue
                 else:
                     dataframe = _parse_text(data)
+                    if dataframe is None or not len(dataframe):
+                        continue
                 break
+    if not len(dataframe):
+        return dataframe
     columns = ['station', 'lat', 'lon', 'distance', 'intensity', 'nresp']
     dataframe = dataframe[columns]
     return dataframe
@@ -857,10 +858,7 @@ def _parse_text(bytes_geo):
     columns = [col.strip(']') for col in columns]
     fileio = StringIO(text_geo)
     df = pd.read_csv(fileio, skiprows=1, names=columns)
-    if 'ZIP/Location' in columns:
-        df = df.rename(index=str, columns=OLD_DYFI_COLUMNS_REPLACE)
-    else:
-        df = df.rename(index=str, columns=DYFI_COLUMNS_REPLACE)
+    df = df.rename(index=str, columns=DYFI_COLUMNS_REPLACE)
     df = df.drop(['Suspect?', 'City', 'State'], axis=1)
     # df = df[df['nresp'] >= MIN_RESPONSES]
     return df
