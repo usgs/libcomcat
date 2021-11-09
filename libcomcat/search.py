@@ -15,12 +15,13 @@ from libcomcat.utils import HEADERS, TIMEOUT
 
 # constants
 # url template for counting events
-HOST = 'earthquake.usgs.gov'
-CATALOG_COUNT_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/'
-                          '1/count?format=geojson')
-SEARCH_TEMPLATE = 'https://[HOST]/fdsnws/event/1/query?format=geojson'
-SCENARIO_SEARCH_TEMPLATE = 'https://[HOST]/fdsnws/scenario/1/query?format=geojson'
-TIMEFMT = '%Y-%m-%dT%H:%M:%S'
+HOST = "earthquake.usgs.gov"
+CATALOG_COUNT_TEMPLATE = (
+    "https://earthquake.usgs.gov/fdsnws/event/" "1/count?format=geojson"
+)
+SEARCH_TEMPLATE = "https://[HOST]/fdsnws/event/1/query?format=geojson"
+SCENARIO_SEARCH_TEMPLATE = "https://[HOST]/fdsnws/scenario/1/query?format=geojson"
+TIMEFMT = "%Y-%m-%dT%H:%M:%S"
 WEEKSECS = 86400 * 7  # number of seconds in a week
 # number of seconds to wait after failing download before trying again
 WAITSECS = 3
@@ -28,39 +29,41 @@ WAITSECS = 3
 SEARCH_LIMIT = 20000
 
 
-def count(starttime=None,
-          endtime=None,
-          updatedafter=None,
-          minlatitude=None,
-          maxlatitude=None,
-          minlongitude=None,
-          maxlongitude=None,
-          latitude=None,
-          longitude=None,
-          maxradiuskm=None,
-          maxradius=None,
-          catalog=None,
-          contributor=None,
-          limit=20000,
-          maxdepth=None,
-          maxmagnitude=10.0,
-          mindepth=None,
-          minmagnitude=0,
-          offset=1,
-          orderby='time-asc',
-          alertlevel=None,
-          eventtype='earthquake',
-          maxcdi=None,
-          maxgap=None,
-          maxmmi=None,
-          maxsig=None,
-          mincdi=None,
-          minfelt=None,
-          mingap=None,
-          minsig=None,
-          producttype=None,
-          productcode=None,
-          reviewstatus=None):
+def count(
+    starttime=None,
+    endtime=None,
+    updatedafter=None,
+    minlatitude=None,
+    maxlatitude=None,
+    minlongitude=None,
+    maxlongitude=None,
+    latitude=None,
+    longitude=None,
+    maxradiuskm=None,
+    maxradius=None,
+    catalog=None,
+    contributor=None,
+    limit=20000,
+    maxdepth=None,
+    maxmagnitude=None,
+    mindepth=None,
+    minmagnitude=None,
+    offset=1,
+    orderby="time-asc",
+    alertlevel=None,
+    eventtype="earthquake",
+    maxcdi=None,
+    maxgap=None,
+    maxmmi=None,
+    maxsig=None,
+    mincdi=None,
+    minfelt=None,
+    mingap=None,
+    minsig=None,
+    producttype=None,
+    productcode=None,
+    reviewstatus=None,
+):
     """Ask the ComCat database for the number of events matching input criteria.
 
     This count function is a wrapper around the ComCat Web API described here:
@@ -188,36 +191,38 @@ def count(starttime=None,
     newargs = {}
     for key, value in inputargs.items():
         if value is True:
-            newargs[key] = 'true'
+            newargs[key] = "true"
             continue
         if value is False:
-            newargs[key] = 'false'
+            newargs[key] = "false"
             continue
         if value is None:
             continue
         newargs[key] = value
-    if newargs['limit'] > 20000:
-        newargs['limit'] = 20000
+    if newargs["limit"] > 20000:
+        newargs["limit"] = 20000
     nevents = 0
-    segments = _get_time_segments(starttime, endtime, newargs['minmagnitude'])
+    segments = _get_time_segments(starttime, endtime, newargs["minmagnitude"])
     iseg = 1
 
     for stime, etime in segments:
-        newargs['starttime'] = stime
-        newargs['endtime'] = etime
-        logging.debug(
-            'Searching time segment %i: %s to %s\n' % (iseg, stime, etime))
+        newargs["starttime"] = stime
+        newargs["endtime"] = etime
+        logging.debug("Searching time segment %i: %s to %s\n" % (iseg, stime, etime))
         iseg += 1
         nevents += _count(**newargs)
 
     return nevents
 
 
-def get_event_by_id(eventid, catalog=None,
-                    includedeleted=False,
-                    includesuperseded=False,
-                    scenario=False,
-                    host=None):
+def get_event_by_id(
+    eventid,
+    catalog=None,
+    includedeleted=False,
+    includesuperseded=False,
+    scenario=False,
+    host=None,
+):
     """Search the ComCat database for an event matching the input event id.
 
     This search function is a wrapper around the ComCat Web API described here:
@@ -255,10 +260,10 @@ def get_event_by_id(eventid, catalog=None,
     newargs = {}
     for key, value in inputargs.items():
         if value is True:
-            newargs[key] = 'true'
+            newargs[key] = "true"
             continue
         if value is False:
-            newargs[key] = 'false'
+            newargs[key] = "false"
             continue
         if value is None:
             continue
@@ -268,42 +273,44 @@ def get_event_by_id(eventid, catalog=None,
     return event
 
 
-def search(starttime=None,
-           endtime=None,
-           updatedafter=None,
-           minlatitude=None,
-           maxlatitude=None,
-           minlongitude=None,
-           maxlongitude=None,
-           latitude=None,
-           longitude=None,
-           maxradiuskm=None,
-           maxradius=None,
-           catalog=None,
-           contributor=None,
-           limit=20000,
-           maxdepth=None,
-           maxmagnitude=10.0,
-           mindepth=None,
-           minmagnitude=0,
-           offset=1,
-           orderby='time-asc',
-           alertlevel=None,
-           eventtype='earthquake',
-           maxcdi=None,
-           maxgap=None,
-           maxmmi=None,
-           maxsig=None,
-           mincdi=None,
-           minfelt=None,
-           mingap=None,
-           minsig=None,
-           producttype=None,
-           productcode=None,
-           reviewstatus=None,
-           host=None,
-           scenario=False,
-           enable_limit=False):
+def search(
+    starttime=None,
+    endtime=None,
+    updatedafter=None,
+    minlatitude=None,
+    maxlatitude=None,
+    minlongitude=None,
+    maxlongitude=None,
+    latitude=None,
+    longitude=None,
+    maxradiuskm=None,
+    maxradius=None,
+    catalog=None,
+    contributor=None,
+    limit=20000,
+    maxdepth=None,
+    maxmagnitude=None,
+    mindepth=None,
+    minmagnitude=None,
+    offset=1,
+    orderby="time-asc",
+    alertlevel=None,
+    eventtype="earthquake",
+    maxcdi=None,
+    maxgap=None,
+    maxmmi=None,
+    maxsig=None,
+    mincdi=None,
+    minfelt=None,
+    mingap=None,
+    minsig=None,
+    producttype=None,
+    productcode=None,
+    reviewstatus=None,
+    host=None,
+    scenario=False,
+    enable_limit=False,
+):
     """Search the ComCat database for events matching input criteria.
 
     This search function is a wrapper around the ComCat Web API described here:
@@ -440,29 +447,33 @@ def search(starttime=None,
     newargs = {}
     for key, value in inputargs.items():
         if value is True:
-            newargs[key] = 'true'
+            newargs[key] = "true"
             continue
         if value is False:
-            newargs[key] = 'false'
+            newargs[key] = "false"
             continue
         if value is None:
             continue
         newargs[key] = value
-    if newargs['limit'] > 20000:
-        newargs['limit'] = 20000
+    if newargs["limit"] > 20000:
+        newargs["limit"] = 20000
 
     # remove the enable_limit element from the arguments
-    del newargs['enable_limit']
+    del newargs["enable_limit"]
     if enable_limit:
         events = _search(**newargs)
         return events
-    segments = _get_time_segments(starttime, endtime, newargs['minmagnitude'])
+    if "minmagnitude" in newargs:
+        minmag = newargs["minmagnitude"]
+    else:
+        minmag = 0.0
+    segments = _get_time_segments(starttime, endtime, minmag)
     events = []
     iseg = 1
     for stime, etime in segments:
-        newargs['starttime'] = stime
-        newargs['endtime'] = etime
-        fmt = 'Searching time segment %i: %s to %s\n'
+        newargs["starttime"] = stime
+        newargs["endtime"] = etime
+        fmt = "Searching time segment %i: %s to %s\n"
         logging.debug(fmt % (iseg, stime, etime))
         iseg += 1
         events += _search(**newargs)
@@ -482,16 +493,18 @@ def _get_time_segments(starttime, endtime, minmag):
         return [(starttime, endtime)]
 
     # earthquake frequency table: minmag:earthquakes per day
-    freq_table = {0: 10000 / 7,
-                  1: 3500 / 14,
-                  2: 3000 / 18,
-                  3: 4000 / 59,
-                  4: 9000 / 151,
-                  5: 3000 / 365,
-                  6: 210 / 365,
-                  7: 20 / 365,
-                  8: 5 / 365,
-                  9: 0.05 / 365}
+    freq_table = {
+        0: 10000 / 7,
+        1: 3500 / 14,
+        2: 3000 / 18,
+        3: 4000 / 59,
+        4: 9000 / 151,
+        5: 3000 / 365,
+        6: 210 / 365,
+        7: 20 / 365,
+        8: 5 / 365,
+        9: 0.05 / 365,
+    }
 
     floormag = int(np.floor(minmag))
     ndays = (endtime - starttime).days + 1
@@ -511,37 +524,37 @@ def _get_time_segments(starttime, endtime, minmag):
 
 
 def _search(**newargs):
-    if 'starttime' in newargs:
-        newargs['starttime'] = newargs['starttime'].strftime(TIMEFMT)
-    if 'endtime' in newargs:
-        newargs['endtime'] = newargs['endtime'].strftime(TIMEFMT)
-    if 'updatedafter' in newargs:
-        newargs['updatedafter'] = newargs['updatedafter'].strftime(TIMEFMT)
-    if 'scenario' in newargs and newargs['scenario'] == 'true':
+    if "starttime" in newargs:
+        newargs["starttime"] = newargs["starttime"].strftime(TIMEFMT)
+    if "endtime" in newargs:
+        newargs["endtime"] = newargs["endtime"].strftime(TIMEFMT)
+    if "updatedafter" in newargs:
+        newargs["updatedafter"] = newargs["updatedafter"].strftime(TIMEFMT)
+    if "scenario" in newargs and newargs["scenario"] == "true":
         template = SCENARIO_SEARCH_TEMPLATE
-        template = template.replace('[HOST]', HOST)
-        del newargs['scenario']
+        template = template.replace("[HOST]", HOST)
+        del newargs["scenario"]
     else:
-        if 'scenario' in newargs:
-            del newargs['scenario']
-        if 'host' in newargs and newargs['host'] is not None:
-            template = SEARCH_TEMPLATE.replace('[HOST]', newargs['host'])
-            del newargs['host']
+        if "scenario" in newargs:
+            del newargs["scenario"]
+        if "host" in newargs and newargs["host"] is not None:
+            template = SEARCH_TEMPLATE.replace("[HOST]", newargs["host"])
+            del newargs["host"]
         else:
-            template = SEARCH_TEMPLATE.replace('[HOST]', HOST)
+            template = SEARCH_TEMPLATE.replace("[HOST]", HOST)
 
     paramstr = urlencode(newargs)
-    url = template + '&' + paramstr
+    url = template + "&" + paramstr
     events = []
     # handle the case when they're asking for an event id
-    if 'eventid' in newargs:
+    if "eventid" in newargs:
         return DetailEvent(url)
 
     try:
         response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
         jdict = response.json()
         events = []
-        for feature in jdict['features']:
+        for feature in jdict["features"]:
             events.append(SummaryEvent(feature))
     except requests.HTTPError as htpe:
         if htpe.code == 503:
@@ -550,7 +563,7 @@ def _search(**newargs):
                 response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
                 jdict = response.json()
                 events = []
-                for feature in jdict['features']:
+                for feature in jdict["features"]:
                     events.append(SummaryEvent(feature))
             except Exception as msg:
                 fmt = 'Error downloading data from url %s.  "%s".'
@@ -563,31 +576,34 @@ def _search(**newargs):
 
 
 def _count(**newargs):
-    if 'starttime' in newargs:
-        newargs['starttime'] = newargs['starttime'].strftime(TIMEFMT)
-    if 'endtime' in newargs:
-        newargs['endtime'] = newargs['endtime'].strftime(TIMEFMT)
-    if 'updatedafter' in newargs:
-        newargs['updatedafter'] = newargs['updatedafter'].strftime(TIMEFMT)
+    if "starttime" in newargs:
+        newargs["starttime"] = newargs["starttime"].strftime(TIMEFMT)
+    if "endtime" in newargs:
+        newargs["endtime"] = newargs["endtime"].strftime(TIMEFMT)
+    if "updatedafter" in newargs:
+        newargs["updatedafter"] = newargs["updatedafter"].strftime(TIMEFMT)
 
     paramstr = urlencode(newargs)
-    url = CATALOG_COUNT_TEMPLATE + '&' + paramstr
+    url = CATALOG_COUNT_TEMPLATE + "&" + paramstr
     nevents = 0
     try:
-        response = requests.get(CATALOG_COUNT_TEMPLATE,
-                                params=newargs, timeout=TIMEOUT,
-                                headers=HEADERS)
+        response = requests.get(
+            CATALOG_COUNT_TEMPLATE, params=newargs, timeout=TIMEOUT, headers=HEADERS
+        )
         jdict = response.json()
-        nevents = jdict['count']
+        nevents = jdict["count"]
     except requests.HTTPError as htpe:
         if htpe.code == 503:
             try:
                 time.sleep(WAITSECS)
-                response = requests.get(CATALOG_COUNT_TEMPLATE,
-                                        params=newargs, timeout=TIMEOUT,
-                                        headers=HEADERS)
+                response = requests.get(
+                    CATALOG_COUNT_TEMPLATE,
+                    params=newargs,
+                    timeout=TIMEOUT,
+                    headers=HEADERS,
+                )
                 jdict = response.json()
-                nevents = jdict['count']
+                nevents = jdict["count"]
             except Exception as msg:
                 fmt = 'Error downloading data from url %s.  "%s".'
                 raise ConnectionError(fmt % (url, msg))
@@ -610,26 +626,26 @@ def get_authoritative_info(eventid):
     """
     mag_row = {}
     loc_row = {}
-    msg = ''
+    msg = ""
     try:
         detail = get_event_by_id(eventid)
-        origins = detail.getProducts('origin', source='all')
+        origins = detail.getProducts("origin", source="all")
         for origin in origins:
             source = origin.source
-            if origin['magnitude-source'].lower() != source.lower():
+            if origin["magnitude-source"].lower() != source.lower():
                 magval = np.nan
-                magtype = 'NA'
+                magtype = "NA"
             else:
-                magval = float(origin['magnitude'])
-                magtype = origin['magnitude-type']
-            colname = '%s-%s' % (source, magtype)
+                magval = float(origin["magnitude"])
+                magtype = origin["magnitude-type"]
+            colname = "%s-%s" % (source, magtype)
             mag_row[colname] = magval
-            latname = '%s-%s' % (origin.source, 'latitude')
-            lonname = '%s-%s' % (origin.source, 'longitude')
-            depname = '%s-%s' % (origin.source, 'depth')
-            loc_row[latname] = float(origin['latitude'])
-            loc_row[lonname] = float(origin['longitude'])
-            loc_row[depname] = float(origin['depth'])
+            latname = "%s-%s" % (origin.source, "latitude")
+            lonname = "%s-%s" % (origin.source, "longitude")
+            depname = "%s-%s" % (origin.source, "depth")
+            loc_row[latname] = float(origin["latitude"])
+            loc_row[lonname] = float(origin["longitude"])
+            loc_row[depname] = float(origin["depth"])
     except Exception as e:
         msg = 'Failed to download event %s, error "%s".' % (eventid, str(e))
 

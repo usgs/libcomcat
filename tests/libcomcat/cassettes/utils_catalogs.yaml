@@ -5,28 +5,30 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.26.0
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/catalogs
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA22STU7DMBCF95wC9QAQK4RSKU0XHKQytutY8R+duIXbs0BBLL7d6HuWZ+a9GU9f
-        KT7e3FVCycedeup2p+lhfNerjsXLtFVT//Yy7AelxueN/ElHA1AvBFeEUQvxG0Bjkyfs6Qczl2/C
-        AaF11NBeCbbaVhdBcZ8z0TvCs03AvUlkkxeyeaaZgyVIDgUx3tEQv4K0ilqqi86CqUXqnT4AZton
-        O4I0Yc4Ay+USTNCUzCapw2uvOtV3g9oPh3Pf0Vs63kqXUCkqTEpos5aXXO60SSNzm8wYY2sE/x/d
-        Vsn0A+o0N+DyAwAA
+        H4sIAAAAAAAAA22TTW7DIBCF9z1FlQO0Rq6bRnKcRQ8SUSAYxfwkA0l6+y4qV118O/Q9BoZ5j/Hw
+        iMvzzV0l5LTfqJduc5iexk9d9ZK9TOtq6j/ehu2g1Pi6kj9pbwBqbcQRPxOsCBctxG8AjY2esKcT
+        zJy/CQeE1tGF9kqwlVbdAoq7zETvCI82Avcm0pi80Phn6jlYgjShIMY7auJXkFZQi+Wsk6BrC90d
+        vwAmek+iLCXqMCWA+XQKJmhyZpXU7r1Xneq7QW2H3bHvaC+FN1eypVjquFBqCtWjq/ij6gNgIw+a
+        6FYzCjPGoDWCFNq7+1+/rmT6AWMmUvxgBAAA
     headers:
       Access-Control-Allow-Headers:
-      - accept,origin,authorization,content-type
-      Access-Control-Allow-Methods:
       - '*'
+      Access-Control-Allow-Methods:
+      - GET, OPTIONS
       Access-Control-Allow-Origin:
       - '*'
+      Access-Control-Max-Age:
+      - '86400'
       Cache-Control:
       - public, max-age=60
       Connection:
@@ -34,15 +36,15 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Length:
-      - '240'
+      - '255'
       Content-Type:
       - application/xml
       Date:
-      - Tue, 22 Sep 2020 17:37:05 GMT
+      - Tue, 09 Nov 2021 22:34:35 GMT
       Expires:
-      - Tue, 22 Sep 2020 17:38:05 GMT
+      - Tue, 09 Nov 2021 22:35:35 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 17:37:05 GMT
+      - Tue, 09 Nov 2021 22:34:35 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -50,15 +52,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 f8558580f66929e19ed69bba2e85da75.cloudfront.net (CloudFront)
+      - 1.1 ea7c4b0407882327307bae4ed233d142.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 7i60xQbhHIXXXrJXSs_g6X3myvL7ZrHHmkV1R7-sQrb4bZhL9UpDEg==
+      - fxXbVQ46D6gZsDJG_WOLZx6HTaAgvpqsg0GG4Jfe-vDoolUX7rk_Yw==
       X-Amz-Cf-Pop:
-      - IAD79-C1
+      - SFO5-C3
       X-Cache:
       - Miss from cloudfront
-      X-Cache-Status:
-      - EXPIRED
       X-Content-Type-Options:
       - nosniff
       X-Frame-Options:

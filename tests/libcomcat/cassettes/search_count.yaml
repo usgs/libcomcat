@@ -5,56 +5,56 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+5.g98b3b5f.dirty
+      - libcomcat v2.0.13+0.g18278d0.dirty
     method: GET
-    uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&updatedafter=2010-01-01T00%3A00%3A00&limit=20000&maxmagnitude=10.0&minmagnitude=6.6&offset=1&orderby=time-asc&eventtype=earthquake
+    uri: https://earthquake.usgs.gov/fdsnws/event/1/count?format=geojson&starttime=1994-01-17T12%3A30%3A00&endtime=1994-01-18T12%3A35%3A00&updatedafter=2010-01-01T00%3A00%3A00&limit=20000&minmagnitude=6.6&offset=1&orderby=time-asc&eventtype=earthquake
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA6tWSs4vzStRsjLUUcpNrHDMyckvT01RsjIyAIJaACfDZlEeAAAA
+        H4sIAAAAAAAEA6tWSs4vzStRsjLUUcpNrHDMyckvT01RsjIyAIJaACfDZlEeAAAA
     headers:
       Access-Control-Allow-Headers:
-      - accept,origin,authorization,content-type
-      Access-Control-Allow-Methods:
       - '*'
+      Access-Control-Allow-Methods:
+      - GET, OPTIONS
       Access-Control-Allow-Origin:
       - '*'
+      Access-Control-Max-Age:
+      - '86400'
       Cache-Control:
       - public, max-age=60
       Connection:
       - keep-alive
       Content-Encoding:
       - gzip
-      Content-Length:
-      - '48'
       Content-Type:
       - application/json
       Date:
-      - Tue, 22 Sep 2020 17:36:59 GMT
+      - Tue, 09 Nov 2021 22:34:30 GMT
       Expires:
-      - Tue, 22 Sep 2020 17:37:59 GMT
+      - Tue, 09 Nov 2021 22:35:30 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 17:36:59 GMT
+      - Tue, 09 Nov 2021 22:34:30 GMT
       Server:
       - nginx
       Strict-Transport-Security:
       - max-age=31536000
+      Transfer-Encoding:
+      - chunked
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 a805f3562e8099c23b78cf69c21f7835.cloudfront.net (CloudFront)
+      - 1.1 7ba3caf71ae7a52dd411d1a543e80cd8.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 2fxKSJ60dMLbeuXX9YVeSi8lAaQlVZsQTH7ygwNSJDbSJyvRag2RRA==
+      - goDlZF5bOSihHmKiFYc6Lmn8KxHaMbndGisfyVs30ehAddhvy-l9nw==
       X-Amz-Cf-Pop:
-      - IAD79-C1
+      - SFO5-C3
       X-Cache:
       - Miss from cloudfront
-      X-Cache-Status:
-      - MISS
       X-Content-Type-Options:
       - nosniff
       X-Frame-Options:

@@ -5,26 +5,29 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.24.0
+      - python-requests/2.26.0
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/contributors
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA33RSw7CIBCA4b2nMD2Ajz3ShSehlOpEHg1Tqsd3iy7+5fANgeQ34yfF4x6qSsm3
-        4Xq6DKM9mHvJW5WpbaWq7Sfr5iTZnPujX38RbojRKfkO6B901QtgeAM+6VHRtALHGTBNgNkTJkJq
-        k+m3ZVnEi4u0Qm3XSkjhNQA26toa4X/XflL7BQ8Txpb6AgAA
+        H4sIAAAAAAAAA5XSTQ7CIBAF4L2nMN2L4LrShSehQOtEfhoG2h7fxFV18RKXw8cLZGb6YY/hvPrC
+        lNO9U0J2gz71j5xqobHVXFgfK21cpNRfj0ff/kJYIQbDyFeAdkZRSwD9BvCJHiWOC+DgAMYRYLII
+        I0I0m4R+m6eJLJmArqDZLgVidlJdFhekEraIxjOLOaPmfiK3/yJovdgDrDvAhlarNYS/q3WsWL8B
+        9hLcmH0DAAA=
     headers:
       Access-Control-Allow-Headers:
-      - accept,origin,authorization,content-type
-      Access-Control-Allow-Methods:
       - '*'
+      Access-Control-Allow-Methods:
+      - GET, OPTIONS
       Access-Control-Allow-Origin:
       - '*'
+      Access-Control-Max-Age:
+      - '86400'
       Cache-Control:
       - public, max-age=60
       Connection:
@@ -32,15 +35,15 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Length:
-      - '150'
+      - '179'
       Content-Type:
       - application/xml
       Date:
-      - Tue, 22 Sep 2020 17:37:06 GMT
+      - Tue, 09 Nov 2021 22:34:35 GMT
       Expires:
-      - Tue, 22 Sep 2020 17:37:48 GMT
+      - Tue, 09 Nov 2021 22:35:35 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 17:36:48 GMT
+      - Tue, 09 Nov 2021 22:34:35 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -48,15 +51,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 19ae496eb414e9373ed8ce49d0fdbba3.cloudfront.net (CloudFront)
+      - 1.1 100e7eca600d702a8613a94cb0899fe9.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - VjJD3P8PlEw7zbN9hoDXbuiiKXOC-XXz48YWr0r5emaVcc0dG-vRVQ==
+      - c5pNtISFVTv3QDvs_5pl2thZQXH39tvAKK2c7NgeclqY8eP4YfP-5A==
       X-Amz-Cf-Pop:
-      - IAD79-C1
+      - SFO5-C3
       X-Cache:
       - Miss from cloudfront
-      X-Cache-Status:
-      - HIT
       X-Content-Type-Options:
       - nosniff
       X-Frame-Options:

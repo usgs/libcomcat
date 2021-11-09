@@ -5,34 +5,31 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.6+5.g98b3b5f.dirty
+      - libcomcat v2.0.13+0.g18278d0.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/scenario/1/query?format=geojson&starttime=2013-10-10T12%3A00%3A00&endtime=2013-10-10T12%3A30%3A00&limit=20000&maxmagnitude=9.9&minmagnitude=0&offset=1&orderby=time-asc&eventtype=earthquake
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA51TTY+bMBD9K5GlciJgQxICEqpWVdtTpUq7PVV7cPCEdQM2sU22aZT/3jEhX6s9
-        VLUADX7jYea9x4G4fQekIF+Au97AJ900UDmpFQlJC44L7jgpDqQGBYY7EKRgC0qzfJEkM0ppSHrT
-        4PkX5zpbxDFw4162Pd9A1NvaRrXexWth1auNbQWKG6ljFm97MPuPa21a7soa9C+rVWAdnnWyhTKh
-        LJ0yitcTSz6kD5QOjwCUeBdPR7yRrXSI4gpa/rvltZKuF1DmUR60Ul03aKDXawuuZIE2AsxqX/rK
-        U26rAHagnKelvA6DbDjpGs/Uj8evj5PHcRaLAPbtekuKxLPBO4k5LFpGDKGhoQHx2OmTSGBIKt0r
-        Hx1Dsj4xjwV+Ht6ogRU6ozswTnr8QHAAUqRRRu9WgmkNr/xBpbFjMGry0HC74UPbLQIsXbIZzdJF
-        muYL1KwTo5bzeZbleM+GffeHFKpvmn9R9SynjQfCOl5DzDeojKDLVb9d4bcFGkj+rzuGqlKUtzWD
-        e8sQz17jzj1XQp7Dtr2EvEH+zi9nrYiBnYRXpACHtr3iPh8lshIJThgqpLxShG+IF0t4bu9Gk8JX
-        CW+bC70XdG8qGCG/4QUdXrWRtVR+S9lLOwJNeY5Ni3k0miX5/QpJzbvLXLx+OlmkbcbqGL/r028T
-        NMrFqJPPl5zJdPLWJmhDpBT/d7P3NhvLftcSTernx39EKnSMN+mUzWbRfJGlNy0u8ojNs+RqyTRk
-        uHXnUvZ89LQNpN5QeXw+/gV45kVshQQAAA==
+        H4sIAAAAAAAAA22QwWrDMAxAf2UY5lOa2MkoJBDGGGwf0O00dtASJXUX260tdyul/z6lLfQyY4zw
+        s2TpHQUdtiga8YJAKeCznybsyHgnMmGRoAcC0RzFiA4DEPai0ctq+VDXWmmlVCZSmDh/TbSNTVEg
+        BFrvEnxjnuIY89Hvi6GP7icWsUMHwfhCF7uE4fA4+GCB2hH9JnonI3EuGYttqXS10Ir3my7vqyel
+        zodE1//LqyufjDXElJe08GthdIZSj22d19Iad7tQ0g9DRGq19KHH8HVo58oLiJ3EPTqatbS3YdgG
+        GZpmU++r19Xd6jpLZMB9U4qiKWcbsDX8Rue6zCtm547OaIaXP9lgJjqfHEfqlInhop4rfHye/gBs
+        dvDkkQEAAA==
     headers:
       Access-Control-Allow-Headers:
-      - accept,origin,authorization,content-type
-      Access-Control-Allow-Methods:
       - '*'
+      Access-Control-Allow-Methods:
+      - GET, OPTIONS
       Access-Control-Allow-Origin:
       - '*'
+      Access-Control-Max-Age:
+      - '86400'
       Cache-Control:
       - public, max-age=60
       Connection:
@@ -40,15 +37,15 @@ interactions:
       Content-Encoding:
       - gzip
       Content-Length:
-      - '595'
+      - '292'
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 22 Sep 2020 17:37:04 GMT
+      - Tue, 09 Nov 2021 23:05:01 GMT
       Expires:
-      - Tue, 22 Sep 2020 17:38:04 GMT
+      - Tue, 09 Nov 2021 23:06:01 GMT
       Last-Modified:
-      - Tue, 22 Sep 2020 17:37:04 GMT
+      - Tue, 09 Nov 2021 23:05:01 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -56,15 +53,13 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 acb5e0138f17ffe7929a4d64a50c4a24.cloudfront.net (CloudFront)
+      - 1.1 6785379936d15b44a779e5f13a6567df.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - HgQEolGlG4mka3bUWXFiUxjUShASzRJ2zhFnH7Xu63gGoa3y-ygTuQ==
+      - 4nBDwD_5cLgOy5n39bcijWXJm7J9vc5zLNyqjGTuZhceEnTl3gJXTw==
       X-Amz-Cf-Pop:
-      - IAD79-C1
+      - SFO5-C3
       X-Cache:
       - Miss from cloudfront
-      X-Cache-Status:
-      - EXPIRED
       X-Content-Type-Options:
       - nosniff
       X-Frame-Options:
