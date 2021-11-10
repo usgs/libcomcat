@@ -25,34 +25,39 @@ from libcomcat import __version__ as libversion
 
 # use this to set the user agent for each request, giving us a way
 # to distinguish libcomcat requests from other browser requests
-HEADERS = {'User-Agent': 'libcomcat v%s' % libversion}
+HEADERS = {"User-Agent": "libcomcat v%s" % libversion}
 
 # constants
-CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
-CONTRIBUTORS_SEARCH_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/'
-                                '1/contributors')
+CATALOG_SEARCH_TEMPLATE = "https://earthquake.usgs.gov/fdsnws/event/1/catalogs"
+CONTRIBUTORS_SEARCH_TEMPLATE = (
+    "https://earthquake.usgs.gov/fdsnws/event/" "1/contributors"
+)
 TIMEOUT = 60
-TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
-TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
-DATEFMT = '%Y-%m-%d'
-COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
+TIMEFMT1 = "%Y-%m-%dT%H:%M:%S"
+TIMEFMT2 = "%Y-%m-%dT%H:%M:%S.%f"
+DATEFMT = "%Y-%m-%d"
+COUNTRYFILE = "ne_10m_admin_0_countries.shp"
 
 # where is the PAGER fatality model found?
-FATALITY_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
-                'losspager/data/fatality.xml')
-ECONOMIC_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
-                'losspager/data/economy.xml')
+FATALITY_URL = (
+    "https://raw.githubusercontent.com/usgs/pager/master/" "losspager/data/fatality.xml"
+)
+ECONOMIC_URL = (
+    "https://raw.githubusercontent.com/usgs/pager/master/" "losspager/data/economy.xml"
+)
 
-COUNTRIES_SHP = 'ne_50m_admin_0_countries.shp'
+COUNTRIES_SHP = "ne_50m_admin_0_countries.shp"
 BUFFER_DISTANCE_KM = 100
 KM_PER_DEGREE = 119.191
 
 TIMEOUT = 60  # how long should we wait for a response from ComCat?
 
 
-class CombinedFormatter(argparse.ArgumentDefaultsHelpFormatter,
-                        argparse.RawTextHelpFormatter,
-                        argparse.RawDescriptionHelpFormatter):
+class CombinedFormatter(
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawTextHelpFormatter,
+    argparse.RawDescriptionHelpFormatter,
+):
     pass
 
 
@@ -77,30 +82,32 @@ def get_mag_src(mag):
     if c2:
         magsrc = mag.creation_info.agency_id.lower()
     else:
-        has_gcmt = mag.resource_id.id.lower().find('gcmt') > -1
-        has_at = mag.resource_id.id.lower().find('at') > -1
-        has_pt = mag.resource_id.id.lower().find('pt') > -1
-        has_ak = (mag.resource_id.id.lower().find('ak') > -1 or
-                  mag.resource_id.id.lower().find('alaska') > -1)
-        has_pr = mag.resource_id.id.lower().find('pr') > -1
-        has_dup = mag.resource_id.id.lower().find('duputel') > -1
-        has_us = mag.resource_id.id.lower().find('us') > -1
+        has_gcmt = mag.resource_id.id.lower().find("gcmt") > -1
+        has_at = mag.resource_id.id.lower().find("at") > -1
+        has_pt = mag.resource_id.id.lower().find("pt") > -1
+        has_ak = (
+            mag.resource_id.id.lower().find("ak") > -1
+            or mag.resource_id.id.lower().find("alaska") > -1
+        )
+        has_pr = mag.resource_id.id.lower().find("pr") > -1
+        has_dup = mag.resource_id.id.lower().find("duputel") > -1
+        has_us = mag.resource_id.id.lower().find("us") > -1
         if has_gcmt:
-            magsrc = 'gcmt'
+            magsrc = "gcmt"
         elif has_dup:
-            magsrc = 'duputel'
+            magsrc = "duputel"
         elif has_at:
-            magsrc = 'at'
+            magsrc = "at"
         elif has_pt:
-            magsrc = 'pt'
+            magsrc = "pt"
         elif has_ak:
-            magsrc = 'ak'
+            magsrc = "ak"
         elif has_pr:
-            magsrc = 'pr'
+            magsrc = "pr"
         elif has_us:
-            magsrc = 'us'
+            magsrc = "us"
         else:
-            magsrc = 'unknown'
+            magsrc = "unknown"
 
     return magsrc
 
@@ -117,30 +124,30 @@ def read_phases(filename):
             dataframe - Pandas dataframe containing phase data.
     """
     if not os.path.isfile(filename):
-        raise FileNotFoundError('Filename %s does not exist.' % filename)
+        raise FileNotFoundError("Filename %s does not exist." % filename)
     header_dict = {}
-    if filename.endswith('xlsx'):
+    if filename.endswith("xlsx"):
         wb = load_workbook(filename=filename, read_only=True)
         ws = wb.active
-        key = ''
+        key = ""
         rowidx = 1
 
-        while key != 'Channel':
-            key = ws['A%i' % rowidx].value
-            if not key.startswith('#'):
-                value = ws['B%i' % rowidx].value
+        while key != "Channel":
+            key = ws["A%i" % rowidx].value
+            if not key.startswith("#"):
+                value = ws["B%i" % rowidx].value
                 header_dict[key] = value
             rowidx += 1
         wb.close()
         dataframe = pd.read_excel(filename, skiprows=rowidx - 2)
-    elif filename.endswith('csv'):
-        f = open(filename, 'rt')
+    elif filename.endswith("csv"):
+        f = open(filename, "rt")
         tline = f.readline()
         rowidx = 0
-        while tline.startswith('#'):
-            if not tline.startswith('#%'):
-                line = tline.replace('#', '').strip()
-                key, value = line.split('=')
+        while tline.startswith("#"):
+            if not tline.startswith("#%"):
+                line = tline.replace("#", "").strip()
+                key, value = line.split("=")
                 key = key.strip()
                 value = value.strip()
                 header_dict[key] = value
@@ -150,19 +157,20 @@ def read_phases(filename):
         dataframe = pd.read_csv(filename, skiprows=rowidx)
     else:
         f, ext = os.path.splitext(filename)
-        raise Exception('Filenames with extension %s are not supported.' % ext)
+        raise Exception("Filenames with extension %s are not supported." % ext)
     return (header_dict, dataframe)
 
 
 def makedict(dictstring):
     try:
-        parts = dictstring.split(':')
+        parts = dictstring.split(":")
         key = parts[0]
         value = parts[1]
         return {key: value}
     except Exception:
         raise Exception(
-            'Could not create a single key dictionary out of %s' % dictstring)
+            "Could not create a single key dictionary out of %s" % dictstring
+        )
 
 
 def maketime(timestring):
@@ -176,8 +184,7 @@ def maketime(timestring):
             try:
                 outtime = HistoricTime.strptime(timestring, DATEFMT)
             except Exception:
-                raise Exception(
-                    'Could not parse time or date from %s' % timestring)
+                raise Exception("Could not parse time or date from %s" % timestring)
     return outtime
 
 
@@ -196,7 +203,7 @@ def get_catalogs():
         raise ConnectionError(fmt % (CATALOG_SEARCH_TEMPLATE, str(e)))
 
     root = minidom.parseString(data)
-    catalogs = root.getElementsByTagName('Catalog')
+    catalogs = root.getElementsByTagName("Catalog")
     catlist = []
     for catalog in catalogs:
         catlist.append(catalog.firstChild.data)
@@ -218,7 +225,7 @@ def get_contributors():
         fmt = 'Could not connect to url %s. Error: "%s"'
         raise ConnectionError(fmt % (CONTRIBUTORS_SEARCH_TEMPLATE, str(e)))
     root = minidom.parseString(data)
-    contributors = root.getElementsByTagName('Contributor')
+    contributors = root.getElementsByTagName("Contributor")
     conlist = []
     for contributor in contributors:
         conlist.append(contributor.firstChild.data)
@@ -235,12 +242,12 @@ def check_ccode(ccode):
         bool: True if valid country code found in bounds file, False otherwise.
     """
     ccode = ccode.upper()
-    datapath = os.path.join('data', COUNTRIES_SHP)
-    shpfile = pkg_resources.resource_filename('libcomcat', datapath)
+    datapath = os.path.join("data", COUNTRIES_SHP)
+    shpfile = pkg_resources.resource_filename("libcomcat", datapath)
     ccodes = []
-    with fiona.open(shpfile, 'r') as shapes:
+    with fiona.open(shpfile, "r") as shapes:
         for shape in shapes:
-            isocode = shape['properties']['ADM0_A3']
+            isocode = shape["properties"]["ADM0_A3"]
             ccodes.append(isocode)
     if ccode not in ccodes:
         return False
@@ -260,17 +267,16 @@ def get_country_bounds(ccode, buffer_km=BUFFER_DISTANCE_KM):
     """
     xmin = xmax = ymin = ymax = None
     ccode = ccode.upper()
-    datapath = os.path.join('data', COUNTRIES_SHP)
-    shpfile = pkg_resources.resource_filename('libcomcat', datapath)
+    datapath = os.path.join("data", COUNTRIES_SHP)
+    shpfile = pkg_resources.resource_filename("libcomcat", datapath)
     bounds = []
-    with fiona.open(shpfile, 'r') as shapes:
+    with fiona.open(shpfile, "r") as shapes:
         for shape in shapes:
-            if shape['properties']['ADM0_A3'] == ccode:
-                country = sShape(shape['geometry'])
+            if shape["properties"]["ADM0_A3"] == ccode:
+                country = sShape(shape["geometry"])
                 if isinstance(country, MultiPolygon):
                     for polygon in country:
-                        xmin, ymin, xmax, ymax = _buffer(
-                            polygon.bounds, buffer_km)
+                        xmin, ymin, xmax, ymax = _buffer(polygon.bounds, buffer_km)
                         bounds.append((xmin, xmax, ymin, ymax))
                 else:
                     xmin, ymin, xmax, ymax = _buffer(country.bounds, buffer_km)
@@ -282,7 +288,7 @@ def get_country_bounds(ccode, buffer_km=BUFFER_DISTANCE_KM):
 
 def _buffer(bounds, buffer_km):
     xmin, ymin, xmax, ymax = bounds
-    km2deg = (1 / KM_PER_DEGREE)
+    km2deg = 1 / KM_PER_DEGREE
     ymin -= buffer_km * km2deg
     ymax += buffer_km * km2deg
     yav = (ymin + ymax) / 2
@@ -292,39 +298,24 @@ def _buffer(bounds, buffer_km):
 
 
 def _get_country_shape(ccode):
-    datapath = os.path.join('data', COUNTRIES_SHP)
-    shpfile = pkg_resources.resource_filename('libcomcat', datapath)
+    datapath = os.path.join("data", COUNTRIES_SHP)
+    shpfile = pkg_resources.resource_filename("libcomcat", datapath)
     country = None
-    with fiona.open(shpfile, 'r') as shapes:
+    with fiona.open(shpfile, "r") as shapes:
         for shape in shapes:
-            if shape['properties']['ADM0_A3'] == ccode:
-                country = sShape(shape['geometry'])
+            if shape["properties"]["ADM0_A3"] == ccode:
+                country = sShape(shape["geometry"])
 
     return country
 
 
 def _get_utm_proj(lat, lon):
     zone = str((math.floor((lon + 180) / 6) % 60) + 1)
-    alphabet = string.ascii_uppercase
-    alphabet = alphabet.replace('I', '')
-    alphabet = alphabet.replace('O', '')
-    alphabet = alphabet[2:-2]
-    if lat < -80:
-        band = 'C'
-    elif lat > 84:
-        band = 'X'
-    else:
-        band_starts = np.arange(-80, 80, 8)
-        # band_ends = np.append(np.arange(-72, 80, 8), [84])
-        dstarts = lat - band_starts
-        sidx = np.where(dstarts >= 0)[0].max()
-        band = alphabet[sidx]
-    fmt = ("+proj=utm +zone=%s%s, %s +ellps=WGS84 "
-           "+datum=WGS84 +units=m +no_defs")
-    south = ''
+    fmt = "+proj=utm +zone=%s %s +ellps=WGS84 " "+datum=WGS84 +units=m +no_defs"
+    south = ""
     if lat < 0:
-        south = '+south'
-    tpl = (zone, band, south)
+        south = "+south"
+    tpl = (zone, south)
     proj = pyproj.Proj(fmt % tpl)
     return proj
 
@@ -339,10 +330,7 @@ def _get_pshape(polygon, buffer_km):
         center_lon -= 360
     center_lat = (bounds[1] + bounds[3]) / 2
     utmproj = _get_utm_proj(center_lat, center_lon)
-    project = partial(
-        pyproj.transform,
-        pyproj.Proj(init='epsg:4326'),
-        utmproj)
+    project = partial(pyproj.transform, pyproj.Proj(init="epsg:4326"), utmproj)
 
     pshape = transform(project, polygon)
     pshape = pshape.buffer(buffer_km * 1000)
@@ -372,8 +360,8 @@ def filter_by_country(df, ccode, buffer_km=BUFFER_DISTANCE_KM):
 
     df2 = pd.DataFrame(columns=df.columns)
     for idx, row in df.iterrows():
-        lat = row['latitude']
-        lon = row['longitude']
+        lat = row["latitude"]
+        lon = row["longitude"]
         point_inside = False
         for pshape, utmproj in pshapes:
             x, y = utmproj(lon, lat)
