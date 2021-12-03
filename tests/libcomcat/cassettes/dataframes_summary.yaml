@@ -5,32 +5,32 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
-      - libcomcat v2.0.10+3.ga3cfab6.dirty
+      - libcomcat v2.0.13+0.g18278d0.dirty
     method: GET
     uri: https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1994-06-01T00%3A00%3A00&endtime=1994-10-06T00%3A00%3A00&limit=20000&maxmagnitude=9.0&minmagnitude=8.0&offset=1&orderby=time-asc&eventtype=earthquake
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       Access-Control-Allow-Headers:
       - '*'
@@ -51,11 +51,11 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Wed, 23 Jun 2021 18:20:13 GMT
+      - Tue, 09 Nov 2021 22:31:56 GMT
       Expires:
-      - Wed, 23 Jun 2021 18:21:13 GMT
+      - Tue, 09 Nov 2021 22:32:56 GMT
       Last-Modified:
-      - Wed, 23 Jun 2021 18:20:13 GMT
+      - Tue, 09 Nov 2021 22:31:56 GMT
       Server:
       - nginx
       Strict-Transport-Security:
@@ -63,11 +63,11 @@ interactions:
       Vary:
       - Accept-Encoding
       Via:
-      - 1.1 d126a6b57e5778e7435ff2e74117527a.cloudfront.net (CloudFront)
+      - 1.1 3837196532c9fdc156c237bc89b37930.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - Ysc3A_oU-nB-8QtZyQ-vtZCLIOGhRWPonnI7w-0XhjMUaLwddvxKEA==
+      - 1cLUmDkdJiJGd9ljQIKNVxqCLb7EyeZISKJTxg1kN4k7tlAbAw_gFw==
       X-Amz-Cf-Pop:
-      - DEN52-C1
+      - SFO5-C3
       X-Cache:
       - Miss from cloudfront
       X-Content-Type-Options:
