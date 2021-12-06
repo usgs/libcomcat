@@ -70,10 +70,10 @@ jobs:
         imageName: 'macOS-10.15'
         python.version: '3.9'
       MacOS_10_16_Python36:
-        imageName: 'macOS-10.16'
+        imageName: 'macOS-11'
         python.version: '3.8'
       MacOS_10_16_Python37:
-        imageName: 'macOS-10.16'
+        imageName: 'macOS-11'
         python.version: '3.9'
   pool:
     vmImage: $(imageName)
