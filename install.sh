@@ -82,7 +82,7 @@ conda remove -y -n $VENV --all
 package_list=(
       "python>=3.6"
       "impactutils"
-      "fiona"
+      "fiona>=1.8.20"
       "ipython"
       "jupyter"
       "numpy"
@@ -98,9 +98,19 @@ package_list=(
       "xlsxwriter"
 )
 
+# check to see if mamba is installed in the base environment
+if ! command -v mamba &> /dev/null
+then
+    echo "Installing mamba into base environment..."
+    conda install mamba -n base -c conda-forge -y
+    echo "Done installing mamba."
+else
+    echo "Mamba already installed."
+fi
+
 # Create a conda virtual environment
 echo "Creating the $VENV virtual environment:"
-conda create -y -n $VENV -c conda-forge --channel-priority ${package_list[*]}
+mamba create -y -n $VENV -c conda-forge --channel-priority ${package_list[*]}
 
 # Bail out at this point if the conda create command fails.
 # Clean up zip files we've downloaded
