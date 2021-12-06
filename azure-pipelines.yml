@@ -57,22 +57,22 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Linux_Python36:
+      Linux_Python38:
         imageName: 'ubuntu-latest'
         python.version: '3.8'
-      Linux_Python37:
+      Linux_Python39:
         imageName: 'ubuntu-latest'
         python.version: '3.9'
-      MacOS_10_15_Python36:
+      MacOS_10_15_Python38:
         imageName: 'macOS-10.15'
         python.version: '3.8'
-      MacOS_10_15_Python37:
+      MacOS_10_15_Python39:
         imageName: 'macOS-10.15'
         python.version: '3.9'
-      MacOS_11_Python36:
+      MacOS_11_Python38:
         imageName: 'macOS-11'
         python.version: '3.8'
-      MacOS_11_Python37:
+      MacOS_11_Python39:
         imageName: 'macOS-11'
         python.version: '3.9'
   pool:
