@@ -16,12 +16,12 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Windows_Python36:
+      Windows_Python38:
         imageName: 'windows-latest'
-        python.version: '3.6'
-      Windows_Python37:
+        python.version: '3.8'
+      Windows_Python39:
         imageName: 'windows-latest'
-        python.version: '3.7'
+        python.version: '3.9'
   pool:
     vmImage: $(imageName)
 
@@ -57,24 +57,24 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Linux_Python36:
+      Linux_Python38:
         imageName: 'ubuntu-latest'
-        python.version: '3.6'
-      Linux_Python37:
+        python.version: '3.8'
+      Linux_Python39:
         imageName: 'ubuntu-latest'
-        python.version: '3.7'
-      MacOS_10_14_Python36:
-        imageName: 'macOS-10.14'
-        python.version: '3.6'
-      MacOS_10_14_Python37:
-        imageName: 'macOS-10.14'
-        python.version: '3.7'
-      MacOS_10_15_Python36:
+        python.version: '3.9'
+      MacOS_10_15_Python38:
         imageName: 'macOS-10.15'
-        python.version: '3.6'
-      MacOS_10_15_Python37:
+        python.version: '3.8'
+      MacOS_10_15_Python39:
         imageName: 'macOS-10.15'
-        python.version: '3.7'
+        python.version: '3.9'
+      MacOS_11_Python38:
+        imageName: 'macOS-11'
+        python.version: '3.8'
+      MacOS_11_Python39:
+        imageName: 'macOS-11'
+        python.version: '3.9'
   pool:
     vmImage: $(imageName)
 

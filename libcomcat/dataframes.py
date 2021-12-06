@@ -19,60 +19,81 @@ from impactutils.mapping.compass import get_compass_dir_azimuth
 # local imports
 from libcomcat.search import get_event_by_id
 from libcomcat import search
-from libcomcat.exceptions import (ConnectionError, ParsingError,
-                                  ProductNotFoundError,
-                                  ProductNotSpecifiedError)
+from libcomcat.exceptions import (
+    ConnectionError,
+    ParsingError,
+    ProductNotFoundError,
+    ProductNotSpecifiedError,
+)
 from libcomcat.utils import HEADERS, TIMEOUT
 
 # constants
-CATALOG_SEARCH_TEMPLATE = 'https://earthquake.usgs.gov/fdsnws/event/1/catalogs'
-CONTRIBUTORS_SEARCH_TEMPLATE = ('https://earthquake.usgs.gov/fdsnws/event/1/'
-                                'contributors')
-TIMEFMT1 = '%Y-%m-%dT%H:%M:%S'
-TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%f'
-DATEFMT = '%Y-%m-%d'
-COUNTRYFILE = 'ne_10m_admin_0_countries.shp'
+CATALOG_SEARCH_TEMPLATE = "https://earthquake.usgs.gov/fdsnws/event/1/catalogs"
+CONTRIBUTORS_SEARCH_TEMPLATE = (
+    "https://earthquake.usgs.gov/fdsnws/event/1/" "contributors"
+)
+TIMEFMT1 = "%Y-%m-%dT%H:%M:%S"
+TIMEFMT2 = "%Y-%m-%dT%H:%M:%S.%f"
+DATEFMT = "%Y-%m-%d"
+COUNTRYFILE = "ne_10m_admin_0_countries.shp"
 
 # where is the PAGER fatality model found?
-FATALITY_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
-                'losspager/data/fatality.xml')
-ECONOMIC_URL = ('https://raw.githubusercontent.com/usgs/pager/master/'
-                'losspager/data/economy.xml')
+FATALITY_URL = (
+    "https://raw.githubusercontent.com/usgs/pager/master/" "losspager/data/fatality.xml"
+)
+ECONOMIC_URL = (
+    "https://raw.githubusercontent.com/usgs/pager/master/" "losspager/data/economy.xml"
+)
 
 # what are the DYFI columns and what do we rename them to?
 DYFI_COLUMNS_REPLACE = {
-    'Geocoded box': 'station',
-    'CDI': 'intensity',
-    'Latitude': 'lat',
-    'Longitude': 'lon',
-    'No. of responses': 'nresp',
-    'Hypocentral distance': 'distance',
-    'Epicentral distance': 'distance',
-    'ZIP/Location': 'station',
-
+    "Geocoded box": "station",
+    "CDI": "intensity",
+    "Latitude": "lat",
+    "Longitude": "lon",
+    "No. of responses": "nresp",
+    "Hypocentral distance": "distance",
+    "Epicentral distance": "distance",
+    "ZIP/Location": "station",
 }
 
 
-PRODUCT_COLUMNS = ['Update Time', 'Product', 'Authoritative Event ID', 'Code',
-                   'Associated',
-                   'Product Source', 'Product Version',
-                   'Elapsed (min)', 'URL', 'Comment', 'Description']
+PRODUCT_COLUMNS = [
+    "Update Time",
+    "Product",
+    "Authoritative Event ID",
+    "Code",
+    "Associated",
+    "Product Source",
+    "Product Version",
+    "Elapsed (min)",
+    "URL",
+    "Comment",
+    "Description",
+]
 
 SECSPERDAY = 86400
-TIMEFMT = '%Y-%m-%d %H:%M:%S'
-TIMEFMT2 = '%Y-%m-%dT%H:%M:%S.%fZ'
-TIMEFMT3 = '%Y-%m-%d %H:%M:%S.%f'
+TIMEFMT = "%Y-%m-%d %H:%M:%S"
+TIMEFMT2 = "%Y-%m-%dT%H:%M:%S.%fZ"
+TIMEFMT3 = "%Y-%m-%d %H:%M:%S.%f"
 
-PRODUCTS = ['dyfi', 'finite-fault',
-            'focal-mechanism', 'ground-failure',
-            'losspager', 'moment-tensor',
-            'oaf', 'origin', 'phase-data',
-            'shakemap']
+PRODUCTS = [
+    "dyfi",
+    "finite-fault",
+    "focal-mechanism",
+    "ground-failure",
+    "losspager",
+    "moment-tensor",
+    "oaf",
+    "origin",
+    "phase-data",
+    "shakemap",
+]
 
 EARTH_RADIUS = 6371.0
 
 
-def get_phase_dataframe(detail, catalog='preferred'):
+def get_phase_dataframe(detail, catalog="preferred"):
     """Return a Pandas DataFrame consisting of Phase arrival data.
 
     Args:
@@ -96,16 +117,26 @@ def get_phase_dataframe(detail, catalog='preferred'):
             for the input catalog.
     """
     if catalog is None:
-        catalog = 'preferred'
-    df = pd.DataFrame(columns=['Channel', 'Distance', 'Azimuth',
-                               'Phase', 'Arrival Time', 'Status',
-                               'Residual', 'Weight', 'Agency'])
+        catalog = "preferred"
+    df = pd.DataFrame(
+        columns=[
+            "Channel",
+            "Distance",
+            "Azimuth",
+            "Phase",
+            "Arrival Time",
+            "Status",
+            "Residual",
+            "Weight",
+            "Agency",
+        ]
+    )
 
-    phasedata = detail.getProducts('phase-data', source=catalog)[0]
-    quakeurl = phasedata.getContentURL('quakeml.xml')
+    phasedata = detail.getProducts("phase-data", source=catalog)[0]
+    quakeurl = phasedata.getContentURL("quakeml.xml")
     try:
         response = requests.get(quakeurl, timeout=TIMEOUT, headers=HEADERS)
-        data = response.text.encode('utf-8')
+        data = response.text.encode("utf-8")
     except Exception:
         return None
     unpickler = Unpickler()
@@ -114,13 +145,13 @@ def get_phase_dataframe(detail, catalog='preferred'):
         try:
             catalog = unpickler.loads(data)
         except Exception as e:
-            fmt = 'Could not parse QuakeML from %s due to error: %s'
+            fmt = "Could not parse QuakeML from %s due to error: %s"
             msg = fmt % (quakeurl, str(e))
             raise ParsingError(msg)
         catevent = catalog.events[0]
         for pick in catevent.picks:
             station = pick.waveform_id.station_code
-            fmt = 'Getting pick %s for station%s...'
+            fmt = "Getting pick %s for station%s..."
             logging.debug(fmt % (pick.time, station))
             phaserow = _get_phaserow(pick, catevent)
             if phaserow is None:
@@ -160,18 +191,20 @@ def _get_phaserow(pick, catevent):
     # save info to row of dataframe
     etime = pick.time.datetime
     channel = stringify(waveform_id)
-    agency_id = ''
+    agency_id = ""
     if arrival.creation_info is not None:
         agency_id = arrival.creation_info.agency_id
-    row = {'Channel': channel,
-           'Distance': arrival.distance,
-           'Azimuth': arrival.azimuth,
-           'Phase': arrival.phase,
-           'Arrival Time': etime,
-           'Status': pick.evaluation_mode,
-           'Residual': arrival.time_residual,
-           'Weight': arrival.time_weight,
-           'Agency': agency_id}
+    row = {
+        "Channel": channel,
+        "Distance": arrival.distance,
+        "Azimuth": arrival.azimuth,
+        "Phase": arrival.phase,
+        "Arrival Time": etime,
+        "Status": pick.evaluation_mode,
+        "Residual": arrival.time_residual,
+        "Weight": arrival.time_weight,
+        "Agency": agency_id,
+    }
     return row
 
 
@@ -183,17 +216,17 @@ def stringify(waveform):
     Returns:
         str: NSCL- style string representation of waveform object.
     """
-    fmt = '%s.%s.%s.%s'
-    network = '--'
+    fmt = "%s.%s.%s.%s"
+    network = "--"
     if waveform.network_code is not None:
         network = waveform.network_code
-    station = '--'
+    station = "--"
     if waveform.station_code is not None:
         station = waveform.station_code
-    channel = '--'
+    channel = "--"
     if waveform.channel_code is not None:
         channel = waveform.channel_code
-    location = '--'
+    location = "--"
     if waveform.location_code is not None:
         location = waveform.location_code
     tpl = (network, station, channel, location)
@@ -285,26 +318,34 @@ def get_magnitude_data_frame(detail, catalog, magtype):
         AttributeError if input DetailEvent does not have a phase-data product
             for the input catalog.
     """
-    columns = columns = ['Channel', 'Type', 'Amplitude',
-                         'Period', 'Status', 'Magnitude',
-                         'Weight', 'Distance', 'Azimuth',
-                         'MeasurementTime']
+    columns = columns = [
+        "Channel",
+        "Type",
+        "Amplitude",
+        "Period",
+        "Status",
+        "Magnitude",
+        "Weight",
+        "Distance",
+        "Azimuth",
+        "MeasurementTime",
+    ]
     df = pd.DataFrame(columns=columns)
-    phasedata = detail.getProducts('phase-data', source=catalog)[0]
-    quakeurl = phasedata.getContentURL('quakeml.xml')
+    phasedata = detail.getProducts("phase-data", source=catalog)[0]
+    quakeurl = phasedata.getContentURL("quakeml.xml")
     try:
         response = requests.get(quakeurl, timeout=TIMEOUT, headers=HEADERS)
-        data = response.text.encode('utf-8')
+        data = response.text.encode("utf-8")
     except Exception:
         return None
-    fmt = '%s.%s.%s.%s'
+    fmt = "%s.%s.%s.%s"
     unpickler = Unpickler()
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=UserWarning)
         try:
             catalog = unpickler.loads(data)
         except Exception as e:
-            fmt = 'Could not parse QuakeML from %s due to error: %s'
+            fmt = "Could not parse QuakeML from %s due to error: %s"
             msg = fmt % (quakeurl, str(e))
             raise ParsingError(msg)
         catevent = catalog.events[0]  # match this to input catalog
@@ -318,27 +359,23 @@ def get_magnitude_data_frame(detail, catalog, magtype):
                 amp = None
                 if ampid is None:
                     waveid = smag.waveform_id
-                    tpl = (waveid.network_code,
-                           waveid.station_code,
-                           '--',
-                           '--')
+                    tpl = (waveid.network_code, waveid.station_code, "--", "--")
                 else:
                     amp = ampid.get_referred_object()
                     if amp is None:
                         waveid = smag.waveform_id
-                        tpl = (waveid.network_code,
-                               waveid.station_code,
-                               '--',
-                               '--')
+                        tpl = (waveid.network_code, waveid.station_code, "--", "--")
                     else:
                         waveid = amp.waveform_id
-                        tpl = (waveid.network_code,
-                               waveid.station_code,
-                               waveid.channel_code,
-                               waveid.location_code)
+                        tpl = (
+                            waveid.network_code,
+                            waveid.station_code,
+                            waveid.channel_code,
+                            waveid.location_code,
+                        )
 
-                row['Channel'] = fmt % tpl
-                row['Type'] = smag.station_magnitude_type
+                row["Channel"] = fmt % tpl
+                row["Type"] = smag.station_magnitude_type
 
                 distance = np.nan
                 azimuth = np.nan
@@ -352,30 +389,33 @@ def get_magnitude_data_frame(detail, catalog, magtype):
                             distance = arrival.distance
                             azimuth = arrival.azimuth
                 if amp is not None:
-                    row['Amplitude'] = amp.generic_amplitude
-                    row['Period'] = amp.period
-                    row['Status'] = amp.evaluation_mode
-                    row['MeasurementTime'] = amp.scaling_time.datetime
+                    row["Amplitude"] = amp.generic_amplitude
+                    row["Period"] = amp.period
+                    row["Status"] = amp.evaluation_mode
+                    row["MeasurementTime"] = amp.scaling_time.datetime
                 else:
-                    row['Amplitude'] = np.nan
-                    row['Period'] = np.nan
-                    row['Status'] = 'automatic'
-                    row['MeasurementTime'] = np.nan
-                row['Magnitude'] = smag.mag
-                row['Weight'] = contribution.weight
-                row['Distance'] = distance
-                row['Azimuth'] = azimuth
+                    row["Amplitude"] = np.nan
+                    row["Period"] = np.nan
+                    row["Status"] = "automatic"
+                    row["MeasurementTime"] = np.nan
+                row["Magnitude"] = smag.mag
+                row["Weight"] = contribution.weight
+                row["Distance"] = distance
+                row["Azimuth"] = azimuth
 
                 df = df.append(row, ignore_index=True)
     df = df[columns]
     return df
 
 
-def get_detail_data_frame(events, get_all_magnitudes=False,
-                          get_tensors='preferred',
-                          get_focals='preferred',
-                          get_moment_supplement=False,
-                          verbose=False):
+def get_detail_data_frame(
+    events,
+    get_all_magnitudes=False,
+    get_tensors="preferred",
+    get_focals="preferred",
+    get_moment_supplement=False,
+    verbose=False,
+):
     """Extract the detailed event informat into a pandas DataFrame.
 
     Usage:
@@ -399,27 +439,27 @@ def get_detail_data_frame(events, get_all_magnitudes=False,
     elist = []
     ic = 0
     inc = min(100, np.power(10, np.floor(np.log10(len(events))) - 1))
-    fmt = 'Getting detailed event info - reporting every %i events.'
+    fmt = "Getting detailed event info - reporting every %i events."
     logging.debug(fmt % inc)
     for event in events:
         try:
             detail = event.getDetailEvent()
         except Exception:
-            logging.warning(
-                'Failed to get detailed version of event %s' % event.id)
+            logging.warning("Failed to get detailed version of event %s" % event.id)
             continue
-        edict = detail.toDict(get_all_magnitudes=get_all_magnitudes,
-                              get_tensors=get_tensors,
-                              get_moment_supplement=get_moment_supplement,
-                              get_focals=get_focals)
+        edict = detail.toDict(
+            get_all_magnitudes=get_all_magnitudes,
+            get_tensors=get_tensors,
+            get_moment_supplement=get_moment_supplement,
+            get_focals=get_focals,
+        )
         elist.append(edict)
         if ic % inc == 0 and verbose:
-            msg = 'Getting detailed information for %s, %i of %i events.\n'
+            msg = "Getting detailed information for %s, %i of %i events.\n"
             logging.debug(msg % (event.id, ic, len(events)))
         ic += 1
     df = pd.DataFrame(elist)
-    first_columns = ['id', 'time', 'latitude',
-                     'longitude', 'depth', 'magnitude']
+    first_columns = ["id", "time", "latitude", "longitude", "depth", "magnitude"]
     all_columns = df.columns
     rem_columns = [col for col in all_columns if col not in first_columns]
     new_columns = first_columns + rem_columns
@@ -454,9 +494,9 @@ def get_summary_data_frame(events):
     return df
 
 
-def get_pager_data_frame(detail, get_losses=False,
-                         get_country_exposures=False,
-                         get_all_versions=False):
+def get_pager_data_frame(
+    detail, get_losses=False, get_country_exposures=False, get_all_versions=False
+):
     """Extract PAGER results for an event as a DataFrame.
 
     Args:
@@ -482,108 +522,115 @@ def get_pager_data_frame(detail, get_losses=False,
             mmi10 - Estimated population exposed to shaking at MMI intensity
                     10.
     """
-    default_columns = ['id', 'location', 'time',
-                       'latitude', 'longitude',
-                       'depth', 'magnitude', 'country',
-                       'pager_version',
-                       'mmi1', 'mmi2',
-                       'mmi3', 'mmi4',
-                       'mmi5', 'mmi6',
-                       'mmi7', 'mmi8',
-                       'mmi9', 'mmi10']
+    default_columns = [
+        "id",
+        "location",
+        "time",
+        "latitude",
+        "longitude",
+        "depth",
+        "magnitude",
+        "country",
+        "pager_version",
+        "mmi1",
+        "mmi2",
+        "mmi3",
+        "mmi4",
+        "mmi5",
+        "mmi6",
+        "mmi7",
+        "mmi8",
+        "mmi9",
+        "mmi10",
+    ]
 
-    if not detail.hasProduct('losspager'):
+    if not detail.hasProduct("losspager"):
         return None
 
     df = None
-    for pager in detail.getProducts('losspager', version='all'):
+    for pager in detail.getProducts("losspager", version="all"):
         total_row = {}
         default = {}
-        default['id'] = detail.id
-        default['location'] = detail.location
+        default["id"] = detail.id
+        default["location"] = detail.location
         lat = detail.latitude
         lon = detail.longitude
-        default['time'] = detail.time
-        default['latitude'] = lat
-        default['longitude'] = lon
-        default['depth'] = detail.depth
-        default['magnitude'] = detail.magnitude
-        default['pager_version'] = pager.version
+        default["time"] = detail.time
+        default["latitude"] = lat
+        default["longitude"] = lon
+        default["depth"] = detail.depth
+        default["magnitude"] = detail.magnitude
+        default["pager_version"] = pager.version
         total_row.update(default)
-        total_row['country'] = 'Total'
+        total_row["country"] = "Total"
 
-        if len(pager.getContentsMatching('exposures.json')):
-            total_row, country_rows = _get_json_exposure(total_row,
-                                                         pager,
-                                                         get_country_exposures,
-                                                         default)
+        if len(pager.getContentsMatching("exposures.json")):
+            total_row, country_rows = _get_json_exposure(
+                total_row, pager, get_country_exposures, default
+            )
 
             if get_losses:
-                loss_json = pager.getContentBytes(
-                    'losses.json')[0].decode('utf-8')
+                loss_json = pager.getContentBytes("losses.json")[0].decode("utf-8")
                 jdict = json.loads(loss_json)
-                empfat = jdict['empirical_fatality']
+                empfat = jdict["empirical_fatality"]
 
                 # get the list of country codes
-                ccodes = [cfat['country_code']
-                          for cfat in empfat['country_fatalities']]
+                ccodes = [cfat["country_code"] for cfat in empfat["country_fatalities"]]
                 gfat, geco = get_g_values(ccodes)
 
                 # get the total fatalities
-                total_row['predicted_fatalities'] = empfat['total_fatalities']
+                total_row["predicted_fatalities"] = empfat["total_fatalities"]
 
                 gfat_total, geco_total = _get_total_g(pager)
                 # get the Gs/sigmas for total fatality
-                fat_sigma = get_sigma(empfat['total_fatalities'], gfat_total)
-                total_row['fatality_sigma'] = fat_sigma
+                fat_sigma = get_sigma(empfat["total_fatalities"], gfat_total)
+                total_row["fatality_sigma"] = fat_sigma
 
                 # get the total economic losses
-                emploss = jdict['empirical_economic']
-                total_row['predicted_dollars'] = emploss['total_dollars']
+                emploss = jdict["empirical_economic"]
+                total_row["predicted_dollars"] = emploss["total_dollars"]
 
                 # get the Gs/sigmas for total dollars
-                eco_sigma = get_sigma(emploss['total_dollars'], geco_total)
-                total_row['dollars_sigma'] = eco_sigma
+                eco_sigma = get_sigma(emploss["total_dollars"], geco_total)
+                total_row["dollars_sigma"] = eco_sigma
 
                 if get_country_exposures:
-                    for country_fat in empfat['country_fatalities']:
-                        fat = country_fat['fatalities']
-                        ccode = country_fat['country_code']
+                    for country_fat in empfat["country_fatalities"]:
+                        fat = country_fat["fatalities"]
+                        ccode = country_fat["country_code"]
                         # in at least one case (not sure why) PAGER results
                         # have fatalities per country but not exposures.
                         if ccode not in country_rows:
                             country_rows[ccode] = {}
                             country_rows[ccode].update(default)
-                            country_rows[ccode]['country'] = ccode
-                            country_rows[ccode]['mmi1'] = np.nan
-                            country_rows[ccode]['mmi2'] = np.nan
-                            country_rows[ccode]['mmi3'] = np.nan
-                            country_rows[ccode]['mmi4'] = np.nan
-                            country_rows[ccode]['mmi5'] = np.nan
-                            country_rows[ccode]['mmi6'] = np.nan
-                            country_rows[ccode]['mmi7'] = np.nan
-                            country_rows[ccode]['mmi8'] = np.nan
-                            country_rows[ccode]['mmi9'] = np.nan
-                            country_rows[ccode]['mmi10'] = np.nan
+                            country_rows[ccode]["country"] = ccode
+                            country_rows[ccode]["mmi1"] = np.nan
+                            country_rows[ccode]["mmi2"] = np.nan
+                            country_rows[ccode]["mmi3"] = np.nan
+                            country_rows[ccode]["mmi4"] = np.nan
+                            country_rows[ccode]["mmi5"] = np.nan
+                            country_rows[ccode]["mmi6"] = np.nan
+                            country_rows[ccode]["mmi7"] = np.nan
+                            country_rows[ccode]["mmi8"] = np.nan
+                            country_rows[ccode]["mmi9"] = np.nan
+                            country_rows[ccode]["mmi10"] = np.nan
 
-                        country_rows[ccode]['predicted_fatalities'] = fat
+                        country_rows[ccode]["predicted_fatalities"] = fat
                         if ccode in gfat:
                             gvalue = gfat[ccode]
                         else:
                             gvalue = np.nan
-                        country_rows[ccode]['fatality_sigma'] = get_sigma(
-                            fat, gvalue)
+                        country_rows[ccode]["fatality_sigma"] = get_sigma(fat, gvalue)
 
-                    for country_eco in emploss['country_dollars']:
-                        eco = country_eco['us_dollars']
-                        ccode = country_eco['country_code']
-                        country_rows[ccode]['predicted_dollars'] = eco
+                    for country_eco in emploss["country_dollars"]:
+                        eco = country_eco["us_dollars"]
+                        ccode = country_eco["country_code"]
+                        country_rows[ccode]["predicted_dollars"] = eco
                         if ccode in geco:
                             gvalue = geco[ccode]
                         else:
                             gvalue = np.nan
-                        country_rows[ccode]['dollars_sigma'] = get_sigma(
-                            eco, gvalue)
+                        country_rows[ccode]["dollars_sigma"] = get_sigma(eco, gvalue)
 
         else:  # event does not have JSON content
             country_rows = {}
@@ -591,10 +638,12 @@ def get_pager_data_frame(detail, get_losses=False,
 
         columns = default_columns
         if get_losses:
-            columns = default_columns + ['predicted_fatalities',
-                                         'fatality_sigma',
-                                         'predicted_dollars',
-                                         'dollars_sigma']
+            columns = default_columns + [
+                "predicted_fatalities",
+                "fatality_sigma",
+                "predicted_dollars",
+                "dollars_sigma",
+            ]
         if df is None:
             df = pd.DataFrame(columns=columns)
         df = df.append(total_row, ignore_index=True)
@@ -604,10 +653,10 @@ def get_pager_data_frame(detail, get_losses=False,
     df = df[columns]
     # countries with zero fatalities don't report, so fill in with zeros
     if get_losses:
-        df['predicted_fatalities'] = df['predicted_fatalities'].fillna(value=0)
-        df['fatality_sigma'] = df['fatality_sigma'].fillna(value=0)
-        df['predicted_dollars'] = df['predicted_dollars'].fillna(value=0)
-        df['dollars_sigma'] = df['dollars_sigma'].fillna(value=0)
+        df["predicted_fatalities"] = df["predicted_fatalities"].fillna(value=0)
+        df["fatality_sigma"] = df["fatality_sigma"].fillna(value=0)
+        df["predicted_dollars"] = df["predicted_dollars"].fillna(value=0)
+        df["dollars_sigma"] = df["dollars_sigma"].fillna(value=0)
 
     return df
 
@@ -631,11 +680,10 @@ def _get_total_g(pager):
     Returns:
         tuple: (Aggregated Fatality G value, Aggregated Economic G value)
     """
-    alert_json = pager.getContentBytes(
-        'alerts.json')[0].decode('utf-8')
+    alert_json = pager.getContentBytes("alerts.json")[0].decode("utf-8")
     jdict = json.loads(alert_json)
-    gfat = jdict['fatality']['gvalue']
-    geco = jdict['economic']['gvalue']
+    gfat = jdict["fatality"]["gvalue"]
+    geco = jdict["economic"]["gvalue"]
     return (gfat, geco)
 
 
@@ -649,26 +697,26 @@ def _get_xml_exposure(total_row, pager, get_losses):
     Returns:
         dict: Filled in total_row.
     """
-    if not len(pager.getContentsMatching('pager.xml')):
+    if not len(pager.getContentsMatching("pager.xml")):
         for i in range(0, 11):
-            mmistr = 'mmi%i' % i
+            mmistr = "mmi%i" % i
             total_row[mmistr] = np.nan
-        total_row['predicted_fatalities'] = np.nan
-        total_row['predicted_dollars'] = np.nan
+        total_row["predicted_fatalities"] = np.nan
+        total_row["predicted_dollars"] = np.nan
     else:
-        xmlbytes, xmlurl = pager.getContentBytes('pager.xml')
-        exposure_xml = xmlbytes.decode('utf-8')
+        xmlbytes, xmlurl = pager.getContentBytes("pager.xml")
+        exposure_xml = xmlbytes.decode("utf-8")
         root = minidom.parseString(exposure_xml)
-        pager = root.getElementsByTagName('pager')[0]
+        pager = root.getElementsByTagName("pager")[0]
         if get_losses:
-            total_row['predicted_fatalities'] = np.nan
-            total_row['predicted_dollars'] = np.nan
+            total_row["predicted_fatalities"] = np.nan
+            total_row["predicted_dollars"] = np.nan
         for node in pager.childNodes:
-            if node.localName != 'exposure':
+            if node.localName != "exposure":
                 continue
-            mmistr = 'mmi%i' % (int(float(node.getAttribute('dmax'))))
-            total_row[mmistr] = int(node.getAttribute('exposure'))
-            total_row['ccode'] = 'Total'
+            mmistr = "mmi%i" % (int(float(node.getAttribute("dmax"))))
+            total_row[mmistr] = int(node.getAttribute("exposure"))
+            total_row["ccode"] = "Total"
         root.unlink()
     return total_row
 
@@ -684,37 +732,37 @@ def _get_json_exposure(total_row, pager, get_country_exposures, default):
     Returns:
         tuple: (total_row, country_rows)
     """
-    exposure_json = pager.getContentBytes('exposures.json')[0].decode('utf-8')
+    exposure_json = pager.getContentBytes("exposures.json")[0].decode("utf-8")
     jdict = json.loads(exposure_json)
-    exp = jdict['population_exposure']['aggregated_exposure']
-    total_row['mmi1'] = exp[0]
-    total_row['mmi2'] = exp[1]
-    total_row['mmi3'] = exp[2]
-    total_row['mmi4'] = exp[3]
-    total_row['mmi5'] = exp[4]
-    total_row['mmi6'] = exp[5]
-    total_row['mmi7'] = exp[6]
-    total_row['mmi8'] = exp[7]
-    total_row['mmi9'] = exp[8]
-    total_row['mmi10'] = exp[9]
+    exp = jdict["population_exposure"]["aggregated_exposure"]
+    total_row["mmi1"] = exp[0]
+    total_row["mmi2"] = exp[1]
+    total_row["mmi3"] = exp[2]
+    total_row["mmi4"] = exp[3]
+    total_row["mmi5"] = exp[4]
+    total_row["mmi6"] = exp[5]
+    total_row["mmi7"] = exp[6]
+    total_row["mmi8"] = exp[7]
+    total_row["mmi9"] = exp[8]
+    total_row["mmi10"] = exp[9]
     country_rows = {}
     if get_country_exposures:
-        for country in jdict['population_exposure']['country_exposures']:
+        for country in jdict["population_exposure"]["country_exposures"]:
             country_row = {}
-            ccode = country['country_code']
+            ccode = country["country_code"]
             country_row.update(default)
-            country_row['country'] = ccode
-            exp = country['exposure']
-            country_row['mmi1'] = exp[0]
-            country_row['mmi2'] = exp[1]
-            country_row['mmi3'] = exp[2]
-            country_row['mmi4'] = exp[3]
-            country_row['mmi5'] = exp[4]
-            country_row['mmi6'] = exp[5]
-            country_row['mmi7'] = exp[6]
-            country_row['mmi8'] = exp[7]
-            country_row['mmi9'] = exp[8]
-            country_row['mmi10'] = exp[9]
+            country_row["country"] = ccode
+            exp = country["exposure"]
+            country_row["mmi1"] = exp[0]
+            country_row["mmi2"] = exp[1]
+            country_row["mmi3"] = exp[2]
+            country_row["mmi4"] = exp[3]
+            country_row["mmi5"] = exp[4]
+            country_row["mmi6"] = exp[5]
+            country_row["mmi7"] = exp[6]
+            country_row["mmi8"] = exp[7]
+            country_row["mmi9"] = exp[8]
+            country_row["mmi10"] = exp[9]
             country_rows[ccode] = country_row
 
     return (total_row, country_rows)
@@ -749,31 +797,28 @@ def get_g_values(ccodes):
     res = requests.get(FATALITY_URL, timeout=TIMEOUT, headers=HEADERS)
     root = minidom.parseString(res.text)
     res.close()
-    models = root.getElementsByTagName(
-        'models')[0].getElementsByTagName('model')
+    models = root.getElementsByTagName("models")[0].getElementsByTagName("model")
     fatmodels = {}
     for model in models:
-        ccode = model.getAttribute('ccode')
+        ccode = model.getAttribute("ccode")
         if ccode in ccodes:
-            fatmodels[ccode] = float(model.getAttribute('evalnormvalue'))
+            fatmodels[ccode] = float(model.getAttribute("evalnormvalue"))
     root.unlink()
 
     response = requests.get(ECONOMIC_URL)
     root = minidom.parseString(response.text)
-    models = root.getElementsByTagName(
-        'models')[0].getElementsByTagName('model')
+    models = root.getElementsByTagName("models")[0].getElementsByTagName("model")
     ecomodels = {}
     for model in models:
-        ccode = model.getAttribute('ccode')
+        ccode = model.getAttribute("ccode")
         if ccode in ccodes:
-            ecomodels[ccode] = float(model.getAttribute('evalnormvalue'))
+            ecomodels[ccode] = float(model.getAttribute("evalnormvalue"))
     root.unlink()
 
     return (fatmodels, ecomodels)
 
 
-def get_dyfi_data_frame(detail, dyfi_file=None,
-                        version='preferred'):
+def get_dyfi_data_frame(detail, dyfi_file=None, version="preferred"):
     """Retrieve a pandas DataFrame containing DYFI responses.
 
     Args:
@@ -800,40 +845,42 @@ def get_dyfi_data_frame(detail, dyfi_file=None,
 
     This function returns None if no DYFI products were found.
     """
-    if not detail.hasProduct('dyfi'):
+    if not detail.hasProduct("dyfi"):
         return None
-    dyfi = detail.getProducts('dyfi', version=version)[0]
-    files = ['dyfi_geo_1km.geojson',
-             'dyfi_geo_10km.geojson',
-             'cdi_geo.txt',
-             'cdi_zip.txt']
+    dyfi = detail.getProducts("dyfi", version=version)[0]
+    files = [
+        "dyfi_geo_1km.geojson",
+        "dyfi_geo_10km.geojson",
+        "cdi_geo.txt",
+        "cdi_zip.txt",
+    ]
     dataframe = None
     if dyfi_file is not None:
-        if dyfi_file == 'utm_1km':
-            if 'dyfi_geo_1km.geojson' not in dyfi.contents:
+        if dyfi_file == "utm_1km":
+            if "dyfi_geo_1km.geojson" not in dyfi.contents:
                 return None
-            data, _ = dyfi.getContentBytes('dyfi_geo_1km.geojson')
+            data, _ = dyfi.getContentBytes("dyfi_geo_1km.geojson")
             dataframe = _parse_geojson(data)
-        elif dyfi_file == 'utm_10km':
-            if 'dyfi_geo_10km.geojson' not in dyfi.contents:
+        elif dyfi_file == "utm_10km":
+            if "dyfi_geo_10km.geojson" not in dyfi.contents:
                 return None
-            data, _ = dyfi.getContentBytes('dyfi_geo_10km.geojson')
+            data, _ = dyfi.getContentBytes("dyfi_geo_10km.geojson")
             dataframe = _parse_geojson(data)
-        elif dyfi_file == 'utm_var':
-            if 'cdi_geo.txt' not in dyfi.contents:
+        elif dyfi_file == "utm_var":
+            if "cdi_geo.txt" not in dyfi.contents:
                 return None
-            data, _ = dyfi.getContentBytes('cdi_geo.txt')
+            data, _ = dyfi.getContentBytes("cdi_geo.txt")
             dataframe = _parse_text(data)
-        elif dyfi_file == 'zip':
-            if 'cdi_zip.txt' not in dyfi.contents:
+        elif dyfi_file == "zip":
+            if "cdi_zip.txt" not in dyfi.contents:
                 return None
-            data, _ = dyfi.getContentBytes('cdi_zip.txt')
+            data, _ = dyfi.getContentBytes("cdi_zip.txt")
             dataframe = _parse_text(data)
     else:
         for file in files:
             if file in dyfi.contents:
                 data, _ = dyfi.getContentBytes(file)
-                if file.endswith('geojson'):
+                if file.endswith("geojson"):
                     dataframe = _parse_geojson(data)
                     if dataframe is None or not len(dataframe):
                         continue
@@ -844,58 +891,56 @@ def get_dyfi_data_frame(detail, dyfi_file=None,
                 break
     if not len(dataframe):
         return dataframe
-    columns = ['station', 'lat', 'lon', 'distance', 'intensity', 'nresp']
+    columns = ["station", "lat", "lon", "distance", "intensity", "nresp"]
     dataframe = dataframe[columns]
     return dataframe
 
 
 def _parse_text(bytes_geo):
-    text_geo = bytes_geo.decode('utf-8')
-    lines = text_geo.split('\n')
-    columns = lines[0].split(':')[1].split(',')
+    text_geo = bytes_geo.decode("utf-8")
+    lines = text_geo.split("\n")
+    columns = lines[0].split(":")[1].split(",")
     columns = [col.strip() for col in columns]
-    columns = [col.strip('[') for col in columns]
-    columns = [col.strip(']') for col in columns]
+    columns = [col.strip("[") for col in columns]
+    columns = [col.strip("]") for col in columns]
     fileio = StringIO(text_geo)
     df = pd.read_csv(fileio, skiprows=1, names=columns)
     df = df.rename(index=str, columns=DYFI_COLUMNS_REPLACE)
-    df = df.drop(['Suspect?', 'City', 'State'], axis=1)
+    df = df.drop(["Suspect?", "City", "State"], axis=1)
     # df = df[df['nresp'] >= MIN_RESPONSES]
     return df
 
 
 def _parse_geojson(bytes_data):
-    text_data = bytes_data.decode('utf-8')
+    text_data = bytes_data.decode("utf-8")
     jdict = json.loads(text_data)
-    if len(jdict['features']) == 0:
+    if len(jdict["features"]) == 0:
         return None
-    prop_columns = list(jdict['features'][0]['properties'].keys())
-    columns = ['lat', 'lon'] + prop_columns
+    prop_columns = list(jdict["features"][0]["properties"].keys())
+    columns = ["lat", "lon"] + prop_columns
     arrays = [[] for col in columns]
     df_dict = dict(zip(columns, arrays))
-    for feature in jdict['features']:
+    for feature in jdict["features"]:
         for column in prop_columns:
-            if column == 'name':
-                prop = feature['properties'][column]
-                prop = prop[0: prop.find('<br>')]
+            if column == "name":
+                prop = feature["properties"][column]
+                prop = prop[0 : prop.find("<br>")]
             else:
-                prop = feature['properties'][column]
+                prop = feature["properties"][column]
 
             df_dict[column].append(prop)
         # the geojson defines a box, so let's grab the center point
-        lons = [c[0] for c in feature['geometry']['coordinates'][0]]
-        lats = [c[1] for c in feature['geometry']['coordinates'][0]]
+        lons = [c[0] for c in feature["geometry"]["coordinates"][0]]
+        lats = [c[1] for c in feature["geometry"]["coordinates"][0]]
         clon = np.mean(lons)
         clat = np.mean(lats)
-        df_dict['lat'].append(clat)
-        df_dict['lon'].append(clon)
+        df_dict["lat"].append(clat)
+        df_dict["lon"].append(clon)
 
     df = pd.DataFrame(df_dict)
-    df = df.rename(index=str, columns={
-        'cdi': 'intensity',
-        'dist': 'distance',
-        'name': 'station'
-    })
+    df = df.rename(
+        index=str, columns={"cdi": "intensity", "dist": "distance", "name": "station"}
+    )
     return df
 
 
@@ -948,56 +993,54 @@ def get_history_data_frame(detail, products=None):
     event = detail
     if products is not None:
         if not len(set(products) & set(PRODUCTS)):
-            fmt = '''None of the input products "%s" are in the list
+            fmt = """None of the input products "%s" are in the list
             of supported ComCat products: %s.
-            '''
-            tpl = (','.join(products), ','.join(PRODUCTS))
+            """
+            tpl = (",".join(products), ",".join(PRODUCTS))
             raise ProductNotFoundError(fmt % tpl)
     else:
         products = PRODUCTS
 
     dataframe = pd.DataFrame(columns=PRODUCT_COLUMNS)
     for product in products:
-        logging.debug('Searching for %s products...' % product)
+        logging.debug("Searching for %s products..." % product)
         if not event.hasProduct(product):
             continue
         prows = _get_product_rows(event, product)
         dataframe = dataframe.append(prows, ignore_index=True)
 
-    dataframe = dataframe.sort_values('Update Time')
-    dataframe['Elapsed (min)'] = np.round(dataframe['Elapsed (min)'], 1)
-    dataframe['Comment'] = ''
+    dataframe = dataframe.sort_values("Update Time")
+    dataframe["Elapsed (min)"] = np.round(dataframe["Elapsed (min)"], 1)
+    dataframe["Comment"] = ""
     dataframe = dataframe[PRODUCT_COLUMNS]
     return (dataframe, event)
 
 
 def _get_product_rows(event, product_name):
-    products = event.getProducts(product_name,
-                                 source='all',
-                                 version='all')
+    products = event.getProducts(product_name, source="all", version="all")
     prows = pd.DataFrame(columns=PRODUCT_COLUMNS)
     for product in products:
         # if product.contents == ['']:
         #     continue
-        if product.name == 'origin':
+        if product.name == "origin":
             prow = _describe_origin(event, product)
-        elif product.name == 'shakemap':
+        elif product.name == "shakemap":
             prow = _describe_shakemap(event, product)
-        elif product.name == 'dyfi':
+        elif product.name == "dyfi":
             prow = _describe_dyfi(event, product)
-        elif product.name == 'losspager':
+        elif product.name == "losspager":
             prow = _describe_pager(event, product)
-        elif product.name == 'oaf':
+        elif product.name == "oaf":
             prow = _describe_oaf(event, product)
-        elif product.name == 'finite-fault':
+        elif product.name == "finite-fault":
             prow = _describe_finite_fault(event, product)
-        elif product.name == 'focal-mechanism':
+        elif product.name == "focal-mechanism":
             prow = _describe_focal_mechanism(event, product)
-        elif product.name == 'ground-failure':
+        elif product.name == "ground-failure":
             prow = _describe_ground_failure(event, product)
-        elif product.name == 'moment-tensor':
+        elif product.name == "moment-tensor":
             prow = _describe_moment_tensor(event, product)
-        elif product.name == 'phase-data':
+        elif product.name == "phase-data":
             prow = _describe_origin(event, product)
         else:
             continue
@@ -1013,48 +1056,49 @@ def _describe_pager(event, product):
 
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
-    oid = product['eventsource'] + product['eventsourcecode']
-    productsource = 'us'
+    oid = product["eventsource"] + product["eventsourcecode"]
+    productsource = "us"
 
     # get pager version, alert level, and max exposure from JSON
     # or xml files.
     pversion = 0
-    alertlevel = ''
+    alertlevel = ""
     max_exp = 0
     maxmmi = 0
-    if product.hasProperty('maxmmi'):
-        maxmmi = int(float(product['maxmmi']))
+    if product.hasProperty("maxmmi"):
+        maxmmi = int(float(product["maxmmi"]))
 
-        has_json = len(product.getContentsMatching('event.json')) == 1
-        has_xml = len(product.getContentsMatching('pager.xml'))
+        has_json = len(product.getContentsMatching("event.json")) == 1
+        has_xml = len(product.getContentsMatching("pager.xml"))
         if has_json:
-            eventinfo_bytes = product.getContentBytes('event.json')[0]
-            eventinfo = json.loads(eventinfo_bytes.decode('utf-8'))
-            pversion = eventinfo['pager']['version_number']
-            alertlevel = eventinfo['pager']['true_alert_level']
+            eventinfo_bytes = product.getContentBytes("event.json")[0]
+            eventinfo = json.loads(eventinfo_bytes.decode("utf-8"))
+            pversion = eventinfo["pager"]["version_number"]
+            alertlevel = eventinfo["pager"]["true_alert_level"]
 
-            exp_bytes = product.getContentBytes('exposures.json')[0]
-            expinfo = json.loads(exp_bytes.decode('utf-8'))
-            expdict = expinfo['population_exposure']
-            max_exp = expdict['aggregated_exposure'][maxmmi - 1]
+            exp_bytes = product.getContentBytes("exposures.json")[0]
+            expinfo = json.loads(exp_bytes.decode("utf-8"))
+            expdict = expinfo["population_exposure"]
+            max_exp = expdict["aggregated_exposure"][maxmmi - 1]
         elif has_xml:
-            xmlbytes = product.getContentBytes('pager.xml')[0]
-            root = minidom.parseString(xmlbytes.decode('utf-8'))
-            eventobj = root.getElementsByTagName('event')[0]
-            pversion = int(eventobj.getAttribute('number'))
-            alerts = root.getElementsByTagName('alert')
+            xmlbytes = product.getContentBytes("pager.xml")[0]
+            root = minidom.parseString(xmlbytes.decode("utf-8"))
+            eventobj = root.getElementsByTagName("event")[0]
+            pversion = int(eventobj.getAttribute("number"))
+            alerts = root.getElementsByTagName("alert")
             for alert in alerts:
-                if alert.getAttribute('summary') == 'no':
+                if alert.getAttribute("summary") == "no":
                     continue
-                alertlevel = alert.getAttribute('level')
+                alertlevel = alert.getAttribute("level")
 
             exposures = []
-            for exposure in root.getElementsByTagName('exposure'):
+            for exposure in root.getElementsByTagName("exposure"):
                 try:
-                    expval = int(float(exposure.getAttribute('exposure')))
+                    expval = int(float(exposure.getAttribute("exposure")))
                 except ValueError:
                     expval = 0
                 exposures.append(expval)
@@ -1062,20 +1106,22 @@ def _describe_pager(event, product):
             max_exp = exposures[maxmmi - 1]
             root.unlink()
 
-    fmt = 'AlertLevel# %s| MaxMMI# %i|Population@MaxMMI# %i'
+    fmt = "AlertLevel# %s| MaxMMI# %i|Population@MaxMMI# %i"
     tpl = (alertlevel.capitalize(), maxmmi, max_exp)
     desc = fmt % tpl
-    url = product.getContentURL('onepager.pdf')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    url = product.getContentURL("onepager.pdf")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
@@ -1083,14 +1129,15 @@ def _describe_shakemap(event, product):
     authtime = event.time
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
 
-    oid = 'unknown'
-    productsource = 'unknown'
-    if product.hasProperty('eventsource'):
-        oid = product['eventsource'] + product['eventsourcecode']
+    oid = "unknown"
+    productsource = "unknown"
+    if product.hasProperty("eventsource"):
+        oid = product["eventsource"] + product["eventsourcecode"]
         productsource = product.source
 
     # get from info:
@@ -1102,118 +1149,127 @@ def _describe_shakemap(event, product):
     maxmmi = 0
     ninstrument = 0
     ndyfi = 0
-    fault_ref = ''
-    gmpe = ''
+    fault_ref = ""
+    gmpe = ""
     mag_used = np.nan
     depth_used = np.nan
     pversion = 0
-    if product.hasProperty('maxmmi'):
+    if product.hasProperty("maxmmi"):
         try:
             # maxmmi may not be set in oceanic maps
-            maxmmi = float(product['maxmmi'])
+            maxmmi = float(product["maxmmi"])
         except:
             pass
-        pversion = int(float(product['version']))
-        
+        pversion = int(float(product["version"]))
 
-        (ninstrument, ndyfi, mag_used,
-         depth_used, fault_file, gmpe) = _get_shakemap_info(product)
+        (
+            ninstrument,
+            ndyfi,
+            mag_used,
+            depth_used,
+            fault_file,
+            gmpe,
+        ) = _get_shakemap_info(product)
 
-    fmt = ('MaxMMI# %.1f|Instrumented# %i|DYFI# %i|Fault# %s|'
-           'GMPE# %s|Mag# %.1f|Depth# %.1f')
+    fmt = (
+        "MaxMMI# %.1f|Instrumented# %i|DYFI# %i|Fault# %s|"
+        "GMPE# %s|Mag# %.1f|Depth# %.1f"
+    )
     tpl = (maxmmi, ninstrument, ndyfi, fault_ref, gmpe, mag_used, depth_used)
     desc = fmt % tpl
-    url = product.getContentURL('intensity.jpg')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    url = product.getContentURL("intensity.jpg")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
 def _get_shakemap_info(product):
-    if len(product.getContentsMatching('info.json')):
-        infobytes = product.getContentBytes('info.json')[0]
-        infodict = json.loads(infobytes.decode('utf-8'))
+    if len(product.getContentsMatching("info.json")):
+        infobytes = product.getContentBytes("info.json")[0]
+        infodict = json.loads(infobytes.decode("utf-8"))
         try:
-            gmpe = ','.join(infodict['multigmpe']['PGA']['gmpes'][0]['gmpes'])
+            gmpe = ",".join(infodict["multigmpe"]["PGA"]["gmpes"][0]["gmpes"])
         except Exception:
-            gmpedict = infodict['processing']['ground_motion_modules']
-            gmpe = gmpedict['gmpe']['module']
+            gmpedict = infodict["processing"]["ground_motion_modules"]
+            gmpe = gmpedict["gmpe"]["module"]
 
-        gmpe = gmpe.replace('()', '')
+        gmpe = gmpe.replace("()", "")
 
-        fault_ref = infodict['input']['event_information']['fault_ref']
-        fault_file = ''
-        if 'faultfiles' in infodict['input']['event_information']:
-            fault_file = infodict['input']['event_information']['faultfiles']
+        fault_ref = infodict["input"]["event_information"]["fault_ref"]
+        fault_file = ""
+        if "faultfiles" in infodict["input"]["event_information"]:
+            fault_file = infodict["input"]["event_information"]["faultfiles"]
         if not len(fault_ref) and len(fault_file):
             fault_ref = fault_file
-        mag_used = float(infodict['input']['event_information']['magnitude'])
-        depth_used = float(infodict['input']['event_information']['depth'])
+        mag_used = float(infodict["input"]["event_information"]["magnitude"])
+        depth_used = float(infodict["input"]["event_information"]["depth"])
 
         # get from stations
         # - number instrumented stations
         # - number dyfi
         ninstrument = 0
         ndyfi = 0
-        if len(product.getContentsMatching('stationlist')):
-            stationbytes = product.getContentBytes('stationlist.json')[0]
-            stationdict = json.loads(stationbytes.decode('utf-8'))
+        if len(product.getContentsMatching("stationlist.json")):
+            stationbytes = product.getContentBytes("stationlist.json")[0]
+            stationdict = json.loads(stationbytes.decode("utf-8"))
             ninstrument = 0
             ndyfi = 0
-            for feature in stationdict['features']:
-                if feature['properties']['source'] == 'DYFI':
+            for feature in stationdict["features"]:
+                if feature["properties"]["source"] == "DYFI":
                     ndyfi += 1
                 else:
                     ninstrument += 1
-    elif len(product.getContentsMatching('info.xml')):
-        infobytes = product.getContentBytes('info.xml')[0]
-        root = minidom.parseString(infobytes.decode('utf-8'))
-        fault_ref = ''
-        fault_file = ''
-        gmpe = ''
-        for tag in root.getElementsByTagName('tag'):
-            ttype = tag.getAttribute('name')
-            if ttype == 'GMPE':
-                gmpe = tag.getAttribute('value')
-            elif ttype == 'fault_ref':
-                fault_ref = tag.getAttribute('value')
-            elif ttype == 'fault_files':
-                fault_file = tag.getAttribute('value')
+    elif len(product.getContentsMatching("info.xml")):
+        infobytes = product.getContentBytes("info.xml")[0]
+        root = minidom.parseString(infobytes.decode("utf-8"))
+        fault_ref = ""
+        fault_file = ""
+        gmpe = ""
+        for tag in root.getElementsByTagName("tag"):
+            ttype = tag.getAttribute("name")
+            if ttype == "GMPE":
+                gmpe = tag.getAttribute("value")
+            elif ttype == "fault_ref":
+                fault_ref = tag.getAttribute("value")
+            elif ttype == "fault_files":
+                fault_file = tag.getAttribute("value")
             else:
                 continue
         if len(fault_ref) and not len(fault_file):
             fault_file = fault_ref
         root.unlink()
-        if len(product.getContentsMatching('stationlist.xml')):
-            stationbytes = product.getContentBytes('stationlist.xml')[0]
-            root = minidom.parseString(stationbytes.decode('utf-8'))
+        if len(product.getContentsMatching("stationlist.xml")):
+            stationbytes = product.getContentBytes("stationlist.xml")[0]
+            root = minidom.parseString(stationbytes.decode("utf-8"))
             ndyfi = 0
             ninstrument = 0
-            for station in root.getElementsByTagName('station'):
-                netid = station.getAttribute('netid')
-                if netid.lower() in ['dyfi', 'ciim', 'intensity', 'mmi']:
+            for station in root.getElementsByTagName("station"):
+                netid = station.getAttribute("netid")
+                if netid.lower() in ["dyfi", "ciim", "intensity", "mmi"]:
                     ndyfi += 1
                 else:
                     ninstrument += 1
-            eq = root.getElementsByTagName('earthquake')[0]
-            mag_used = float(eq.getAttribute('mag'))
-            depth_used = float(eq.getAttribute('depth'))
+            eq = root.getElementsByTagName("earthquake")[0]
+            mag_used = float(eq.getAttribute("mag"))
+            depth_used = float(eq.getAttribute("depth"))
             root.unlink()
     else:
         ninstrument = 0
         ndyfi = 0
         mag_used = np.nan
         depth_used = np.nan
-        fault_file = ''
-        gmpe = ''
+        fault_file = ""
+        gmpe = ""
 
     return (ninstrument, ndyfi, mag_used, depth_used, fault_file, gmpe)
 
@@ -1223,29 +1279,30 @@ def _describe_origin(event, product):
     authlat = event.latitude
     authlon = event.longitude
 
-    oid = 'unknown'
+    oid = "unknown"
     productsource = product.source
-    if product.hasProperty('eventsource'):
-        oid = product['eventsource'] + product['eventsourcecode']
-        productsource = product['eventsource']
+    if product.hasProperty("eventsource"):
+        oid = product["eventsource"] + product["eventsourcecode"]
+        productsource = product["eventsource"]
     omag = np.nan
-    if product.hasProperty('magnitude'):
-        omag = float(product['magnitude'])
+    if product.hasProperty("magnitude"):
+        omag = float(product["magnitude"])
 
-    magtype = 'unknown'
-    if product.hasProperty('magnitude-type'):
-        magtype = product['magnitude-type']
+    magtype = "unknown"
+    if product.hasProperty("magnitude-type"):
+        magtype = product["magnitude-type"]
 
-    otime = 'NaT'
+    otime = "NaT"
     tdiff = np.nan
-    if product.hasProperty('eventtime'):
-        otime_str = product['eventtime']
+    if product.hasProperty("eventtime"):
+        otime_str = product["eventtime"]
         otime = datetime.strptime(otime_str, TIMEFMT2)
         tdiff = (otime - authtime).total_seconds()
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
 
     olat = np.nan
@@ -1253,29 +1310,29 @@ def _describe_origin(event, product):
     odepth = np.nan
     dist = np.nan
     az = np.nan
-    url = ''
-    if len(product.getContentsMatching('quakeml.xml')):
-        url = product.getContentURL('quakeml.xml')
-    elif len(product.getContentsMatching('eqxml.xml')):
-        url = product.getContentURL('eqxml.xml')
-    if product.hasProperty('latitude'):
-        olat = float(product['latitude'])
-        olon = float(product['longitude'])
-        odepth = float(product['depth'])
+    url = ""
+    if len(product.getContentsMatching("quakeml.xml")):
+        url = product.getContentURL("quakeml.xml")
+    elif len(product.getContentsMatching("eqxml.xml")):
+        url = product.getContentURL("eqxml.xml")
+    if product.hasProperty("latitude"):
+        olat = float(product["latitude"])
+        olon = float(product["longitude"])
+        odepth = float(product["depth"])
         dist_m, az, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
         dist = dist_m / 1000.0
     else:
-        if len(product.getContentsMatching('quakeml.xml')):
+        if len(product.getContentsMatching("quakeml.xml")):
             unpickler = Unpickler()
-            cbytes, url = product.getContentBytes('quakeml.xml')
+            cbytes, url = product.getContentBytes("quakeml.xml")
             try:
                 catalog = unpickler.loads(cbytes)
             except Exception as e:
-                fmt = 'Could not parse QuakeML from %s due to error: %s'
+                fmt = "Could not parse QuakeML from %s due to error: %s"
                 msg = fmt % (url, str(e))
                 raise ParsingError(msg)
             evt = catalog.events[0]
-            if hasattr(evt, 'origin'):
+            if hasattr(evt, "origin"):
                 origin = evt.origin
                 olat = origin.latitude
                 olon = origin.longitude
@@ -1283,43 +1340,57 @@ def _describe_origin(event, product):
                 dist_m, az, _ = gps2dist_azimuth(authlat, authlon, olat, olon)
                 dist = dist_m / 1000.0
 
-    loc_method = 'unknown'
-    if product.hasProperty('cube-location-method'):
-        loc_method = product['cube-location-method']
+    loc_method = "unknown"
+    if product.hasProperty("cube-location-method"):
+        loc_method = product["cube-location-method"]
 
     # convert azimuth to cardinal direction
     if not np.isnan(az):
-        azstr = get_compass_dir_azimuth(az, resolution='meteorological')
+        azstr = get_compass_dir_azimuth(az, resolution="meteorological")
     else:
-        azstr = ''
+        azstr = ""
 
     # get the origin weight - this should help us determine which
     # origin is authoritative
     weight = product.preferred_weight
-    review_status = 'unknown'
-    if product.hasProperty('review-status'):
-        review_status = product['review-status']
+    review_status = "unknown"
+    if product.hasProperty("review-status"):
+        review_status = product["review-status"]
 
-    fmt = ('Magnitude# %.1f|Time# %s |Time Offset (sec)# %.1f|'
-           'Location# (%.3f,%.3f)|Distance from Auth. Origin (km)# %.1f|'
-           'Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s|'
-           'Preferred Weight#%i|Review Status# %s')
-    desc = fmt % (omag, otime, tdiff,
-                  olat, olon, dist, azstr,
-                  odepth, magtype, loc_method,
-                  weight, review_status)
+    fmt = (
+        "Magnitude# %.1f|Time# %s |Time Offset (sec)# %.1f|"
+        "Location# (%.3f,%.3f)|Distance from Auth. Origin (km)# %.1f|"
+        "Azimuth# %s|Depth# %.1f|Magnitude Type# %s|Location Method# %s|"
+        "Preferred Weight#%i|Review Status# %s"
+    )
+    desc = fmt % (
+        omag,
+        otime,
+        tdiff,
+        olat,
+        olon,
+        dist,
+        azstr,
+        odepth,
+        magtype,
+        loc_method,
+        weight,
+        review_status,
+    )
 
     pversion = product.version
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
@@ -1327,66 +1398,72 @@ def _describe_finite_fault(event, product):
     authtime = event.time
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
-    oid = product['eventsource'] + product['eventsourcecode']
+    oid = product["eventsource"] + product["eventsourcecode"]
     productsource = product.source
 
     slip = np.nan
     strike = np.nan
     dip = np.nan
-    if product.hasProperty('maximum-slip'):
-        slip = float(product['maximum-slip'])
-        strike = float(product['segment-1-strike'])
-        dip = float(product['segment-1-dip'])
+    if product.hasProperty("maximum-slip"):
+        slip = float(product["maximum-slip"])
+        strike = float(product["segment-1-strike"])
+        dip = float(product["segment-1-dip"])
 
-    fmt = 'Peak Slip# %.3f|Strike# %.0f|Dip# %.0f'
+    fmt = "Peak Slip# %.3f|Strike# %.0f|Dip# %.0f"
     tpl = (slip, strike, dip)
     desc = fmt % tpl
     pversion = product.version
-    url = product.getContentURL('basemap.png')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    url = product.getContentURL("basemap.png")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
 def _describe_dyfi(event, product):
     authtime = event.time
     maxmmi = np.nan
-    if product.hasProperty('maxmmi'):
-        maxmmi = float(product['maxmmi'])
+    if product.hasProperty("maxmmi"):
+        maxmmi = float(product["maxmmi"])
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
-    oid = product['eventsource'] + product['eventsourcecode']
+    oid = product["eventsource"] + product["eventsourcecode"]
     nresp = 0
-    if product.hasProperty('num-responses'):
-        nresp = int(product['num-responses'])
-    productsource = 'us'
-    desc = 'Max MMI# %.1f|NumResponses# %i' % (maxmmi, nresp)
+    if product.hasProperty("num-responses"):
+        nresp = int(product["num-responses"])
+    productsource = "us"
+    desc = "Max MMI# %.1f|NumResponses# %i" % (maxmmi, nresp)
     pversion = product.version
-    url = product.getContentURL('ciim_geo.jpg')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    url = product.getContentURL("ciim_geo.jpg")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
@@ -1394,54 +1471,57 @@ def _describe_focal_mechanism(event, product):
     authtime = event.time
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
-    oid = product['eventsource'] + product['eventsourcecode']
-    productsource = product['eventsource']
+    oid = product["eventsource"] + product["eventsourcecode"]
+    productsource = product["eventsource"]
 
-    if product.hasProperty('nodal-plane-1-strike'):
-        strike = float(product['nodal-plane-1-strike'])
-        dip = float(product['nodal-plane-1-dip'])
-        rake = float(product['nodal-plane-1-rake'])
+    if product.hasProperty("nodal-plane-1-strike"):
+        strike = float(product["nodal-plane-1-strike"])
+        dip = float(product["nodal-plane-1-dip"])
+        rake = float(product["nodal-plane-1-rake"])
     else:
         strike = np.nan
         dip = np.nan
         rake = np.nan
 
-    method = 'unknown'
-    if len(product.getContentsMatching('quakeml.xml')):
-        cbytes, url = product.getContentBytes('quakeml.xml')
+    method = "unknown"
+    if len(product.getContentsMatching("quakeml.xml")):
+        cbytes, url = product.getContentBytes("quakeml.xml")
         unpickler = Unpickler()
         try:
             catalog = unpickler.loads(cbytes)
         except Exception as e:
-            fmt = 'Could not parse QuakeML from %s due to error: %s'
+            fmt = "Could not parse QuakeML from %s due to error: %s"
             msg = fmt % (url, str(e))
             raise ParsingError(msg)
         evt = catalog.events[0]
         fm = evt.focal_mechanisms[0]
-        if hasattr(fm, 'method_id') and hasattr(fm.method_id, 'id'):
-            method = fm.method_id.id.split('/')[-1]
+        if hasattr(fm, "method_id") and hasattr(fm.method_id, "id"):
+            method = fm.method_id.id.split("/")[-1]
 
-    fmt = 'Method# %s|NP1 Strike# %.1f|NP1 Dip# %.1f|NP1 Rake# %.1f'
+    fmt = "Method# %s|NP1 Strike# %.1f|NP1 Dip# %.1f|NP1 Rake# %.1f"
     tpl = (method, strike, dip, rake)
     desc = fmt % tpl
     pversion = product.version
-    if len(product.getContentsMatching('cifm1.jpg')):
-        url = product.getContentURL('cifm1.jpg')
+    if len(product.getContentsMatching("cifm1.jpg")):
+        url = product.getContentURL("cifm1.jpg")
     else:
-        url = product.getContentURL('quakeml.xml')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+        url = product.getContentURL("quakeml.xml")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
@@ -1449,46 +1529,57 @@ def _describe_ground_failure(event, product):
     authtime = event.time
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
-    if product.hasProperty('eventsource'):
-        oid = product['eventsource'] + product['eventsourcecode']
+    if product.hasProperty("eventsource"):
+        oid = product["eventsource"] + product["eventsourcecode"]
     else:
-        oid = 'unknown'
-    productsource = 'us'
+        oid = "unknown"
+    productsource = "us"
 
-    slide_alert = product['landslide-alert']
-    liq_alert = product['liquefaction-alert']
-    slide_pop_alert_val = int(product['landslide-population-alert-value'])
-    liq_pop_alert_val = int(product['liquefaction-population-alert-value'])
+    slide_alert = product["landslide-alert"]
+    liq_alert = product["liquefaction-alert"]
+    slide_pop_alert_val = int(product["landslide-population-alert-value"])
+    liq_pop_alert_val = int(product["liquefaction-population-alert-value"])
 
     # get the shakemap event ID and magnitude from info.json
-    infobytes = product.getContentBytes('info.json')[0]
-    infodict = json.loads(infobytes.decode('utf-8'))
-    sm_net = infodict['Summary']['net']
-    sm_code = infodict['Summary']['code']
+    infobytes = product.getContentBytes("info.json")[0]
+    infodict = json.loads(infobytes.decode("utf-8"))
+    sm_net = infodict["Summary"]["net"]
+    sm_code = infodict["Summary"]["code"]
     sm_eventid = sm_net + sm_code
-    sm_mag = infodict['Summary']['magnitude']
+    sm_mag = infodict["Summary"]["magnitude"]
 
-    fmt = ('ShakeMap Event ID# %s|ShakeMap Magnitude# %.1f|'
-           'Landslide Pop Alert Value# %i|Liquefaction Pop Alert Value# %i|'
-           'Landslide Alert# %s|Liquefaction Alert# %s')
-    tpl = (sm_eventid, sm_mag, slide_pop_alert_val,
-           liq_pop_alert_val, slide_alert, liq_alert)
+    fmt = (
+        "ShakeMap Event ID# %s|ShakeMap Magnitude# %.1f|"
+        "Landslide Pop Alert Value# %i|Liquefaction Pop Alert Value# %i|"
+        "Landslide Alert# %s|Liquefaction Alert# %s"
+    )
+    tpl = (
+        sm_eventid,
+        sm_mag,
+        slide_pop_alert_val,
+        liq_pop_alert_val,
+        slide_alert,
+        liq_alert,
+    )
     desc = fmt % tpl
-    pversion = int(product['version'])
-    url = product.getContentURL('info.json')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    pversion = int(product["version"])
+    url = product.getContentURL("info.json")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
@@ -1496,56 +1587,57 @@ def _describe_moment_tensor(event, product):
     authtime = event.time
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
-    oid = product['eventsource'] + product['eventsourcecode']
-    productsource = product['eventsource']
+    oid = product["eventsource"] + product["eventsourcecode"]
+    productsource = product["eventsource"]
 
     # try to find the method
-    method = 'unknown'
-    if product.hasProperty('derived-magnitude-type'):
-        method = product['derived-magnitude-type']
+    method = "unknown"
+    if product.hasProperty("derived-magnitude-type"):
+        method = product["derived-magnitude-type"]
 
     # get the derived moment magnitude
     derived_mag = np.nan
-    if product.hasProperty('derived-magnitude'):
-        derived_mag = float(product['derived-magnitude'])
+    if product.hasProperty("derived-magnitude"):
+        derived_mag = float(product["derived-magnitude"])
 
     # get the derived depth
     derived_depth = np.nan
-    if product.hasProperty('derived-depth'):
-        derived_depth = float(product['derived-depth'])
+    if product.hasProperty("derived-depth"):
+        derived_depth = float(product["derived-depth"])
 
     # get the percent double couple
     double_couple = np.nan
-    if product.hasProperty('percent-double-couple'):
-        double_couple = float(product['percent-double-couple'])
+    if product.hasProperty("percent-double-couple"):
+        double_couple = float(product["percent-double-couple"])
 
     strike = np.nan
     dip = np.nan
     rake = np.nan
     # get the first nodal plane
-    if product.hasProperty('nodal-plane-1-strike'):
-        strike = float(product['nodal-plane-1-strike'])
-        dip = float(product['nodal-plane-1-dip'])
-        rake = float(product['nodal-plane-1-rake'])
+    if product.hasProperty("nodal-plane-1-strike"):
+        strike = float(product["nodal-plane-1-strike"])
+        dip = float(product["nodal-plane-1-dip"])
+        rake = float(product["nodal-plane-1-rake"])
     else:
         # try to get NP1 from the quakeml...
-        if len(product.getContentsMatching('quakeml.xml')):
-            cbytes, url = product.getContentBytes('quakeml.xml')
+        if len(product.getContentsMatching("quakeml.xml")):
+            cbytes, url = product.getContentBytes("quakeml.xml")
             unpickler = Unpickler()
             try:
                 catalog = unpickler.loads(cbytes)
             except Exception as e:
-                fmt = 'Could not parse QuakeML from %s due to error: %s'
+                fmt = "Could not parse QuakeML from %s due to error: %s"
                 msg = fmt % (url, str(e))
                 raise ParsingError(msg)
             evt = catalog.events[0]
             fm = evt.focal_mechanisms[0]
             mt = fm.moment_tensor
-            if method == 'unknown':
-                method = mt.method_id.id.split('/')[-1]
+            if method == "unknown":
+                method = mt.method_id.id.split("/")[-1]
             if fm.nodal_planes is not None:
                 strike = fm.nodal_planes.nodal_plane_1.strike
                 dip = fm.nodal_planes.nodal_plane_1.dip
@@ -1554,35 +1646,43 @@ def _describe_moment_tensor(event, product):
                 derived_mag = evt.magnitudes[0].mag
             if np.isnan(derived_depth):
                 for origin in evt.origins:
-                    if 'moment' in origin.depth_type:
+                    if "moment" in origin.depth_type:
                         derived_depth = origin.depth / 1000
             if np.isnan(double_couple):
                 double_couple = mt.double_couple
 
-    hasnan = (np.isnan(derived_mag) + np.isnan(derived_depth) +
-              np.isnan(double_couple) + np.isnan(strike) +
-              np.isnan(dip) + np.isnan(rake))
+    hasnan = (
+        np.isnan(derived_mag)
+        + np.isnan(derived_depth)
+        + np.isnan(double_couple)
+        + np.isnan(strike)
+        + np.isnan(dip)
+        + np.isnan(rake)
+    )
     if hasnan:
         return None
-    desc_fmt = ('Method# %s|Moment Magnitude# %.1f|Depth# %.1d|'
-                'Double Couple# %.2f|NP1 Strike# %.0f|NP1 Dip# %.0f|'
-                'NP1 Rake# %.0f')
-    desc_tpl = (method, derived_mag, derived_depth,
-                double_couple, strike, dip, rake)
+    desc_fmt = (
+        "Method# %s|Moment Magnitude# %.1f|Depth# %.1d|"
+        "Double Couple# %.2f|NP1 Strike# %.0f|NP1 Dip# %.0f|"
+        "NP1 Rake# %.0f"
+    )
+    desc_tpl = (method, derived_mag, derived_depth, double_couple, strike, dip, rake)
 
     desc = desc_fmt % desc_tpl
     pversion = product.version
-    url = product.getContentURL('quakeml.xml')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    url = product.getContentURL("quakeml.xml")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
@@ -1590,28 +1690,31 @@ def _describe_oaf(event, product):
     authtime = event.time
     ptime = datetime.utcfromtimestamp(product.product_timestamp / 1000)
     elapsed = ptime - authtime
-    elapsed_sec = elapsed.days * SECSPERDAY + \
-        elapsed.seconds + elapsed.microseconds / 1e6
+    elapsed_sec = (
+        elapsed.days * SECSPERDAY + elapsed.seconds + elapsed.microseconds / 1e6
+    )
     elapsed_min = elapsed_sec / 60
-    oid = product['eventsource'] + product['eventsourcecode']
-    productsource = product['eventsource']
+    oid = product["eventsource"] + product["eventsourcecode"]
+    productsource = product["eventsource"]
 
-    desc = 'Operational Earthquake Forecast# Info'
+    desc = "Operational Earthquake Forecast# Info"
     pversion = product.version
-    url = ''
-    logging.info('%s version %i' % (product.name, product.version))
-    if product.getContentsMatching('json'):
-        url = product.getContentURL('forecast_data.json')
-    row = {'Product': product.name,
-           'Authoritative Event ID': event.id,
-           'Code': oid,
-           'Associated': True,
-           'Product Source': productsource,
-           'Product Version': pversion,
-           'Update Time': ptime,
-           'Elapsed (min)': elapsed_min,
-           'URL': url,
-           'Description': desc}
+    url = ""
+    logging.info("%s version %i" % (product.name, product.version))
+    if product.getContentsMatching("json"):
+        url = product.getContentURL("forecast_data.json")
+    row = {
+        "Product": product.name,
+        "Authoritative Event ID": event.id,
+        "Code": oid,
+        "Associated": True,
+        "Product Source": productsource,
+        "Product Version": pversion,
+        "Update Time": ptime,
+        "Elapsed (min)": elapsed_min,
+        "URL": url,
+        "Description": desc,
+    }
     return row
 
 
@@ -1641,23 +1744,26 @@ def split_history_frame(dataframe, product=None):
 
 
     """
-    products = dataframe['Product'].unique()
+    products = dataframe["Product"].unique()
     if product is not None and product not in products:
         raise ProductNotFoundError(
-            '%s is not a product found in this dataframe.' % product)
+            "%s is not a product found in this dataframe." % product
+        )
     if product is None and len(products) > 1:
-        raise ProductNotSpecifiedError('Dataframe contains many products, '
-                                       'you must specify one of them to '
-                                       'split.')
+        raise ProductNotSpecifiedError(
+            "Dataframe contains many products, "
+            "you must specify one of them to "
+            "split."
+        )
     if product is not None:
-        dataframe = dataframe[dataframe['Product'] == product]
-    parts = dataframe.iloc[0]['Description'].split('|')
-    columns = [p.split('#')[0] for p in parts]
+        dataframe = dataframe[dataframe["Product"] == product]
+    parts = dataframe.iloc[0]["Description"].split("|")
+    columns = [p.split("#")[0] for p in parts]
     df2 = pd.DataFrame(columns=columns)
     for idx, row in dataframe.iterrows():
-        parts = row['Description'].split('|')
-        columns = [p.split('#')[0].strip() for p in parts]
-        values = [p.split('#')[1].strip() for p in parts]
+        parts = row["Description"].split("|")
+        columns = [p.split("#")[0].strip() for p in parts]
+        values = [p.split("#")[1].strip() for p in parts]
         newvalues = []
         for val in values:
             try:
@@ -1675,8 +1781,8 @@ def split_history_frame(dataframe, product=None):
     dataframe = dataframe.reset_index(drop=True)
     df2 = df2.reset_index(drop=True)
     dataframe = pd.concat([dataframe, df2], axis=1)
-    dataframe = dataframe.drop(['Description'], axis='columns')
-    dataframe = dataframe.sort_values('Update Time')
+    dataframe = dataframe.drop(["Description"], axis="columns")
+    dataframe = dataframe.sort_values("Update Time")
 
     return dataframe
 
@@ -1710,11 +1816,13 @@ def find_nearby_events(time, lat, lon, twindow, radius):
     """
     start_time = time - timedelta(seconds=twindow)
     end_time = time + timedelta(seconds=twindow)
-    events = search.search(starttime=start_time,
-                           endtime=end_time,
-                           latitude=lat,
-                           longitude=lon,
-                           maxradiuskm=radius)
+    events = search.search(
+        starttime=start_time,
+        endtime=end_time,
+        latitude=lat,
+        longitude=lon,
+        maxradiuskm=radius,
+    )
 
     if not len(events):
         return None
@@ -1723,33 +1831,44 @@ def find_nearby_events(time, lat, lon, twindow, radius):
 
     # drop the pager alert level and location strings,
     # as they aren't really needed in this context
-    df = df.drop(labels=['alert', 'location'], axis='columns')
+    df = df.drop(labels=["alert", "location"], axis="columns")
 
-    df['distance(km)'] = 0
-    df['timedelta(sec)'] = 0
-    df['azimuth(deg)'] = 0
-    df['normalized_time_dist_vector'] = 0
+    df["distance(km)"] = 0
+    df["timedelta(sec)"] = 0
+    df["azimuth(deg)"] = 0
+    df["normalized_time_dist_vector"] = 0
     for idx, row in df.iterrows():
         distance, az, azb = gps2dist_azimuth(
-            lat, lon, row['latitude'], row['longitude'])
+            lat, lon, row["latitude"], row["longitude"]
+        )
         distance_km = distance / 1000
-        row_time = row['time'].to_pydatetime()
+        row_time = row["time"].to_pydatetime()
         dtime = row_time - time
         dt = np.abs(dtime.days * 86400 + dtime.seconds)
-        df.loc[idx, 'distance(km)'] = distance_km
-        df.loc[idx, 'timedelta(sec)'] = dt
-        df.loc[idx, 'azimuth(deg)'] = az
+        df.loc[idx, "distance(km)"] = distance_km
+        df.loc[idx, "timedelta(sec)"] = dt
+        df.loc[idx, "azimuth(deg)"] = az
         dt_norm = dt / twindow
         dd_norm = distance_km / radius
-        norm_vec = np.sqrt(dt_norm**2 + dd_norm**2)
-        df.loc[idx, 'normalized_time_dist_vector'] = norm_vec
+        norm_vec = np.sqrt(dt_norm ** 2 + dd_norm ** 2)
+        df.loc[idx, "normalized_time_dist_vector"] = norm_vec
 
     # reorder the columns so that url is at the end
-    cols = ['id', 'time', 'latitude', 'longitude', 'depth', 'magnitude',
-            'distance(km)', 'timedelta(sec)', 'azimuth(deg)',
-            'normalized_time_dist_vector', 'url']
+    cols = [
+        "id",
+        "time",
+        "latitude",
+        "longitude",
+        "depth",
+        "magnitude",
+        "distance(km)",
+        "timedelta(sec)",
+        "azimuth(deg)",
+        "normalized_time_dist_vector",
+        "url",
+    ]
     df = df[cols]
-    df = df.sort_values('normalized_time_dist_vector', axis='index')
+    df = df.sort_values("normalized_time_dist_vector", axis="index")
     return df
 
 
@@ -1783,23 +1902,25 @@ def _geodetic_distance(lons1, lats1, lons2, lats2):
         Distance in km, floating point scalar or numpy array of such.
     """
     lons1, lats1, lons2, lats2 = _prepare_coords(lons1, lats1, lons2, lats2)
-    distance = np.arcsin(np.sqrt(
-        np.sin((lats1 - lats2) / 2.0) ** 2.0
-        + np.cos(lats1) * np.cos(lats2)
-        * np.sin((lons1 - lons2) / 2.0) ** 2.0
-    ).clip(-1., 1.))
+    distance = np.arcsin(
+        np.sqrt(
+            np.sin((lats1 - lats2) / 2.0) ** 2.0
+            + np.cos(lats1) * np.cos(lats2) * np.sin((lons1 - lons2) / 2.0) ** 2.0
+        ).clip(-1.0, 1.0)
+    )
     return (2.0 * EARTH_RADIUS) * distance
 
 
-def associate(dataframe,
-              time_column='time',
-              lat_column='latitude',
-              lon_column='longitude',
-              mag_column='magnitude',
-              time_tol_secs=16,
-              dist_tol_km=100,
-              mag_tol=0.5,
-              ):
+def associate(
+    dataframe,
+    time_column="time",
+    lat_column="latitude",
+    lon_column="longitude",
+    mag_column="magnitude",
+    time_tol_secs=16,
+    dist_tol_km=100,
+    mag_tol=0.5,
+):
     """Associate events from an input catalogue with ComCat events.
 
     This function works by treating the time difference, magnitude difference, and
@@ -1898,20 +2019,16 @@ def associate(dataframe,
     if maxmag > 9.9 or np.isnan(maxmag):
         maxmag = 9.9
     try:
-        events = search.search(starttime=stime,
-                               endtime=etime,
-                               minmagnitude=minmag,
-                               maxmagnitude=maxmag
-                               )
+        events = search.search(
+            starttime=stime, endtime=etime, minmagnitude=minmag, maxmagnitude=maxmag
+        )
     except Exception:
         try:
-            events = search.search(starttime=stime,
-                                   endtime=etime,
-                                   minmagnitude=minmag,
-                                   maxmagnitude=maxmag
-                                   )
+            events = search.search(
+                starttime=stime, endtime=etime, minmagnitude=minmag, maxmagnitude=maxmag
+            )
         except Exception:
-            print('Tried twice to download... continuing.')
+            print("Tried twice to download... continuing.")
             return (pd.DataFrame([]), pd.DataFrame([]))
     ef = get_summary_data_frame(events)
     if ef.empty:
@@ -1924,65 +2041,65 @@ def associate(dataframe,
         row = dataframe.loc[idx].copy()
         nanmag = np.isnan(row[mag_column])
         nanloc = np.isnan(row[lat_column]) or np.isnan(row[lon_column])
-        ef['dtime'] = np.abs(
-            (row[time_column] - ef['time']).dt.total_seconds().values)
-        ef['dmag'] = np.nan
+        ef["dtime"] = np.abs((row[time_column] - ef["time"]).dt.total_seconds().values)
+        ef["dmag"] = np.nan
         if not nanmag:
-            ef['dmag'] = np.abs(row[mag_column] - ef['magnitude'])
+            ef["dmag"] = np.abs(row[mag_column] - ef["magnitude"])
 
-        ef['ddist'] = np.nan
+        ef["ddist"] = np.nan
         if not nanloc:
             input_lon = row[lon_column]
             input_lat = row[lat_column]
-            comcat_lon = ef['longitude']
-            comcat_lat = ef['latitude']
-            ef['ddist'] = _geodetic_distance(input_lon, input_lat,
-                                             comcat_lon, comcat_lat)
-        ef2 = ef[ef['dtime'] < time_tol_secs].copy()
+            comcat_lon = ef["longitude"]
+            comcat_lat = ef["latitude"]
+            ef["ddist"] = _geodetic_distance(
+                input_lon, input_lat, comcat_lon, comcat_lat
+            )
+        ef2 = ef[ef["dtime"] < time_tol_secs].copy()
         if not len(ef2):
             continue
 
         if not nanloc:
-            ef2 = ef2[ef2['ddist'] < dist_tol_km]
+            ef2 = ef2[ef2["ddist"] < dist_tol_km]
         if not len(ef2):
             continue
 
         if not nanmag:
-            ef2 = ef2[ef2['dmag'] < mag_tol]
+            ef2 = ef2[ef2["dmag"] < mag_tol]
         if len(ef2) == 0:
             continue
         if len(ef2) == 1:
             ef_row = ef2.iloc[0]
-            row['comcat_id'] = ef_row['id']
-            row['comcat_time'] = ef_row['time']
-            row['comcat_latitude'] = ef_row['latitude']
-            row['comcat_longitude'] = ef_row['longitude']
-            row['comcat_depth'] = ef_row['depth']
-            row['comcat_magnitude'] = ef_row['magnitude']
-            row['comcat_score'] = 0.0
+            row["comcat_id"] = ef_row["id"]
+            row["comcat_time"] = ef_row["time"]
+            row["comcat_latitude"] = ef_row["latitude"]
+            row["comcat_longitude"] = ef_row["longitude"]
+            row["comcat_depth"] = ef_row["depth"]
+            row["comcat_magnitude"] = ef_row["magnitude"]
+            row["comcat_score"] = 0.0
         else:
-            ef2['ntime'] = ef2['dtime'] / ef2['dtime'].max()
-            ef2['nmag'] = ef2['dmag'] / ef2['dmag'].max()
-            ef2['ndist'] = ef2['ddist'] / ef2['ddist'].max()
+            ef2["ntime"] = ef2["dtime"] / ef2["dtime"].max()
+            ef2["nmag"] = ef2["dmag"] / ef2["dmag"].max()
+            ef2["ndist"] = ef2["ddist"] / ef2["ddist"].max()
 
-            ef2['asq'] = np.power(ef2['ntime'], 2)
-            ef2['bsq'] = np.power(ef2['nmag'], 2)
-            ef2['csq'] = np.power(ef2['ndist'], 2)
+            ef2["asq"] = np.power(ef2["ntime"], 2)
+            ef2["bsq"] = np.power(ef2["nmag"], 2)
+            ef2["csq"] = np.power(ef2["ndist"], 2)
 
-            ef2['psum'] = ef2[['asq', 'bsq', 'csq']].sum(axis=1)
-            ef2['score'] = np.sqrt(ef2['psum'])
-            ef_row = ef2[ef2['score'] == ef2['score'].min()].iloc[0]
-            row['comcat_id'] = ef_row['id']
-            row['comcat_time'] = ef_row['time']
-            row['comcat_latitude'] = ef_row['latitude']
-            row['comcat_longitude'] = ef_row['longitude']
-            row['comcat_depth'] = ef_row['depth']
-            row['comcat_magnitude'] = ef_row['magnitude']
-            row['comcat_score'] = ef_row['score']
-            talternates = ef2[ef2['id'] != row['comcat_id']].copy()
-            dlabels = ['dtime', 'ddist', 'dmag', 'asq', 'bsq', 'csq', 'psum']
-            talternates.drop(labels=dlabels, axis='columns', inplace=True)
-            talternates['chosen_id'] = ef_row['id']
+            ef2["psum"] = ef2[["asq", "bsq", "csq"]].sum(axis=1)
+            ef2["score"] = np.sqrt(ef2["psum"])
+            ef_row = ef2[ef2["score"] == ef2["score"].min()].iloc[0]
+            row["comcat_id"] = ef_row["id"]
+            row["comcat_time"] = ef_row["time"]
+            row["comcat_latitude"] = ef_row["latitude"]
+            row["comcat_longitude"] = ef_row["longitude"]
+            row["comcat_depth"] = ef_row["depth"]
+            row["comcat_magnitude"] = ef_row["magnitude"]
+            row["comcat_score"] = ef_row["score"]
+            talternates = ef2[ef2["id"] != row["comcat_id"]].copy()
+            dlabels = ["dtime", "ddist", "dmag", "asq", "bsq", "csq", "psum"]
+            talternates.drop(labels=dlabels, axis="columns", inplace=True)
+            talternates["chosen_id"] = ef_row["id"]
             alternates = alternates.append(talternates)
 
         found_events.append(row)
