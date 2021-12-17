@@ -15,6 +15,7 @@ import requests
 from scipy.special import erfcinv
 from obspy.geodetics.base import gps2dist_azimuth
 from impactutils.mapping.compass import get_compass_dir_azimuth
+from obspy.imaging.beachball import aux_plane, mt2plane, MomentTensor
 
 # local imports
 from libcomcat.search import get_event_by_id
@@ -1642,6 +1643,19 @@ def _describe_moment_tensor(event, product):
                 strike = fm.nodal_planes.nodal_plane_1.strike
                 dip = fm.nodal_planes.nodal_plane_1.dip
                 rake = fm.nodal_planes.nodal_plane_1.rake
+            else:
+                if mt.tensor is not None:
+                    tensor = MomentTensor(
+                        mt.tensor.m_rr,
+                        mt.tensor.m_tt,
+                        mt.tensor.m_pp,
+                        mt.tensor.m_rt,
+                        mt.tensor.m_rp,
+                        mt.tensor.m_tp,
+                        1,
+                    )
+                    np1 = mt2plane(tensor)
+                    strike, dip, rake = np1.strike, np1.dip, np1.rake
             if np.isnan(derived_mag):
                 derived_mag = evt.magnitudes[0].mag
             if np.isnan(derived_depth):
