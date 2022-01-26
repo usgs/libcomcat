@@ -1003,24 +1003,25 @@ def get_history_data_frame(detail, products=None):
     else:
         products = PRODUCTS
 
-    dataframe = pd.DataFrame(columns=PRODUCT_COLUMNS)
+    allrows = []
     for product in products:
         logging.debug("Searching for %s products..." % product)
         if not event.hasProduct(product):
             continue
         prows = _get_product_rows(event, product)
-        dataframe = pd.concat([dataframe, prows])
+        allrows += prows
 
+    dataframe = pd.DataFrame(allrows)
+    dataframe["Comment"] = ""
     dataframe = dataframe[PRODUCT_COLUMNS]
     dataframe = dataframe.sort_values("Update Time")
     dataframe["Elapsed (min)"] = np.round(dataframe["Elapsed (min)"], 1)
-    dataframe["Comment"] = ""
     return (dataframe, event)
 
 
 def _get_product_rows(event, product_name):
     products = event.getProducts(product_name, source="all", version="all")
-    prows = pd.DataFrame(columns=PRODUCT_COLUMNS)
+    prows = []
     for product in products:
         # if product.contents == ['']:
         #     continue
@@ -1048,7 +1049,7 @@ def _get_product_rows(event, product_name):
             continue
         if prow is None:
             continue
-        prows = prows.append(prow, ignore_index=True)
+        prows.append(prow)
 
     return prows
 
@@ -2117,7 +2118,7 @@ def associate(
             dlabels = ["dtime", "ddist", "dmag", "asq", "bsq", "csq", "psum"]
             talternates.drop(labels=dlabels, axis="columns", inplace=True)
             talternates["chosen_id"] = ef_row["id"]
-            alternates = alternates.append(talternates)
+            alternates = pd.concat([alternates, talternates])
 
         found_events.append(row)
     associated = pd.DataFrame(found_events)
