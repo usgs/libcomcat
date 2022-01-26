@@ -767,7 +767,7 @@ class DetailEvent(object):
             dft = df[df["source"] == psource]
             dft = dft.sort_values("time")
             dft["version"] = np.arange(1, len(dft) + 1)
-            newframe = newframe.append(dft)
+            newframe = pd.concat([newframe, dft])
         df = newframe
 
         if source == "preferred":

@@ -119,19 +119,6 @@ def get_phase_dataframe(detail, catalog="preferred"):
     """
     if catalog is None:
         catalog = "preferred"
-    df = pd.DataFrame(
-        columns=[
-            "Channel",
-            "Distance",
-            "Azimuth",
-            "Phase",
-            "Arrival Time",
-            "Status",
-            "Residual",
-            "Weight",
-            "Agency",
-        ]
-    )
 
     phasedata = detail.getProducts("phase-data", source=catalog)[0]
     quakeurl = phasedata.getContentURL("quakeml.xml")
@@ -150,6 +137,7 @@ def get_phase_dataframe(detail, catalog="preferred"):
             msg = fmt % (quakeurl, str(e))
             raise ParsingError(msg)
         catevent = catalog.events[0]
+        phaserows = []
         for pick in catevent.picks:
             station = pick.waveform_id.station_code
             fmt = "Getting pick %s for station%s..."
@@ -157,7 +145,20 @@ def get_phase_dataframe(detail, catalog="preferred"):
             phaserow = _get_phaserow(pick, catevent)
             if phaserow is None:
                 continue
-            df = df.append(phaserow, ignore_index=True)
+            phaserows.append(phaserow)
+    df = pd.DataFrame(phaserows)
+    columns = [
+        "Channel",
+        "Distance",
+        "Azimuth",
+        "Phase",
+        "Arrival Time",
+        "Status",
+        "Residual",
+        "Weight",
+        "Agency",
+    ]
+    df = df[columns]
     return df
 
 
@@ -319,7 +320,7 @@ def get_magnitude_data_frame(detail, catalog, magtype):
         AttributeError if input DetailEvent does not have a phase-data product
             for the input catalog.
     """
-    columns = columns = [
+    columns = [
         "Channel",
         "Type",
         "Amplitude",
@@ -331,7 +332,6 @@ def get_magnitude_data_frame(detail, catalog, magtype):
         "Azimuth",
         "MeasurementTime",
     ]
-    df = pd.DataFrame(columns=columns)
     phasedata = detail.getProducts("phase-data", source=catalog)[0]
     quakeurl = phasedata.getContentURL("quakeml.xml")
     try:
@@ -350,6 +350,7 @@ def get_magnitude_data_frame(detail, catalog, magtype):
             msg = fmt % (quakeurl, str(e))
             raise ParsingError(msg)
         catevent = catalog.events[0]  # match this to input catalog
+        rows = []
         for magnitude in catevent.magnitudes:
             if magnitude.magnitude_type.lower() != magtype.lower():
                 continue
@@ -403,8 +404,9 @@ def get_magnitude_data_frame(detail, catalog, magtype):
                 row["Weight"] = contribution.weight
                 row["Distance"] = distance
                 row["Azimuth"] = azimuth
+                rows.append(row)
 
-                df = df.append(row, ignore_index=True)
+    df = pd.DataFrame(rows)
     df = df[columns]
     return df
 
@@ -548,7 +550,7 @@ def get_pager_data_frame(
     if not detail.hasProduct("losspager"):
         return None
 
-    df = None
+    total_rows = []
     for pager in detail.getProducts("losspager", version="all"):
         total_row = {}
         default = {}
@@ -645,12 +647,11 @@ def get_pager_data_frame(
                 "predicted_dollars",
                 "dollars_sigma",
             ]
-        if df is None:
-            df = pd.DataFrame(columns=columns)
-        df = df.append(total_row, ignore_index=True)
+        total_rows.append(total_row)
         for ccode, country_row in country_rows.items():
-            df = df.append(country_row, ignore_index=True)
+            total_rows.append(country_row)
 
+    df = pd.DataFrame(total_rows)
     df = df[columns]
     # countries with zero fatalities don't report, so fill in with zeros
     if get_losses:
@@ -1002,24 +1003,25 @@ def get_history_data_frame(detail, products=None):
     else:
         products = PRODUCTS
 
-    dataframe = pd.DataFrame(columns=PRODUCT_COLUMNS)
+    allrows = []
     for product in products:
         logging.debug("Searching for %s products..." % product)
         if not event.hasProduct(product):
             continue
         prows = _get_product_rows(event, product)
-        dataframe = dataframe.append(prows, ignore_index=True)
+        allrows += prows
 
-    dataframe = dataframe.sort_values("Update Time")
-    dataframe["Elapsed (min)"] = np.round(dataframe["Elapsed (min)"], 1)
+    dataframe = pd.DataFrame(allrows)
     dataframe["Comment"] = ""
     dataframe = dataframe[PRODUCT_COLUMNS]
+    dataframe = dataframe.sort_values("Update Time")
+    dataframe["Elapsed (min)"] = np.round(dataframe["Elapsed (min)"], 1)
     return (dataframe, event)
 
 
 def _get_product_rows(event, product_name):
     products = event.getProducts(product_name, source="all", version="all")
-    prows = pd.DataFrame(columns=PRODUCT_COLUMNS)
+    prows = []
     for product in products:
         # if product.contents == ['']:
         #     continue
@@ -1047,7 +1049,7 @@ def _get_product_rows(event, product_name):
             continue
         if prow is None:
             continue
-        prows = prows.append(prow, ignore_index=True)
+        prows.append(prow)
 
     return prows
 
@@ -1774,6 +1776,7 @@ def split_history_frame(dataframe, product=None):
     parts = dataframe.iloc[0]["Description"].split("|")
     columns = [p.split("#")[0] for p in parts]
     df2 = pd.DataFrame(columns=columns)
+    hrows = []
     for idx, row in dataframe.iterrows():
         parts = row["Description"].split("|")
         columns = [p.split("#")[0].strip() for p in parts]
@@ -1790,8 +1793,9 @@ def split_history_frame(dataframe, product=None):
             newvalues.append(newval)
         ddict = dict(zip(columns, newvalues))
         row = pd.Series(ddict)
-        df2 = df2.append(row, ignore_index=True)
+        hrows.append(row)
 
+    df2 = pd.DataFrame(hrows)
     dataframe = dataframe.reset_index(drop=True)
     df2 = df2.reset_index(drop=True)
     dataframe = pd.concat([dataframe, df2], axis=1)
@@ -2114,7 +2118,7 @@ def associate(
             dlabels = ["dtime", "ddist", "dmag", "asq", "bsq", "csq", "psum"]
             talternates.drop(labels=dlabels, axis="columns", inplace=True)
             talternates["chosen_id"] = ef_row["id"]
-            alternates = alternates.append(talternates)
+            alternates = pd.concat([alternates, talternates])
 
         found_events.append(row)
     associated = pd.DataFrame(found_events)

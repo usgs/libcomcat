@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cwd=$(pwd)
 unamestr=`uname`
 env_file=environment.yml
 if [ "$unamestr" == 'Linux' ]; then
@@ -71,6 +72,9 @@ if [ $? -ne 0 ]; then
     echo ". $_CONDA_ROOT/etc/profile.d/conda.sh" >> $prof
 fi
 
+# make sure we're in the project directory still
+cd $cwd
+
 # Start in conda base environment
 echo "Activate base virtual environment"
 conda activate base
@@ -80,12 +84,12 @@ conda remove -y -n $VENV --all
 
 # Package list:
 package_list=(
-      "python>=3.6"
+      "python>=3.7"
       "impactutils"
       "fiona>=1.8.20"
       "ipython"
       "jupyter"
-      "numpy"
+      "numpy=1.21"
       "obspy"
       "pandas"
       "pip"

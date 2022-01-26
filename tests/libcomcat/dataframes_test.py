@@ -152,23 +152,22 @@ def test_history_data_frame():
     # SMOKE TEST
     cassettes, datadir = get_datadir()
     tape_file = os.path.join(cassettes, "dataframes_history.yaml")
+    products = [
+        "shakemap",
+        "dyfi",
+        "losspager",
+        "oaf",
+        "finite-fault",
+        "focal-mechanism",
+        "ground-failure",
+        "moment-tensor",
+        "phase-data",
+        "origin",
+    ]
+
     with vcr.use_cassette(tape_file, record_mode="new_episodes"):
         nc72852151 = get_event_by_id("nc72852151", includesuperseded=True)
-        (history, event) = get_history_data_frame(
-            nc72852151,
-            [
-                "shakemap",
-                "dyfi",
-                "losspager",
-                "oaf",
-                "finite-fault",
-                "focal-mechanism",
-                "ground-failure",
-                "moment-tensor",
-                "phase-data",
-                "origin",
-            ],
-        )
+        (history, event) = get_history_data_frame(nc72852151, products)
         us10008e3k = get_event_by_id("us10008e3k", includesuperseded=True)
         (history, event) = get_history_data_frame(
             us10008e3k,
@@ -415,6 +414,8 @@ def test_associate():
 
 
 if __name__ == "__main__":
+    print("Testing history frame...")
+    test_history_data_frame()
     print("Testing catalog association...")
     test_associate()
     print("Testing nan mags extraction...")
@@ -431,5 +432,3 @@ if __name__ == "__main__":
     test_get_detail_data_frame()
     print("Testing magnitude frame...")
     test_magnitude_dataframe()
-    print("Testing history frame...")
-    test_history_data_frame()
