@@ -4,7 +4,6 @@ from urllib.error import HTTPError
 from urllib.parse import urlparse
 from collections import OrderedDict
 import re
-from enum import Enum
 import time
 import logging
 
@@ -46,7 +45,13 @@ WAITSECS = 3
 
 
 def _get_moment_tensor_info(tensor, get_angles=False, get_moment_supplement=False):
-    """Internal - gather up tensor components and focal mechanism angles."""
+    """Internal - gather up tensor components and focal mechanism angles.
+
+    Args:
+        tensor:
+        get_angles(bool):
+        get_moment_supplement(bool):
+    """
     msource = tensor["eventsource"]
     if tensor.hasProperty("derived-magnitude-type"):
         msource += "_" + tensor["derived-magnitude-type"]
@@ -95,7 +100,11 @@ def _get_moment_tensor_info(tensor, get_angles=False, get_moment_supplement=Fals
 
 
 def _get_focal_mechanism_info(focal):
-    """Internal - gather up focal mechanism angles."""
+    """Internal - gather up focal mechanism angles.
+
+    Args:
+        focal():
+    """
     msource = focal["eventsource"]
     eventid = msource + focal["eventsourcecode"]
     edict = OrderedDict()
@@ -195,7 +204,7 @@ class SummaryEvent(object):
         """Authoritative origin time.
 
         Returns:
-            datetime: Authoritative origin time.
+            dt (datetime): Authoritative origin time.
         """
         time_in_msec = self._jdict["properties"]["time"]
         time_in_sec = time_in_msec // 1000
@@ -374,7 +383,7 @@ class DetailEvent(object):
             response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
             self._jdict = response.json()
             self._actual_url = url
-        except requests.exceptions.ReadTimeout as rt:
+        except requests.exceptions.ReadTimeout:
             try:
                 response = requests.get(url, timeout=TIMEOUT, headers=HEADERS)
                 self._jdict = response.json()
@@ -576,7 +585,7 @@ class DetailEvent(object):
             extracted (when available.)
             get_focals (str): String option of 'none', 'preferred', or 'all'.
         Returns:
-            dict: OrderedDict with the same fields as returned by
+            edict: OrderedDict with the same fields as returned by
                 SummaryEvent.toDict(), *preferred* moment tensor and focal
                 mechanism data.  If all magnitudes are requested, then
                 those will be returned as well. Generally speaking, the
@@ -961,7 +970,7 @@ class Product(object):
             regexp (str): Regular expression which should match one of the
                 content files
                 in the Product.
-        filename (str): Filename to which content should be downloaded.
+            filename (str): Filename to which content should be downloaded.
         Returns:
             str: The URL from which the content was downloaded.
         Raises:

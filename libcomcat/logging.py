@@ -1,6 +1,5 @@
 import logging
 import logging.config
-import sys
 
 LEVELDICT = {'debug': logging.DEBUG,
              'info': logging.INFO,
@@ -20,7 +19,7 @@ def setup_logger(logfile, level='info'):
     used if args is None).
 
     Args:
-        args (argparse):
+        logfile (str):
             Must contain logging options in gmprocess.args.add_shared_args.
         level (str):
             String indicating logging level; either 'info', 'debug', or
