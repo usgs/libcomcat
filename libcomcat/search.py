@@ -241,18 +241,20 @@ def get_event_by_id(
 
 
     Args:
-        eventid (str): Select a specific event by ID; event identifiers are
-        data center specific.
+        eventid (str):
+            Select a specific event by ID; event identifiers are data center specific.
         catalog (str):
             Limit to events from a specified catalog.
         includesuperseded (bool):
             Specify if superseded products should be included. This also
             includes all deleted products, and is mutually exclusive to the
             includedeleted parameter.
-        includedeleted (bool): Specify if deleted products should be incuded.
-        scenario (bool): Specify if the event ID being searched is a scenario.
-        host (str): Replace default ComCat host (earthquake.usgs.gov) with a
-                    custom host.
+        includedeleted (bool):
+            Specify if deleted products should be incuded.
+        scenario (bool):
+            Specify if the event ID being searched is a scenario.
+        host (str):
+            Replace default ComCat host (earthquake.usgs.gov) with a custom host.
     Returns: DetailEvent object.
     """
     # getting the inputargs must be the first line of the method!

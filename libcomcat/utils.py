@@ -2,7 +2,6 @@
 from xml.dom import minidom
 import os.path
 import math
-import string
 from functools import partial
 import argparse
 
@@ -10,7 +9,6 @@ import argparse
 import pandas as pd
 from shapely.geometry import shape as sShape, Point, MultiPolygon
 import fiona
-from obspy.clients.fdsn import Client
 from impactutils.time.ancient_time import HistoricTime
 from openpyxl import load_workbook
 import pkg_resources
