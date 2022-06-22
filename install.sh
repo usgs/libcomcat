@@ -2,7 +2,7 @@
 
 cwd=$(pwd)
 unamestr=`uname`
-env_file=environment.yml
+
 if [ "$unamestr" == 'Linux' ]; then
     prof=~/.bashrc
     mini_conda_url=https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -84,7 +84,7 @@ conda remove -y -n $VENV --all
 
 # Package list:
 package_list=(
-      "python>=3.7"
+      "python>=3.8"
       "impactutils"
       "fiona>=1.8.20"
       "ipython"
