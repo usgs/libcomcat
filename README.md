@@ -76,6 +76,7 @@ Example Jupyter notebooks show how the API can be used to get and manipulate inf
 - [Magnitude Comparison Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/ComparingMagnitudes.ipynb)
 - [Phase and Magnitude Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/PhasesAndMagnitudes.ipynb)
 - [Search Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/Search.ipynb)
+- [Get ShakeMap/DYFI Station Pairs Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/GetSMDYFIPairs.ipynb)
 
 ## Citation
 
