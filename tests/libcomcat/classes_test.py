@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
-import os.path
-from datetime import datetime
-import tempfile
 import json
+import os.path
+import tempfile
+from datetime import datetime
 
 import vcr
 
 from libcomcat.classes import DetailEvent, Product
-from libcomcat.search import search, get_event_by_id
 from libcomcat.exceptions import (
     ArgumentConflictError,
-    ProductNotFoundError,
     ContentNotFoundError,
+    ProductNotFoundError,
 )
+from libcomcat.search import get_event_by_id, search
 
 
 def get_datadir():
@@ -148,7 +148,7 @@ def test_moment_supplement():
 def test_detail():
     cassettes, datadir = get_datadir()
     tape_file = os.path.join(cassettes, "classes_detailevent.yaml")
-    with vcr.use_cassette(tape_file):
+    with vcr.use_cassette(tape_file, record_mode="once"):
         eventid = "ci3144585"  # northridge
         fmt = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/" "detail/%s.geojson"
         url = fmt % eventid
@@ -215,7 +215,7 @@ def test_detail():
             if key.startswith("magtype"):
                 allmags.append(value)
         cmpmags = ["Md", "Ml", "Ms_20", "Mw", "Mwb", "Mwc", "Mwr", "Mww", "mb", "mw"]
-        assert sorted(allmags) == sorted(cmpmags)
+        assert set(allmags) == set(cmpmags)
 
         ncdict_alltensors = event.toDict(get_tensors="all")
         assert ncdict_alltensors["us_Mwb_mrr"] == 7.63e16
