@@ -683,6 +683,7 @@ class DetailEvent(object):
                 origin_products = self.getProducts("origin", source="all")
                 phases += origin_products
             imag = 0
+            unique_magnitudes = []
             for phase_data in phases:
                 # we don't want duplicates of phase data information
                 # from us origin product
@@ -703,6 +704,13 @@ class DetailEvent(object):
                     continue
                 event = catalog.events[0]
                 for magnitude in event.magnitudes:
+                    # since resource IDs for magnitudes are unique, we can use this
+                    # to track whether we're getting duplicate magnitudes
+                    # from phase-data and origin products.
+                    magid = magnitude.resource_id.id
+                    if magid in unique_magnitudes:
+                        continue
+                    unique_magnitudes.append(magid)
                     edict["magnitude%i" % imag] = magnitude.mag
                     edict["magtype%i" % imag] = magnitude.magnitude_type
                     cname = "magsource%i" % imag
