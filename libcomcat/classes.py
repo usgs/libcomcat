@@ -1,26 +1,27 @@
 # stdlib imports
+import logging
+import re
+import time
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
 from urllib.parse import urlparse
-from collections import OrderedDict
-import re
-import time
-import logging
+
+import dateutil
+import numpy as np
+import pandas as pd
+import requests
 
 # third party imports
 from obspy.core.event import read_events
-import pandas as pd
-import numpy as np
-import dateutil
-import requests
 
 # local imports
 from libcomcat.exceptions import (
-    ConnectionError,
-    ProductNotFoundError,
     ArgumentConflictError,
-    UndefinedVersionError,
+    ConnectionError,
     ContentNotFoundError,
+    ProductNotFoundError,
+    UndefinedVersionError,
 )
 from libcomcat.utils import HEADERS, TIMEOUT
 
@@ -674,12 +675,15 @@ class DetailEvent(object):
                 edict.update(_get_focal_mechanism_info(focal))
 
         if get_all_magnitudes:
+            phases = []
             if self.hasProduct("phase-data"):
-                product = "phase-data"
-            else:
-                product = "origin"
-            phases = self.getProducts(product, source="all")
+                phase_products = self.getProducts("phase-data", source="all")
+                phases += phase_products
+            if self.hasProduct("origin"):
+                origin_products = self.getProducts("origin", source="all")
+                phases += origin_products
             imag = 0
+            unique_magnitudes = []
             for phase_data in phases:
                 # we don't want duplicates of phase data information
                 # from us origin product
@@ -691,14 +695,22 @@ class DetailEvent(object):
                 # ######################################
                 phase_url = phase_data.getContentURL("quakeml.xml")
                 try:
-                    catalog = read_events(phase_url)
+                    catalog = read_events(phase_url, format="QUAKEML")
                 except Exception as e:
+                    catalog = read_events(phase_url, format="QUAKEML")
                     fmt = "Could not parse quakeml file from %s. " "Error: %s"
                     tpl = (phase_url, str(e))
                     logging.warning(fmt % tpl)
                     continue
                 event = catalog.events[0]
                 for magnitude in event.magnitudes:
+                    # since resource IDs for magnitudes are unique, we can use this
+                    # to track whether we're getting duplicate magnitudes
+                    # from phase-data and origin products.
+                    magid = magnitude.resource_id.id
+                    if magid in unique_magnitudes:
+                        continue
+                    unique_magnitudes.append(magid)
                     edict["magnitude%i" % imag] = magnitude.mag
                     edict["magtype%i" % imag] = magnitude.magnitude_type
                     cname = "magsource%i" % imag

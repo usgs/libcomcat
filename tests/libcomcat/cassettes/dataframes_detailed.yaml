@@ -1099,8 +1099,6 @@ interactions:
       - nginx
       Strict-Transport-Security:
       - max-age=31536000
-      Transfer-Encoding:
-      - chunked
       Vary:
       - Accept-Encoding
       Via:
@@ -2126,8 +2124,6 @@ interactions:
       - nginx
       Strict-Transport-Security:
       - max-age=31536000
-      Transfer-Encoding:
-      - chunked
       Vary:
       - Accept-Encoding
       Via:
@@ -2148,6 +2144,224 @@ interactions:
       - '2014-11-07T00:56:26.000Z'
       x-amz-meta-sha256:
       - 6tMppqjoy22w01MnciNcE6nejsgvNbW2maFnHYxH37k=
+      x-amz-version-id:
+      - 'null'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+    method: GET
+    uri: https://earthquake.usgs.gov/product/origin/usp0006dzc/us/1415321740300/quakeml.xml
+  response:
+    body:
+      string: "<q:quakeml xmlns=\"http://quakeml.org/xmlns/bed/1.2\" xmlns:catalog=\"http://anss.org/xmlns/catalog/0.1\"
+        xmlns:q=\"http://quakeml.org/xmlns/quakeml/1.2\" xmlns:anss=\"http://anss.org/xmlns/event/0.1\"><eventParameters
+        publicID=\"quakeml:US.anss.org/eventParameters/pde19940609003316230_631/1415321740300\"><event
+        publicID=\"quakeml:US.anss.org/event/pde19940609003316230_631\" catalog:datasource=\"us\"
+        catalog:dataid=\"usp0006dzc\" catalog:eventsource=\"us\" catalog:eventid=\"p0006dzc\"><comment><text>Station
+        CEH\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation MIAR\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation LSCT\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation HRV\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        BINY\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation WMOK\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation YSNY\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation LBNH\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        RSNY\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation JFWS\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation CBM\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation TUC\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        GOL\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation RSSD\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation DUG\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation ISA\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        MHC\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation STAN\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation BKS\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation ORV\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        MIN\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation ARC\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation DOI\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation ORO\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        GRF\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation BRT\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation VKA\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nPreferred magnitude chosen
+        using pickmag_pre2011.</text></comment><magnitude publicID=\"quakeml:us.anss.org/magnitude/pde19940609003316230_631/Mw/HRV\"><mag><value>8.2</value></mag><type>Mw</type><originID>quakeml:us.anss.org/origin/pde19940609003316230_631</originID><evaluationMode>manual</evaluationMode><evaluationStatus>reviewed</evaluationStatus><creationInfo><agencyID>HRV</agencyID></creationInfo></magnitude><origin
+        publicID=\"quakeml:us.anss.org/origin/pde19940609003316230_631\"><originUncertainty><minHorizontalUncertainty>2560</minHorizontalUncertainty><maxHorizontalUncertainty>2560</maxHorizontalUncertainty></originUncertainty><time><value>1994-06-09T00:33:16.230Z</value><uncertainty>0.11</uncertainty><upperUncertainty>8500</upperUncertainty><confidenceLevel>0.90</confidenceLevel></time><longitude><value>-67.553</value></longitude><latitude><value>-13.841</value></latitude><depth><value>631300</value></depth><depthType>operator
+        assigned</depthType><quality><standardError>1.1</standardError></quality><evaluationMode>manual</evaluationMode><evaluationStatus>reviewed</evaluationStatus><creationInfo><agencyID>US</agencyID></creationInfo></origin><preferredOriginID>quakeml:us.anss.org/origin/pde19940609003316230_631</preferredOriginID><preferredMagnitudeID>quakeml:us.anss.org/magnitude/pde19940609003316230_631/Mw/HRV</preferredMagnitudeID><type>earthquake</type></event><creationInfo><agencyID>US</agencyID><creationTime>2014-11-07T00:55:40.300Z</creationTime></creationInfo></eventParameters></q:quakeml>"
+    headers:
+      Access-Control-Allow-Headers:
+      - '*'
+      Access-Control-Allow-Methods:
+      - GET, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '86400'
+      Cache-Control:
+      - max-age=315360000
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4586'
+      Content-Type:
+      - application/xml
+      Date:
+      - Wed, 29 Jun 2022 20:48:14 GMT
+      ETag:
+      - '"1311938813fc8c6336d8522c19683593"'
+      Expires:
+      - Sat, 26 Jun 2032 20:48:14 GMT
+      Last-Modified:
+      - Mon, 23 Nov 2020 01:50:23 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 a10f8b8edba35e6f4205ea317abf3c48.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - ixP3_HVixv-RyIo6Nxpov7Ba8WS0ydiIEPJ1LaiuhKb_QK-Mgi1o5g==
+      X-Amz-Cf-Pop:
+      - IAD50-C2
+      X-Cache:
+      - Miss from cloudfront
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+      x-amz-meta-modified:
+      - '2014-11-07T00:55:40.000Z'
+      x-amz-meta-sha256:
+      - EztAxmYLM2ezU9wpVuBMsneGVipZsncBMNBlXOELRqk=
+      x-amz-version-id:
+      - 'null'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+    method: GET
+    uri: https://earthquake.usgs.gov/product/origin/usp0006kdp/us/1415321786359/quakeml.xml
+  response:
+    body:
+      string: "<q:quakeml xmlns=\"http://quakeml.org/xmlns/bed/1.2\" xmlns:catalog=\"http://anss.org/xmlns/catalog/0.1\"
+        xmlns:q=\"http://quakeml.org/xmlns/quakeml/1.2\" xmlns:anss=\"http://anss.org/xmlns/event/0.1\"><eventParameters
+        publicID=\"quakeml:US.anss.org/eventParameters/pde19941004132255840_14/1415321786359\"><event
+        publicID=\"quakeml:US.anss.org/event/pde19941004132255840_14\" catalog:datasource=\"us\"
+        catalog:dataid=\"usp0006kdp\" catalog:eventsource=\"us\" catalog:eventid=\"p0006kdp\"><comment><text>Station
+        COL\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation RAMN\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation TRO\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation JMI\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        MOR8\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation NSS\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation MAK\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation HYA\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        KONO\n\t- Primary Phase magnitude amplitude overflow; usage flag is blank,
+        amplitude set to max value (9999.99)\nStation ASK\n\t- Primary Phase magnitude
+        amplitude overflow; usage flag is X, omitting amplitude\nStation BER\n\t-
+        Primary Phase magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        ODD1\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation EGD\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation SMTC\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is blank, amplitude set to max value (9999.99)\nStation
+        KMY\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation CLL\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation BRG\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation GRF\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        BNS\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation SKO\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nStation TPT\n\t- Primary Phase magnitude amplitude
+        overflow; usage flag is X, omitting amplitude\nStation RUV\n\t- Primary Phase
+        magnitude amplitude overflow; usage flag is X, omitting amplitude\nStation
+        AFR\n\t- Primary Phase magnitude amplitude overflow; usage flag is X, omitting
+        amplitude\nStation LSCT\n\t- Primary Phase magnitude amplitude overflow; usage
+        flag is X, omitting amplitude\nPreferred magnitude chosen using pickmag_pre2011.</text></comment><magnitude
+        publicID=\"quakeml:us.anss.org/magnitude/pde19941004132255840_14/Mw/HRV\"><mag><value>8.3</value></mag><type>Mw</type><originID>quakeml:us.anss.org/origin/pde19941004132255840_14</originID><evaluationMode>manual</evaluationMode><evaluationStatus>reviewed</evaluationStatus><creationInfo><agencyID>HRV</agencyID></creationInfo></magnitude><origin
+        publicID=\"quakeml:us.anss.org/origin/pde19941004132255840_14\"><originUncertainty><minHorizontalUncertainty>1800</minHorizontalUncertainty><maxHorizontalUncertainty>2090</maxHorizontalUncertainty></originUncertainty><time><value>1994-10-04T13:22:55.840Z</value><uncertainty>0.80</uncertainty><upperUncertainty>8500</upperUncertainty><confidenceLevel>0.90</confidenceLevel></time><longitude><value>147.321</value></longitude><latitude><value>43.773</value></latitude><depth><value>14000</value><uncertainty>4700</uncertainty><upperUncertainty>8500</upperUncertainty><confidenceLevel>0.90</confidenceLevel></depth><quality><standardError>0.9</standardError></quality><evaluationMode>manual</evaluationMode><evaluationStatus>reviewed</evaluationStatus><creationInfo><agencyID>US</agencyID></creationInfo></origin><preferredOriginID>quakeml:us.anss.org/origin/pde19941004132255840_14</preferredOriginID><preferredMagnitudeID>quakeml:us.anss.org/magnitude/pde19941004132255840_14/Mw/HRV</preferredMagnitudeID><type>earthquake</type></event><creationInfo><agencyID>US</agencyID><creationTime>2014-11-07T00:56:26.359Z</creationTime></creationInfo></eventParameters></q:quakeml>"
+    headers:
+      Access-Control-Allow-Headers:
+      - '*'
+      Access-Control-Allow-Methods:
+      - GET, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '86400'
+      Cache-Control:
+      - max-age=315360000
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4403'
+      Content-Type:
+      - application/xml
+      Date:
+      - Wed, 29 Jun 2022 20:48:16 GMT
+      ETag:
+      - '"cdda05fd8bc2561e112221aaa50d5102"'
+      Expires:
+      - Sat, 26 Jun 2032 20:48:16 GMT
+      Last-Modified:
+      - Mon, 23 Nov 2020 01:52:00 GMT
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Accept-Encoding
+      Via:
+      - 1.1 8d0bf2975485a7f0e4b8d82ddd378292.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - OsmRq8pl65hwY7iSHb6-xb9XKt3TpMkIGr4cF0gbxVpUV1vtIlNl4A==
+      X-Amz-Cf-Pop:
+      - IAD50-C2
+      X-Cache:
+      - Miss from cloudfront
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-XSS-Protection:
+      - 1; mode=block
+      x-amz-meta-modified:
+      - '2014-11-07T00:56:26.000Z'
+      x-amz-meta-sha256:
+      - 0rryPU99oevzp2xPFWbBvSSII1Eg4ViyaZpHUTfazQQ=
       x-amz-version-id:
       - 'null'
     status:
