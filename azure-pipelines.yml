@@ -30,6 +30,12 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
   - script: |
+      # build gdal
+      cd c:\dev
+      git clone https://github.com/OSGeo/gdal.git
+      cd c:\dev\gdal
+      cmake -S . -B build
+      cmake --build build --config Release -j 8
       pip install libcomcat --user
       pip install pytest --user
       pip install pytest-cov --user
