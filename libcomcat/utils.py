@@ -9,7 +9,7 @@ import argparse
 import pandas as pd
 from shapely.geometry import shape as sShape, Point, MultiPolygon
 import fiona
-from impactutils.time.ancient_time import HistoricTime
+from esi_utils_time.ancient_time import HistoricTime
 from openpyxl import load_workbook
 import pkg_resources
 import pyproj
@@ -273,7 +273,7 @@ def get_country_bounds(ccode, buffer_km=BUFFER_DISTANCE_KM):
             if shape["properties"]["ADM0_A3"] == ccode:
                 country = sShape(shape["geometry"])
                 if isinstance(country, MultiPolygon):
-                    for polygon in country:
+                    for polygon in country.geoms:
                         xmin, ymin, xmax, ymax = _buffer(polygon.bounds, buffer_km)
                         bounds.append((xmin, xmax, ymin, ymax))
                 else:
@@ -356,7 +356,7 @@ def filter_by_country(df, ccode, buffer_km=BUFFER_DISTANCE_KM):
         pshape, utmproj = _get_pshape(shape, buffer_km)
         pshapes.append((pshape, utmproj))
 
-    df2 = pd.DataFrame(columns=df.columns)
+    rows = []
     for idx, row in df.iterrows():
         lat = row["latitude"]
         lon = row["longitude"]
@@ -370,6 +370,6 @@ def filter_by_country(df, ccode, buffer_km=BUFFER_DISTANCE_KM):
             if point_inside:
                 break
         if point_inside:
-            df2 = df2.append(row)
-
+            rows.append(row.to_dict())
+    df2 = pd.DataFrame(rows)
     return df2

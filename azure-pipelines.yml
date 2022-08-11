@@ -29,13 +29,9 @@ jobs:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
 
   - script: |
-      conda env create --quiet --file environment.yml
-      call activate comcat
-      pip install -e . --user
+      pip install libcomcat --user
   - script: |
       call activate comcat
       py.test --ignore=tests/bin/ --cov=libcomcat
@@ -83,27 +79,16 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
 
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to path
-
-  - bash: |
-      echo `test "$(Agent.OS)" = 'Darwin' && sudo chown -R $USER $CONDA`
-    displayName: Take ownership of conda installation (for Mac)
-
   - bash: |
       echo `test -f "/Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg" &&
       sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /`
     displayName: Install SDK stuff (for Mac 10.14)
 
   - bash: |
-      bash install.sh                       
+      pip install libcomcat
     displayName: Create environment
 
-  - bash: conda init bash                            
-    displayName: Init conda for bash
-
   - bash: |
-      source activate comcat
       export PYTHONPATH="."                                                   
       py.test --ignore=tests/bin/ --cov=libcomcat
     failOnStderr: true                                           
@@ -119,10 +104,7 @@ jobs:
     displayName: Get coverage
 
   - bash: |
-      echo "Activating virtual environment..."
-      source activate comcat
-      echo "Done."
-      echo "Doing scheduled units tests..."
+      pip install pytest
       py.test --ignore=tests/bin/ --cov=libcomcat
       echo "Done."
       echo "Doing scheduled system tests..."

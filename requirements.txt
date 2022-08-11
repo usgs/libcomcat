@@ -1,0 +1,17 @@
+esi-extern-openquake
+esi-utils-io
+esi-utils-time
+fiona>=1.8.20
+numpy>=1.21
+obspy
+openpyxl
+pandas
+pip
+pyproj
+pytest
+pytest-cov
+shapely
+vcrpy
+xlrd
+xlsxwriter
+xlwt

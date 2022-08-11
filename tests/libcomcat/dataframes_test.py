@@ -131,7 +131,7 @@ def test_dyfi():
     tape_file = os.path.join(cassettes, "dataframes_dyfi.yaml")
     with vcr.use_cassette(tape_file, record_mode="new_episodes"):
         df1km = get_dyfi_data_frame(detail, dyfi_file="utm_1km")
-        np.testing.assert_almost_equal(df1km["intensity"].sum(), 14628.3)
+        np.testing.assert_almost_equal(df1km["intensity"].sum(), 14629.1)
         df10km = get_dyfi_data_frame(detail, dyfi_file="utm_10km")
         np.testing.assert_almost_equal(df10km["intensity"].sum(), 3459.0)
         dfutm = get_dyfi_data_frame(detail, dyfi_file="utm_var")

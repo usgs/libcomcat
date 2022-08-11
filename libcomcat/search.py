@@ -8,7 +8,7 @@ import numpy as np
 import requests
 
 # third party imports
-from impactutils.time.ancient_time import HistoricTime
+from esi_utils_time.ancient_time import HistoricTime
 
 # local imports
 from libcomcat.classes import DetailEvent, SummaryEvent

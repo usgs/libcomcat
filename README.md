@@ -22,38 +22,14 @@ line programs that use those:
 
 
 
-# Installation and Dependencies
+# Installation
 
-## Mac, Windows, and Linux Users
+We recommend installing via pip:
+```
+pip install libcomcat
+```
 
-We recommend using either the Anaconda (https://docs.anaconda.com/anaconda/) or
-Miniconda (https://conda.io/miniconda.html) Python distributions.  These both use the
-conda packaging tool, which makes installation of dependencies much simpler. To install
-either of those packages, see the instructions on the web pages for each.
-
-### Installing
-
-libcomcat *should* work with Python 3.5 and higher versions. It will *not* work with Python
-2.7.  Fortunately, it is easy to install a 3.X version of Python within Anaconda or Miniconda. 
-On a Linux or OSX system, open a Terminal window. On Windows systems, open a Powershell terminal. 
-You'll use these command line windows to type the following commands:
-
- - `conda create -n comcat --channel conda-forge python=3.7` # or 3.8 or 3.9
- - `conda activate comcat`
- - `conda config --add channels conda-forge`
- - `conda install libcomcat`
-
-### Uninstalling and Updating
-
-To uninstall:
-
-`conda remove libcomcat`
-
-To update:
-
-`conda update libcomcat`
-
-## Motivation
+# Motivation
 
 libcomcat is a python wrapper for the Comprehensive Catalog (ComCat), which has a [web page interface](https://earthquake.usgs.gov/earthquakes/map/) and [API](https://earthquake.usgs.gov/fdsnws/event/1/). ComCat contains information in **Events** which contain **Products**. Products contain **Contents** in the form of files, maps, etc.
 
@@ -62,7 +38,7 @@ The ComCat interface is very user friendly, but does not support automation. The
 - Automation of product file downloads
 - Extraction of information in product content files
 
-## Documentation
+# Documentation
 
 Documentation can be found in the docs folder:
 - [API Documentation](https://github.com/usgs/libcomcat/blob/master/docs/api.md)
@@ -78,7 +54,7 @@ Example Jupyter notebooks show how the API can be used to get and manipulate inf
 - [Search Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/Search.ipynb)
 - [Get ShakeMap/DYFI Station Pairs Notebook](https://github.com/usgs/libcomcat/blob/master/notebooks/GetSMDYFIPairs.ipynb)
 
-## Citation
+# Citation
 
 If you wish to cite this work in your own publication, you may use this DOI:
 https://doi.org/10.5066/P91WN1UQ
