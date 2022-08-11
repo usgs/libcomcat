@@ -8,7 +8,7 @@ setup(
     author="Mike Hearne",
     author_email="mhearne@usgs.gov",
     url="https://github.com/usgs/libcomcat",
-    version="2.1.0",
+    version="2.1.1",
     packages=["libcomcat", "libcomcat.bin"],  # must be here or scripts won't install!
     package_data={
         "libcomcat": [
@@ -30,4 +30,23 @@ setup(
             "getproduct = libcomcat.bin.getproduct:main",
         ]
     },
+    install_requires=[
+        "esi-extern-openquake",
+        "esi-utils-io",
+        "esi-utils-time",
+        "fiona>=1.8.20",
+        "numpy>=1.21",
+        "obspy",
+        "openpyxl",
+        "pandas",
+        "pip",
+        "pyproj",
+        "pytest",
+        "pytest-cov",
+        "shapely",
+        "vcrpy",
+        "xlrd",
+        "xlsxwriter",
+        "xlwt",
+    ]
 )
