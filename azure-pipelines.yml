@@ -29,25 +29,11 @@ jobs:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
-
   - script: |
       pip install libcomcat --user
-  - script: |
-      call activate comcat
+      pip install pytest --user
       py.test --ignore=tests/bin/ --cov=libcomcat
     displayName: Unit Tests Windows
-  
-  # - script: |
-  #     echo "Activating virtual environment..."
-  #     echo "Done."
-  #     call activate comcat
-  #     echo "Doing scheduled unit tests..."
-  #     py.test --ignore=tests/bin/ --cov=libcomcat
-  #     echo "Doing scheduled system tests..."
-  #     py.test --ignore=tests/libcomcat/
-  #     echo "Done."
-  #   displayName: Nightly Build Windows
-  #   condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
 
 - job: 'Unix'
   timeoutInMinutes: 120
@@ -89,7 +75,8 @@ jobs:
     displayName: Create environment
 
   - bash: |
-      export PYTHONPATH="."                                                   
+      export PYTHONPATH="."
+      pip install pytest
       py.test --ignore=tests/bin/ --cov=libcomcat
     failOnStderr: true                                           
     displayName: Run tests
