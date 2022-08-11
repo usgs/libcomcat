@@ -32,6 +32,7 @@ jobs:
   - script: |
       pip install libcomcat --user
       pip install pytest --user
+      pip install pytest-cov --user
       py.test --ignore=tests/bin/ --cov=libcomcat
     displayName: Unit Tests Windows
 
@@ -77,6 +78,7 @@ jobs:
   - bash: |
       export PYTHONPATH="."
       pip install pytest
+      pip install pytest-cov
       py.test --ignore=tests/bin/ --cov=libcomcat
     failOnStderr: true                                           
     displayName: Run tests
