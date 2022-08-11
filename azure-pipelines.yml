@@ -31,9 +31,9 @@ jobs:
       versionSpec: '$(python.version)'
   - script: |
       # build gdal
-      cd c:\dev
+      ECHO %cd%
       git clone https://github.com/OSGeo/gdal.git
-      cd c:\dev\gdal
+      cd gdal
       cmake -S . -B build
       cmake --build build --config Release -j 8
       pip install libcomcat --user
