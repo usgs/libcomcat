@@ -3,22 +3,25 @@ import argparse
 import sys
 import logging
 from datetime import timedelta
+import pkg_resources
 
-
-import libcomcat
 from libcomcat.search import search, count
-from libcomcat.utils import (maketime, check_ccode,
-                             get_country_bounds, filter_by_country,
-                             BUFFER_DISTANCE_KM, CombinedFormatter)
-from libcomcat.dataframes import (get_detail_data_frame,
-                                  get_summary_data_frame)
+from libcomcat.utils import (
+    maketime,
+    check_ccode,
+    get_country_bounds,
+    filter_by_country,
+    BUFFER_DISTANCE_KM,
+    CombinedFormatter,
+)
+from libcomcat.dataframes import get_detail_data_frame, get_summary_data_frame
 from libcomcat.logging import setup_logger
 
-EVTYPES = ['earthquake', 'explosion', 'landslide', 'volcanic eruption']
+EVTYPES = ["earthquake", "explosion", "landslide", "volcanic eruption"]
 
 
 def get_parser():
-    desc = '''Download basic earthquake information in line format (csv, tab, etc.).
+    desc = """Download basic earthquake information in line format (csv, tab, etc.).
 
     To download basic event information (time,lat,lon,depth,magnitude) and
     moment tensor components for a box around New Zealand during 2013:
@@ -92,84 +95,106 @@ def get_parser():
     much less time (~10 minutes or less for a 20,000 event query).
     Queries for all magnitude solutions will take even more time, as
     this requires parsing an XML file for each event and extracting
-    the magnitude values and associated source and type.  '''
+    the magnitude values and associated source and type.  """
 
     parser = argparse.ArgumentParser(
-        description=desc, formatter_class=CombinedFormatter)
+        description=desc, formatter_class=CombinedFormatter
+    )
     # positional arguments
-    parser.add_argument('filename',
-                        metavar='FILENAME', help='Output file name.')
+    parser.add_argument("filename", metavar="FILENAME", help="Output file name.")
     # optional arguments
     helpstr = """Limit to events with a specific PAGER alert level. The allowed values are:
               - green; Limit to events with PAGER alert level "green".
               - yellow; Limit to events with PAGER alert level "yellow".
               - orange; Limit to events with PAGER alert level "orange".
               - red; Limit to events with PAGER alert level "red"."""
-    parser.add_argument('--alert-level', help=helpstr, default=None)
-    helpstr = ('Bounds to constrain event search '
-               '[lonmin lonmax latmin latmax].')
-    parser.add_argument('-b', '--bounds',
-                        metavar=('lonmin', 'lonmax', 'latmin', 'latmax'),
-                        dest='bounds', type=float, nargs=4,
-                        help=helpstr)
-    buffer_str = '''Use in conjunction with --country. Specify a buffer (km)
+    parser.add_argument("--alert-level", help=helpstr, default=None)
+    helpstr = "Bounds to constrain event search " "[lonmin lonmax latmin latmax]."
+    parser.add_argument(
+        "-b",
+        "--bounds",
+        metavar=("lonmin", "lonmax", "latmin", "latmax"),
+        dest="bounds",
+        type=float,
+        nargs=4,
+        help=helpstr,
+    )
+    buffer_str = """Use in conjunction with --country. Specify a buffer (km)
     around the country's border where events will be selected.
-    '''
-    parser.add_argument('--buffer', help=buffer_str,
-                        type=int, default=BUFFER_DISTANCE_KM)
-    helpstr = ('Source catalog from which products are '
-               'derived (atlas, centennial, etc.).')
-    parser.add_argument('-c', '--catalog', dest='catalog',
-                        help=helpstr)
-    helpstr = 'Source contributor (who loaded product) (us, nc, etc.).'
-    parser.add_argument('--contributor', dest='contributor',
-                        help=helpstr)
-    country_str = '''Specify three character country code and earthquakes
+    """
+    parser.add_argument(
+        "--buffer", help=buffer_str, type=int, default=BUFFER_DISTANCE_KM
+    )
+    helpstr = (
+        "Source catalog from which products are " "derived (atlas, centennial, etc.)."
+    )
+    parser.add_argument("-c", "--catalog", dest="catalog", help=helpstr)
+    helpstr = "Source contributor (who loaded product) (us, nc, etc.)."
+    parser.add_argument("--contributor", dest="contributor", help=helpstr)
+    country_str = """Specify three character country code and earthquakes
     from inside country polygon (50m resolution) will be returned. Earthquakes
     in the ocean likely will NOT be returned.
 
     See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
-    '''
-    parser.add_argument('--country', help=country_str)
-    helpstr = ('End time for search (defaults to current date/time). '
-               'YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.')
-    parser.add_argument('-e', '--end-time', dest='endTime', type=maketime,
-                        help=helpstr)
-    parser.add_argument('-f', '--format', dest='format',
-                        choices=['csv', 'tab', 'excel'], default='csv',
-                        metavar='FORMAT', help="Output format (csv, tab, or excel). Default is 'csv'.")
-    helpstr = ('Extract all magnitudes (with sources), '
-               'authoritative listed first.')
-    parser.add_argument('--get-all-magnitudes',
-                        dest='getAllMags', action='store_true',
-                        help=helpstr)
-    helpstr = ('Extract preferred or all moment-tensor components '
-               '(including type and derived hypocenter) where available.')
-    parser.add_argument('--get-moment-components',
-                        dest='getComponents',
-                        choices=['none', 'preferred', 'all'],
-                        default='none',
-                        help=helpstr)
-    helpstr = ('Extract preferred or all focal-mechanism angles '
-               '(strike,dip,rake) where available.')
-    parser.add_argument('--get-focal-angles',
-                        dest='getAngles', choices=['none', 'preferred', 'all'],
-                        default='none',
-                        help=helpstr)
-    helpstr = ('Extract moment tensor supplemental information '
-               '(duration, derived origin, percent double couple) '
-               'when available.')
-    parser.add_argument('--get-moment-supplement',
-                        dest='getMomentSupplement', action='store_true',
-                        help=helpstr)
-    helpstr = ('Specify a different comcat *search* host than '
-               'earthquake.usgs.gov.')
-    parser.add_argument('--host',
-                        help=helpstr)
-    loghelp = '''Send debugging, informational, warning and error messages to a file.
-    '''
-    parser.add_argument('--logfile', default='stderr', help=loghelp)
-    levelhelp = '''Set the minimum logging level. The logging levels are (low to high):
+    """
+    parser.add_argument("--country", help=country_str)
+    helpstr = (
+        "End time for search (defaults to current date/time). "
+        "YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s."
+    )
+    parser.add_argument("-e", "--end-time", dest="endTime", type=maketime, help=helpstr)
+    parser.add_argument(
+        "-f",
+        "--format",
+        dest="format",
+        choices=["csv", "tab", "excel"],
+        default="csv",
+        metavar="FORMAT",
+        help="Output format (csv, tab, or excel). Default is 'csv'.",
+    )
+    helpstr = "Extract all magnitudes (with sources), " "authoritative listed first."
+    parser.add_argument(
+        "--get-all-magnitudes", dest="getAllMags", action="store_true", help=helpstr
+    )
+    helpstr = (
+        "Extract preferred or all moment-tensor components "
+        "(including type and derived hypocenter) where available."
+    )
+    parser.add_argument(
+        "--get-moment-components",
+        dest="getComponents",
+        choices=["none", "preferred", "all"],
+        default="none",
+        help=helpstr,
+    )
+    helpstr = (
+        "Extract preferred or all focal-mechanism angles "
+        "(strike,dip,rake) where available."
+    )
+    parser.add_argument(
+        "--get-focal-angles",
+        dest="getAngles",
+        choices=["none", "preferred", "all"],
+        default="none",
+        help=helpstr,
+    )
+    helpstr = (
+        "Extract moment tensor supplemental information "
+        "(duration, derived origin, percent double couple) "
+        "when available."
+    )
+    parser.add_argument(
+        "--get-moment-supplement",
+        dest="getMomentSupplement",
+        action="store_true",
+        help=helpstr,
+    )
+    helpstr = "Specify a different comcat *search* host than " "earthquake.usgs.gov."
+    parser.add_argument("--host", help=helpstr)
+    loghelp = """Send debugging, informational, warning and error messages to a file.
+    """
+    parser.add_argument("--logfile", default="stderr", help=loghelp)
+    levelhelp = """Set the minimum logging level. The logging levels are (low to high):
 
      - debug: Debugging message will be printed, most likely for developers.
               Most verbose.
@@ -178,54 +203,86 @@ def get_parser():
                 single event out of many) and errors will be printed.
      - error: Only errors will be printed, after which program will stop.
               Least verbose.
-    '''
-    parser.add_argument('--loglevel', default='info',
-                        choices=['debug', 'info', 'warning', 'error'],
-                        help=levelhelp)
-    helpstr = 'Minimum and maximum (authoritative) magnitude to restrict search.'
-    parser.add_argument('-m', '--mag-range', metavar=('minmag', 'maxmag'),
-                        dest='magRange', type=float, nargs=2,
-                        help=helpstr)
-    sighelpstr = ('Minimum/maximum significance ranges to restrict search.'
-                  'ANSS significant events have a significance value of '
-                  '600 or greater.')
-    parser.add_argument('--sig-range', metavar=('minsig', 'maxsig'),
-                        dest='sigRange', type=int, nargs=2,
-                        help=sighelpstr)
+    """
+    parser.add_argument(
+        "--loglevel",
+        default="info",
+        choices=["debug", "info", "warning", "error"],
+        help=levelhelp,
+    )
+    helpstr = "Minimum and maximum (authoritative) magnitude to restrict search."
+    parser.add_argument(
+        "-m",
+        "--mag-range",
+        metavar=("minmag", "maxmag"),
+        dest="magRange",
+        type=float,
+        nargs=2,
+        help=helpstr,
+    )
+    sighelpstr = (
+        "Minimum/maximum significance ranges to restrict search."
+        "ANSS significant events have a significance value of "
+        "600 or greater."
+    )
+    parser.add_argument(
+        "--sig-range",
+        metavar=("minsig", "maxsig"),
+        dest="sigRange",
+        type=int,
+        nargs=2,
+        help=sighelpstr,
+    )
+    helpstr = "Number of days after start time (numdays and end-time options are mutually exclusive)."
+    parser.add_argument("--numdays", dest="numdays", type=int, help=helpstr)
     helpstr = (
-        'Number of days after start time (numdays and end-time options are mutually exclusive).')
-    parser.add_argument('--numdays', dest='numdays', type=int,
-                        help=helpstr)
-    helpstr = ('Limit the search to only those events containing '
-               'products of type PRODUCT. See the full list here: '
-               'https://usgs.github.io/pdl/userguide/products/index.html')
-    parser.add_argument('-p', '--product-type',
-                        dest='limitByProductType', metavar='PRODUCT',
-                        help=helpstr)
-    helpstr = 'Search radius in kilometers (radius and bounding options are exclusive).'
-    parser.add_argument('-r', '--radius', dest='radius',
-                        metavar=('lat', 'lon', 'rmax'),
-                        type=float, nargs=3,
-                        help=helpstr)
-    helpstr = ('Start time for search (defaults to ~30 days ago). '
-               'YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s.')
-    parser.add_argument('-s', '--start-time', dest='startTime', type=maketime,
-                        help=helpstr)
-    helpstr = ('Limit to events after specified time. YYYY-mm-dd or '
-               'YYYY-mm-ddTHH:MM:SS.')
-    parser.add_argument('-t', '--time-after', dest='after', type=maketime,
-                        help=helpstr)
-    parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__, help='Version of libcomcat.')
-    helpstr = 'Just return the number of events in search and maximum allowed.'
-    parser.add_argument('-x', '--count', dest='getCount',
-                        action='store_true',
-                        help=helpstr)
-    typehelp = '''Select event type other than "earthquake".'''
+        "Limit the search to only those events containing "
+        "products of type PRODUCT. See the full list here: "
+        "https://usgs.github.io/pdl/userguide/products/index.html"
+    )
+    parser.add_argument(
+        "-p",
+        "--product-type",
+        dest="limitByProductType",
+        metavar="PRODUCT",
+        help=helpstr,
+    )
+    helpstr = "Search radius in kilometers (radius and bounding options are exclusive)."
+    parser.add_argument(
+        "-r",
+        "--radius",
+        dest="radius",
+        metavar=("lat", "lon", "rmax"),
+        type=float,
+        nargs=3,
+        help=helpstr,
+    )
+    helpstr = (
+        "Start time for search (defaults to ~30 days ago). "
+        "YYYY-mm-dd, YYYY-mm-ddTHH:MM:SS, or YYYY-mm-ddTHH:MM:SS.s."
+    )
+    parser.add_argument(
+        "-s", "--start-time", dest="startTime", type=maketime, help=helpstr
+    )
+    helpstr = (
+        "Limit to events after specified time. YYYY-mm-dd or " "YYYY-mm-ddTHH:MM:SS."
+    )
+    parser.add_argument("-t", "--time-after", dest="after", type=maketime, help=helpstr)
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=pkg_resources.require("libcomcat")[0].version,
+        help="Version of libcomcat.",
+    )
+    helpstr = "Just return the number of events in search and maximum allowed."
+    parser.add_argument(
+        "-x", "--count", dest="getCount", action="store_true", help=helpstr
+    )
+    typehelp = """Select event type other than "earthquake"."""
 
-    parser.add_argument('--event-type', default='earthquake',
-                        choices=EVTYPES,
-                        help=typehelp)
+    parser.add_argument(
+        "--event-type", default="earthquake", choices=EVTYPES, help=typehelp
+    )
     return parser
 
 
@@ -235,8 +292,10 @@ def main():
 
     # make sure we don't have -e option AND --numdays option
     if args.endTime is not None and args.numdays is not None:
-        msg = ('You must specify end time or number of days since '
-               'start time, not both. Exiting.')
+        msg = (
+            "You must specify end time or number of days since "
+            "start time, not both. Exiting."
+        )
         print(msg)
         sys.exit(1)
 
@@ -245,11 +304,13 @@ def main():
 
     setup_logger(args.logfile, args.loglevel)
 
-    tsum = (args.bounds is not None) + \
-        (args.radius is not None) + (args.country is not None)
+    tsum = (
+        (args.bounds is not None)
+        + (args.radius is not None)
+        + (args.country is not None)
+    )
     if tsum != 1:
-        logging.error(
-            'Please specify a bounding box, radius, or country code.')
+        logging.error("Please specify a bounding box, radius, or country code.")
         sys.exit(1)
 
     latitude = None
@@ -274,9 +335,8 @@ def main():
     if args.country:
         ccode = args.country
         if not check_ccode(ccode):
-            curl = 'https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2'
-            fmt = ('%s is not a valid ISO 3166 country code. '
-                   'See %s for the list.')
+            curl = "https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2"
+            fmt = "%s is not a valid ISO 3166 country code. " "See %s for the list."
             tpl = (ccode, curl)
             logging.error(fmt % tpl)
             sys.exit(1)
@@ -296,113 +356,120 @@ def main():
 
     if args.getCount:
         if isinstance(bounds, tuple) or bounds is None:
-            nevents = count(starttime=args.startTime,
-                            endtime=args.endTime,
-                            updatedafter=args.after,
-                            minlatitude=latmin,
-                            maxlatitude=latmax,
-                            minlongitude=lonmin,
-                            maxlongitude=lonmax,
-                            latitude=latitude,
-                            longitude=longitude,
-                            maxradiuskm=radiuskm,
-                            catalog=args.catalog,
-                            contributor=args.contributor,
-                            maxmagnitude=maxmag,
-                            minmagnitude=minmag,
-                            minsig=minsig,
-                            maxsig=maxsig,
-                            producttype=args.limitByProductType)
+            nevents = count(
+                starttime=args.startTime,
+                endtime=args.endTime,
+                updatedafter=args.after,
+                minlatitude=latmin,
+                maxlatitude=latmax,
+                minlongitude=lonmin,
+                maxlongitude=lonmax,
+                latitude=latitude,
+                longitude=longitude,
+                maxradiuskm=radiuskm,
+                catalog=args.catalog,
+                contributor=args.contributor,
+                maxmagnitude=maxmag,
+                minmagnitude=minmag,
+                minsig=minsig,
+                maxsig=maxsig,
+                producttype=args.limitByProductType,
+            )
         else:
             for lonmin, lonmax, latmin, latmax in bounds:
                 nevents = 0
-                nevents += count(starttime=args.startTime,
-                                 endtime=args.endTime,
-                                 updatedafter=args.after,
-                                 minlatitude=latmin,
-                                 maxlatitude=latmax,
-                                 minlongitude=lonmin,
-                                 maxlongitude=lonmax,
-                                 latitude=latitude,
-                                 longitude=longitude,
-                                 maxradiuskm=radiuskm,
-                                 catalog=args.catalog,
-                                 contributor=args.contributor,
-                                 minsig=minsig,
-                                 maxsig=maxsig,
-                                 maxmagnitude=maxmag,
-                                 minmagnitude=minmag,
-                                 producttype=args.limitByProductType)
-        print('There are %i events matching input criteria.' % nevents)
+                nevents += count(
+                    starttime=args.startTime,
+                    endtime=args.endTime,
+                    updatedafter=args.after,
+                    minlatitude=latmin,
+                    maxlatitude=latmax,
+                    minlongitude=lonmin,
+                    maxlongitude=lonmax,
+                    latitude=latitude,
+                    longitude=longitude,
+                    maxradiuskm=radiuskm,
+                    catalog=args.catalog,
+                    contributor=args.contributor,
+                    minsig=minsig,
+                    maxsig=maxsig,
+                    maxmagnitude=maxmag,
+                    minmagnitude=minmag,
+                    producttype=args.limitByProductType,
+                )
+        print("There are %i events matching input criteria." % nevents)
         sys.exit(0)
     if isinstance(bounds, tuple) or bounds is None:
-        events = search(starttime=args.startTime,
-                        endtime=args.endTime,
-                        updatedafter=args.after,
-                        minlatitude=latmin,
-                        maxlatitude=latmax,
-                        minlongitude=lonmin,
-                        maxlongitude=lonmax,
-                        latitude=latitude,
-                        longitude=longitude,
-                        maxradiuskm=radiuskm,
-                        catalog=args.catalog,
-                        contributor=args.contributor,
-                        maxmagnitude=maxmag,
-                        minmagnitude=minmag,
-                        minsig=minsig,
-                        maxsig=maxsig,
-                        producttype=args.limitByProductType,
-                        host=args.host,
-                        eventtype=args.event_type,
-                        alertlevel=args.alert_level)
+        events = search(
+            starttime=args.startTime,
+            endtime=args.endTime,
+            updatedafter=args.after,
+            minlatitude=latmin,
+            maxlatitude=latmax,
+            minlongitude=lonmin,
+            maxlongitude=lonmax,
+            latitude=latitude,
+            longitude=longitude,
+            maxradiuskm=radiuskm,
+            catalog=args.catalog,
+            contributor=args.contributor,
+            maxmagnitude=maxmag,
+            minmagnitude=minmag,
+            minsig=minsig,
+            maxsig=maxsig,
+            producttype=args.limitByProductType,
+            host=args.host,
+            eventtype=args.event_type,
+            alertlevel=args.alert_level,
+        )
     else:
         events = []
         for i, tbounds in enumerate(bounds):
             lonmin, lonmax, latmin, latmax = tbounds
-            fmt = 'Checking bounds %i of %i for %s...\n'
+            fmt = "Checking bounds %i of %i for %s...\n"
             tpl = (i + 1, len(bounds), ccode)
             logging.debug(fmt % tpl)
-            tevents = search(starttime=args.startTime,
-                             endtime=args.endTime,
-                             updatedafter=args.after,
-                             minlatitude=latmin,
-                             maxlatitude=latmax,
-                             minlongitude=lonmin,
-                             maxlongitude=lonmax,
-                             latitude=latitude,
-                             longitude=longitude,
-                             maxradiuskm=radiuskm,
-                             catalog=args.catalog,
-                             contributor=args.contributor,
-                             maxmagnitude=maxmag,
-                             minmagnitude=minmag,
-                             minsig=minsig,
-                             maxsig=maxsig,
-                             producttype=args.limitByProductType,
-                             host=args.host,
-                             eventtype=args.event_type,
-                             alertlevel=args.alert_level)
+            tevents = search(
+                starttime=args.startTime,
+                endtime=args.endTime,
+                updatedafter=args.after,
+                minlatitude=latmin,
+                maxlatitude=latmax,
+                minlongitude=lonmin,
+                maxlongitude=lonmax,
+                latitude=latitude,
+                longitude=longitude,
+                maxradiuskm=radiuskm,
+                catalog=args.catalog,
+                contributor=args.contributor,
+                maxmagnitude=maxmag,
+                minmagnitude=minmag,
+                minsig=minsig,
+                maxsig=maxsig,
+                producttype=args.limitByProductType,
+                host=args.host,
+                eventtype=args.event_type,
+                alertlevel=args.alert_level,
+            )
             events += tevents
 
     if not len(events):
-        logging.info('No events found matching your search criteria. Exiting.')
+        logging.info("No events found matching your search criteria. Exiting.")
         sys.exit(0)
 
-    if (args.getAngles != 'none' or
-            args.getAllMags or
-            args.getComponents != 'none'):
+    if args.getAngles != "none" or args.getAllMags or args.getComponents != "none":
 
-        logging.info(
-            'Fetched %i events...creating table.\n' % (len(events)))
+        logging.info("Fetched %i events...creating table.\n" % (len(events)))
         supp = args.getMomentSupplement
-        df = get_detail_data_frame(events, get_all_magnitudes=args.getAllMags,
-                                   get_tensors=args.getComponents,
-                                   get_focals=args.getAngles,
-                                   get_moment_supplement=supp)
+        df = get_detail_data_frame(
+            events,
+            get_all_magnitudes=args.getAllMags,
+            get_tensors=args.getComponents,
+            get_focals=args.getAngles,
+            get_moment_supplement=supp,
+        )
     else:
-        logging.info(
-            'Fetched %i events...creating summary table.\n' % (len(events)))
+        logging.info("Fetched %i events...creating summary table.\n" % (len(events)))
         df = get_summary_data_frame(events)
 
     # order the columns so that at least the initial parameters come the way
@@ -419,17 +486,18 @@ def main():
     if args.country:
         df = filter_by_country(df, ccode, buffer_km=args.buffer)
 
-    logging.info('Created table...saving %i records to %s.\n' %
-                 (len(df), args.filename))
-    if args.format == 'excel':
+    logging.info(
+        "Created table...saving %i records to %s.\n" % (len(df), args.filename)
+    )
+    if args.format == "excel":
         df.to_excel(args.filename, index=False)
-    elif args.format == 'tab':
-        df.to_csv(args.filename, sep='\t', index=False)
+    elif args.format == "tab":
+        df.to_csv(args.filename, sep="\t", index=False)
     else:
         df.to_csv(args.filename, index=False, chunksize=1000)
-    logging.info('%i records saved to %s.' % (len(df), args.filename))
+    logging.info("%i records saved to %s." % (len(df), args.filename))
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

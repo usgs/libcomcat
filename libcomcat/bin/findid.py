@@ -5,6 +5,7 @@ import argparse
 import sys
 import logging
 from datetime import datetime
+import pkg_resources
 
 # third party
 import pandas as pd
@@ -108,7 +109,7 @@ def get_parser():
     parser.add_argument('-v', '--verbose', dest='print_verbose',
                         action='store_true', help=vstr, default=False)
     parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__, help='Version of libcomcat.')
+                        version=pkg_resources.require("libcomcat")[0].version, help='Version of libcomcat.')
     whelp = 'Change the window (sec) around the specified time. Default is %.0f seconds.' % TIME_WINDOW
     parser.add_argument('-w', '--window', type=float,
                         help=whelp)

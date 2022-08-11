@@ -8,7 +8,7 @@ setup(
     author="Mike Hearne",
     author_email="mhearne@usgs.gov",
     url="https://github.com/usgs/libcomcat",
-    version="2.1.1",
+    version="2.1.2",
     packages=["libcomcat", "libcomcat.bin"],  # must be here or scripts won't install!
     package_data={
         "libcomcat": [
@@ -48,5 +48,5 @@ setup(
         "xlrd",
         "xlsxwriter",
         "xlwt",
-    ]
+    ],
 )

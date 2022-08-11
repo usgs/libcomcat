@@ -2,13 +2,13 @@
     {
       "name": "libcomcat",
       "description": "Python wrapper around ComCat web API",
-      "version": "2.1.1",
+      "version": "2.1.2",
       "status": "Beta",
       "organization": "U.S. Geological Survey",
       "vcs": "git",
       "repositoryURL": "https://github.com/usgs/libcomcat",
       "homepageURL": "https://github.com/usgs/libcomcat",
-      "downloadURL": "https://github.com/usgs/libcomcat/releases/tag/2.1.1",
+      "downloadURL": "https://github.com/usgs/libcomcat/releases/tag/2.1.2",
       "disclaimerURL": "https://github.com/usgs/libcomcat/blob/master/DISCLAIMER.md",
       "permissions": {
         "licenses": [

@@ -19,11 +19,10 @@ import requests
 
 # local imports
 from libcomcat.exceptions import ConnectionError
-from libcomcat import __version__ as libversion
 
 # use this to set the user agent for each request, giving us a way
 # to distinguish libcomcat requests from other browser requests
-HEADERS = {"User-Agent": "libcomcat v%s" % libversion}
+HEADERS = {"User-Agent": "libcomcat v%s" % pkg_resources.require("libcomcat")[0].version}
 
 # constants
 CATALOG_SEARCH_TEMPLATE = "https://earthquake.usgs.gov/fdsnws/event/1/catalogs"

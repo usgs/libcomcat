@@ -2,9 +2,9 @@
 import argparse
 import sys
 import logging
+import pkg_resources
 
 # Third party imports
-import libcomcat
 from libcomcat.search import search, count, get_authoritative_info
 from libcomcat.utils import (maketime,
                              CombinedFormatter)
@@ -86,7 +86,7 @@ def get_parser():
     parser.add_argument('-t', '--time-after', dest='after', type=maketime,
                         help='Limit to events after specified time. YYYY-mm-dd or YYYY-mm-ddTHH:MM:SS.')
     parser.add_argument('--version', action='version',
-                        version=libcomcat.__version__, help='Version of libcomcat.')
+                        version=pkg_resources.require("libcomcat")[0].version, help='Version of libcomcat.')
     parser.add_argument('-x', '--count', dest='getCount', action='store_true',
                         help='Just return the number of events in search and maximum allowed.')
     return parser
