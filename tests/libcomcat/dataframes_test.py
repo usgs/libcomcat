@@ -1,28 +1,27 @@
 #!/usr/bin/env python
 
 import os.path
-from datetime import datetime
 import pathlib
+from datetime import datetime
 from unittest import mock
 
 import numpy as np
 import pandas as pd
-
 import vcr
 
+from libcomcat import search
 from libcomcat.dataframes import (
-    get_summary_data_frame,
+    associate,
     get_detail_data_frame,
-    get_pager_data_frame,
-    get_phase_dataframe,
-    get_magnitude_data_frame,
     get_dyfi_data_frame,
     get_history_data_frame,
-    associate,
+    get_magnitude_data_frame,
+    get_pager_data_frame,
+    get_phase_dataframe,
+    get_summary_data_frame,
 )
-from libcomcat import search
-from libcomcat.search import get_event_by_id
 from libcomcat.exceptions import ParsingError
+from libcomcat.search import get_event_by_id
 
 DMINUTE = 60  # number of seconds in a minute
 DHOUR = 3600  # number of seconds in an hour
@@ -131,7 +130,7 @@ def test_dyfi():
     tape_file = os.path.join(cassettes, "dataframes_dyfi.yaml")
     with vcr.use_cassette(tape_file, record_mode="new_episodes"):
         df1km = get_dyfi_data_frame(detail, dyfi_file="utm_1km")
-        np.testing.assert_almost_equal(df1km["intensity"].sum(), 14628.3)
+        np.testing.assert_almost_equal(df1km["intensity"].sum(), 14629.1)
         df10km = get_dyfi_data_frame(detail, dyfi_file="utm_10km")
         np.testing.assert_almost_equal(df10km["intensity"].sum(), 3459.0)
         dfutm = get_dyfi_data_frame(detail, dyfi_file="utm_var")
