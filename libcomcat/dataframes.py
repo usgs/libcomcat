@@ -1,19 +1,20 @@
 # stdlib imports
-from xml.dom import minidom
-import warnings
 import json
-from io import StringIO
-from datetime import datetime, timedelta
 import logging
+import time
+import warnings
+from datetime import datetime, timedelta
+from io import StringIO
+from xml.dom import minidom
 
 # third party imports
 import numpy as np
 import pandas as pd
-from obspy.io.quakeml.core import Unpickler
 import requests
-from scipy.special import erfcinv
-from obspy.geodetics.base import gps2dist_azimuth
 from impactutils.mapping.compass import get_compass_dir_azimuth
+from obspy.geodetics.base import gps2dist_azimuth
+from obspy.io.quakeml.core import Unpickler
+from scipy.special import erfcinv
 
 # local imports
 from libcomcat import search
@@ -54,6 +55,9 @@ DYFI_COLUMNS_REPLACE = {
     "ZIP/Location": "station",
 }
 
+MIN_API_TIME = (
+    0.7  # required number of seconds between calls (with a little safety factor)
+)
 
 PRODUCT_COLUMNS = [
     "Update Time",
@@ -441,6 +445,7 @@ def get_detail_data_frame(
     fmt = "Getting detailed event info - reporting every %i events."
     logging.debug(fmt % inc)
     for event in events:
+        t1 = time.time()
         try:
             detail = event.getDetailEvent()
         except Exception:
@@ -457,6 +462,15 @@ def get_detail_data_frame(
             msg = "Getting detailed information for %s, %i of %i events.\n"
             logging.debug(msg % (event.id, ic, len(events)))
         ic += 1
+
+        # there are limits on the number of ComCat API calls that can be made. To stay under this,
+        # we'll sleep as long as necessary between calls.
+        t2 = time.time()
+        dt = t2 - t1
+        sleep_time = MIN_API_TIME - dt
+        if sleep_time < 0:
+            continue
+        time.sleep(sleep_time)
     df = pd.DataFrame(elist)
     first_columns = ["id", "time", "latitude", "longitude", "depth", "magnitude"]
     all_columns = df.columns
@@ -1851,7 +1865,7 @@ def find_nearby_events(time, lat, lon, twindow, radius):
         df.loc[idx, "azimuth(deg)"] = az
         dt_norm = dt / twindow
         dd_norm = distance_km / radius
-        norm_vec = np.sqrt(dt_norm ** 2 + dd_norm ** 2)
+        norm_vec = np.sqrt(dt_norm**2 + dd_norm**2)
         df.loc[idx, "normalized_time_dist_vector"] = norm_vec
 
     # reorder the columns so that url is at the end
