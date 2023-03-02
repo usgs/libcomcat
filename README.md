@@ -3,6 +3,11 @@
 
 <!--- Comment to test syncing -->
 
+# Notice
+
+This project has been moved to a USGS server: https://code.usgs.gov/ghsc/esi/libcomcat-python
+
+<!--
 # Introduction
 
 
@@ -82,4 +87,4 @@ Example Jupyter notebooks show how the API can be used to get and manipulate inf
 
 If you wish to cite this work in your own publication, you may use this DOI:
 https://doi.org/10.5066/P91WN1UQ
-
+-->
